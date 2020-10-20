@@ -34,6 +34,6 @@ setup(
     packages=['xqute', 'xqute.schedulers'],
     package_dir={"": "."},
     package_data={},
-    install_requires=['aiofiles', 'diot', 'psutil==5.*', 'simplug'],
-    extras_require={"dev": ["pytest", "pytest-asyncio==0.5.*", "pytest-cov"]},
+    install_requires=['aiofiles==0.5.*', 'diot', 'psutil==5.*', 'simplug'],
+    extras_require={"dev": ["pytest", "pytest-asyncio", "pytest-cov"]},
 )
