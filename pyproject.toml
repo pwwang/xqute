@@ -14,6 +14,7 @@ simplug = "*"
 diot = "*"
 aiofiles = "0.5.*"
 psutil = "5.*"
+rich = "9.*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
