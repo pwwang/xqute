@@ -1,0 +1,7 @@
+aiofiles
+diot
+psutil==5.*
+pytest
+pytest-asyncio==0.5.*
+pytest-cov
+simplug

@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "xqute"
+version = "0.0.1"
+description = "A job management system for python"
+authors = ["pwwang <pwwang@pwwang.com>"]
+license = "MIT"
+homepage = "https://github.com/pwwang/xqute"
+repository  = "https://github.com/pwwang/xqute"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+simplug = "*"
+diot = "*"
+aiofiles = "*"
+psutil = "5.*"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pytest-cov = "*"
+pytest-asyncio = "0.5.*"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
