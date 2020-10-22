@@ -1,10 +1,10 @@
 """The scheduler to run jobs locally"""
-from subprocess import Popen
+import asyncio
 from typing import List, Type
 import psutil
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import JobStatus, a_write_text, asyncify, a_read_text
+from ..utils import JobStatus, asyncify, a_read_text
 
 @asyncify
 def a_proc_children(proc: psutil.Process,
@@ -35,17 +35,18 @@ def a_proc_kill(proc: psutil.Process):
 class LocalJob(Job):
     """Local job"""
 
-    async def wrap_cmd(self, scheduler: "Scheduler") -> None:
+    def wrap_cmd(self, scheduler: "Scheduler") -> str:
         """Wrap the command for the scheduler to submit and run
 
         Args:
             scheduler: The scheduler
+
+        Returns:
+            The wrapped script
         """
-        wrapt_script = self.wrapped_script(scheduler)
-        await a_write_text(wrapt_script, self.CMD_WRAPPER_TEMPLATE.format(
+        return self.CMD_WRAPPER_TEMPLATE.format(
             shebang=f'#!{self.CMD_WRAPPER_SHELL}', job=self, status=JobStatus
-        ))
-        self._wrapped_cmd = [self.CMD_WRAPPER_SHELL, wrapt_script]
+        )
 
 class LocalScheduler(Scheduler):
     """The local scheduler
@@ -54,7 +55,7 @@ class LocalScheduler(Scheduler):
         name: The name of the scheduler
         job_class: The job class
     """
-    name: str = 'local'
+    name = 'local'
     job_class: Type[Job] = LocalJob
 
     async def submit_job(self, job: Job) -> int:
@@ -66,13 +67,13 @@ class LocalScheduler(Scheduler):
         Returns:
             The process id
         """
-        # run at background
-        # not using asyncio.create_subprocess_exec, becaused the result
-        # needs to be awaited
-        # otherwise
-        # RuntimeWarning: A loop is being detached from a child watcher
-        #   with pending handlers
-        proc = await asyncify(Popen)(job.wrapped_cmd)
+        proc = await asyncio.create_subprocess_exec(
+            job.CMD_WRAPPER_SHELL,
+            str(await job.wrapped_script(self)),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        # don't await for the results, as this will run the real command
         return proc.pid
 
     async def kill_job(self, job: Job):
@@ -82,13 +83,13 @@ class LocalScheduler(Scheduler):
             job: The job
         """
         try:
-            proc = psutil.Process(int(job.uid))
+            proc = psutil.Process(job.uid)
             children = await a_proc_children(proc, recursive=True)
             for child in children:
                 await a_proc_kill(child)
             await a_proc_kill(proc)
         except psutil.NoSuchProcess: # pragma: no cover
-            # job has finished
+            # job has finished during killing
             pass
 
     async def job_is_running(self, job: Job) -> bool:
@@ -104,7 +105,7 @@ class LocalScheduler(Scheduler):
         """
         try:
             uid = int(await a_read_text(job.lock_file))
-        except (ValueError, TypeError, FileNotFoundError): # pragma: no cover
+        except (ValueError, TypeError, FileNotFoundError):
             return False
 
         return await asyncify(psutil.pid_exists)(uid)

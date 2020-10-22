@@ -1,9 +1,9 @@
 """Builtin schedulers"""
 from importlib import import_module
-from typing import Type
+from typing import Type, Union
 from ..scheduler import Scheduler
 
-def get_scheduler(sched_name: str) -> Type[Scheduler]:
+def get_scheduler(scheduler: Union[str, Type[Scheduler]]) -> Type[Scheduler]:
     """Get the scheduler class
 
     Args:
@@ -13,5 +13,8 @@ def get_scheduler(sched_name: str) -> Type[Scheduler]:
     Returns:
         The scheduler class
     """
-    module = import_module(f'{__name__}.{sched_name}_scheduler')
-    return getattr(module, f'{sched_name[0].upper()}{sched_name[1:]}Scheduler')
+    if isinstance(scheduler, str):
+        module = import_module(f'{__name__}.{scheduler}_scheduler')
+        return getattr(module,
+                       f'{scheduler[0].upper()}{scheduler[1:]}Scheduler')
+    return scheduler

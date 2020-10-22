@@ -9,16 +9,20 @@ Attributes:
     DEFAULT_JOB_CMD_WRAPPER_SHELL: The default shell for job wrapper
     DEFAULT_JOB_CMD_WRAPPER_TEMPLATE: The template for job cmd wrapping
     DEFAULT_SCHEDULER_FORKS: Default number of job forks for scheduler
+    DEFAULT_JOB_SUBMISSION_BATCH: Default consumer workers
 """
 from pathlib import Path
+import uvloop
 from .utils import JobErrorStrategy
 
+uvloop.install()
 # pylint: disable=invalid-name
 
 DEFAULT_JOB_METADIR: Path = Path('./.xqute')
 DEFAULT_JOB_METADIR.mkdir(parents=True, exist_ok=True)
 DEFAULT_JOB_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
 DEFAULT_JOB_NUM_RETRIES: int = 3
+DEFAULT_JOB_SUBMISSION_BATCH: int = 8
 DEFAULT_JOB_CMD_WRAPPER_SHELL: str = '/bin/bash'
 DEFAULT_JOB_CMD_WRAPPER_TEMPLATE: str = r"""{shebang}
 

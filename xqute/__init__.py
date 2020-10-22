@@ -1,6 +1,6 @@
 """A job management system for python"""
 from .xqute import Xqute
-from .plugin import simplug
+from .plugin import plugin
 from .utils import logger
 from .job import Job
 from .scheduler import Scheduler

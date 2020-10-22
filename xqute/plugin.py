@@ -1,32 +1,39 @@
 """Hook specifications for scheduler plugins"""
-from simplug import Simplug
+import signal
+from typing import Optional
+from simplug import Simplug, SimplugResult
 
 # pylint: disable=unused-argument,invalid-name
 
-simplug = Simplug('xqute')
+plugin = Simplug('xqute')
 
-@simplug.spec
-async def on_init(scheduler: "Scheduler"):
-    """Right after scheduler object is initialized
+@plugin.spec
+def on_init(xqute: "Xqute"):
+    """When xqute is initialized
+
+    Note that this hook will run at the same time when producer and consumer
+    start. So they are not ensured to be started at this point.
 
     Args:
-        scheduler: The scheduler object
+        xqute: The xqute object
     """
 
 
-@simplug.spec
-async def on_shutdown(scheduler: "Scheduler", consumer: "Consumer"):
-    """When scheduler is shutting down
+@plugin.spec(result=SimplugResult.FIRST)
+def on_shutdown(xqute: "Xqute", sig: Optional[signal.Signals]):
+    """When xqute is shutting down
 
     Return False to stop shutting down, but you have to shut it down
-    by yourself, for example, scheduler.kill_running_jobs()
+    by yourself, for example, `xqute.task.cancel()`
+
+    Only the first return value will be used.
 
     Args:
-        scheduler: The scheduler object
-        sig: The signal
+        xqute: The xqute object
+        sig: The signal. `None` means a natural shutdown
     """
 
-@simplug.spec
+@plugin.spec
 async def on_job_init(scheduler: "Scheduler", job: "Job"):
     """When the job is initialized
 
@@ -35,7 +42,7 @@ async def on_job_init(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
-@simplug.spec
+@plugin.spec
 async def on_job_queued(scheduler: "Scheduler", job: "Job"):
     """When the job is queued
 
@@ -44,7 +51,18 @@ async def on_job_queued(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
-@simplug.spec
+@plugin.spec(result=SimplugResult.FIRST)
+async def on_job_submitting(scheduler: "Scheduler", job: "Job"):
+    """When the job is to be submitted
+
+    Return False to cancel submitting. Only the first return value is used.
+
+    Args:
+        scheduler: The scheduler object
+        job: The job object
+    """
+
+@plugin.spec
 async def on_job_submitted(scheduler: "Scheduler", job: "Job"):
     """When the job is submitted
 
@@ -53,7 +71,7 @@ async def on_job_submitted(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
-@simplug.spec
+@plugin.spec(result=SimplugResult.FIRST)
 async def on_job_killing(scheduler: "Scheduler", job: "Job"):
     """When the job is being killed
 
@@ -64,7 +82,7 @@ async def on_job_killing(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
-@simplug.spec
+@plugin.spec
 async def on_job_killed(scheduler: "Scheduler", job: "Job"):
     """When the job is killed
 
@@ -73,7 +91,7 @@ async def on_job_killed(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
-@simplug.spec
+@plugin.spec
 async def on_job_failed(scheduler: "Scheduler", job: "Job"):
     """When the job is failed
 
@@ -82,7 +100,7 @@ async def on_job_failed(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
-@simplug.spec
+@plugin.spec
 async def on_job_succeeded(scheduler: "Scheduler", job: "Job"):
     """When the job is succeeded
 
@@ -91,41 +109,4 @@ async def on_job_succeeded(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
-@simplug.spec
-async def on_complete(scheduler: "Scheduler"):
-    """When all jobs complete
-
-    Args:
-        scheduler: The scheduler object
-    """
-
-priority = 99 # pylint: disable=invalid-name
-
-# pylint: disable=function-redefined
-@simplug.impl
-async def on_job_failed(scheduler: "Scheduler", job: "Job"):
-    """When the job is failed. Have to make sure it's only called once
-
-    Because we don't have a trigger in memory to determine this status change.
-    It is obtained by polling.
-
-    Args:
-        scheduler: The scheduler object
-        job: The job object
-    """
-    job.hook_done = True
-
-@simplug.impl
-async def on_job_succeeded(scheduler: "Scheduler", job: "Job"):
-    """When the job is succeeded. Have to make sure it's only called once
-
-    Because we don't have a trigger in memory to determine this status change.
-    It is obtained by polling.
-
-    Args:
-        scheduler: The scheduler object
-        job: The job object
-    """
-    job.hook_done = True
-
-simplug.register(__name__)
+plugin.load_entrypoints()

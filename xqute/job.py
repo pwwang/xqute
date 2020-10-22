@@ -2,7 +2,7 @@
 from os import PathLike, unlink
 import shlex
 import shutil
-from typing import Any, List
+from typing import List, Union
 from pathlib import Path
 from abc import ABC, abstractmethod
 from .defaults import (
@@ -15,6 +15,7 @@ from .utils import (
     a_mkdir, logger,
     JobStatus,
     a_read_text,
+    a_write_text,
     asyncify
 )
 
@@ -52,12 +53,15 @@ class Job(ABC):
         error_retry: Whether we should retry if error happened
         num_retries: Total number of retries
     """
+    __slots__ = ('cmd', 'index', 'metadir', 'trial_count', '_uid', '_status',
+                 '_rc', '_error_retry', '_num_retries', 'status_changed')
+
     CMD_WRAPPER_TEMPLATE: str = DEFAULT_JOB_CMD_WRAPPER_TEMPLATE
     CMD_WRAPPER_SHELL: str = DEFAULT_JOB_CMD_WRAPPER_SHELL
 
     def __init__(self,
                  index: int,
-                 cmd: List[str],
+                 cmd: Union[str, List[str]],
                  metadir: PathLike = DEFAULT_JOB_METADIR,
                  error_retry: bool = False,
                  num_retries: int = DEFAULT_JOB_NUM_RETRIES):
@@ -68,15 +72,14 @@ class Job(ABC):
         self.metadir.mkdir(exist_ok=True, parents=True)
 
         # The name of the job, should be the unique id from the scheduler
-        self.uid = None
         self.trial_count = 0
-        self.hook_done = False
+        self.status_changed = False
 
+        self._uid = None
         self._status = JobStatus.INIT
         self._rc = -1
         self._error_retry = error_retry
         self._num_retries = num_retries
-        self._wrapped_cmd = None
 
     def __repr__(self) -> str:
         """repr of the job"""
@@ -85,6 +88,20 @@ class Job(ABC):
         return (f'<{self.__class__.__name__}-{self.index}({self.uid}): '
                 f'({self.cmd})>')
 
+    @property
+    def uid(self) -> str:
+        """Get the uid of the job in scheduler system"""
+        if self._uid is None and not self.lock_file.is_file():
+            return None
+        if self._uid is not None:
+            return self._uid
+        self._uid = self.lock_file.read_text()
+        return self._uid
+
+    @uid.setter
+    def uid(self, uniqid: Union[int, str]):
+        self._uid = uniqid
+        self.lock_file.write_text(str(uniqid))
 
     @property
     def stdout_file(self) -> Path:
@@ -117,7 +134,7 @@ class Job(ABC):
         return self.metadir / 'job.retry'
 
     @property
-    async def status(self) -> int:
+    def status(self) -> int:
         """Query the status of the job
 
         If the job is submitted, try to query it from the status file
@@ -130,7 +147,7 @@ class Job(ABC):
                 JobStatus.KILLING
         ):
             try:
-                self._status = int(await a_read_text(self.status_file))
+                self._status = int(self.status_file.read_text())
             except (FileNotFoundError,
                     ValueError,
                     TypeError): # pragma: no cover
@@ -141,7 +158,9 @@ class Job(ABC):
                 self.trial_count < self._num_retries):
             self._status = JobStatus.RETRYING
 
-        if self._status != prev_status and (
+        self.status_changed = self._status != prev_status
+
+        if self.status_changed and (
                 self._status == JobStatus.RETRYING or
                 self._status >= JobStatus.KILLING
         ):
@@ -160,6 +179,7 @@ class Job(ABC):
         logger.debug('/Job-%s Status changed: %r -> %r',
                      self.index,
                      *JobStatus.get_name(self._status, stat))
+        self.status_changed = True
         self._status = stat
 
     @property
@@ -172,12 +192,9 @@ class Job(ABC):
     @property
     def strcmd(self) -> str:
         """Get the string representation of the command"""
-        return ' '.join(shlex.quote(str(cmditem)) for cmditem in self.cmd)
-
-    @property
-    def wrapped_cmd(self) -> Any:
-        """Get the wrapped command"""
-        return self._wrapped_cmd
+        if isinstance(self.cmd, list):
+            return ' '.join(shlex.quote(str(cmditem)) for cmditem in self.cmd)
+        return self.cmd
 
     async def clean(self, retry=False):
         """Clean up the meta files
@@ -185,7 +202,6 @@ class Job(ABC):
         Args:
             retry: Whether clean it for retrying
         """
-        self.hook_done = False
         if retry:
             retry_dir = self.retry_dir / str(self.trial_count)
             if retry_dir.exists():
@@ -210,7 +226,7 @@ class Job(ABC):
             if self.rc_file.is_file():
                 unlink(self.rc_file)
 
-    def wrapped_script(self, scheduler: "Scheduler") -> PathLike:
+    async def wrapped_script(self, scheduler: "Scheduler") -> PathLike:
         """Get the wrapped script
 
         Args:
@@ -219,21 +235,13 @@ class Job(ABC):
         Returns:
             The path of the wrapped script
         """
-        return self.metadir / f'job.wrapped.{scheduler.name}'
-
-    def name(self, scheduler: "Scheduler") -> str:
-        """Get the name of job according to the scheduler
-
-        Args:
-            scheduler: The scheduler
-
-        Returns:
-            The name of the job
-        """
-        return f"{scheduler.name}.job.{self.index}"
+        wrapt_script = self.metadir / f'job.wrapped.{scheduler.name}'
+        if not wrapt_script.is_file():
+            await a_write_text(wrapt_script, self.wrap_cmd(scheduler))
+        return wrapt_script
 
     @abstractmethod
-    async def wrap_cmd(self, scheduler: "Scheduler") -> None:
+    def wrap_cmd(self, scheduler: "Scheduler") -> None:
         """Wrap the command for the scheduler to submit and run
 
         Args:

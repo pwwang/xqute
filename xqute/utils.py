@@ -7,7 +7,11 @@ from typing import Callable, Coroutine, Tuple, Union
 import asyncio
 from functools import partial, wraps
 
+import uvloop
 import aiofiles as aiof
+# pylint: disable=invalid-name
+uvloop.install()
+
 # pylint: disable=invalid-name
 DEBUG = True
 LOGGER_NAME = 'XQUTE'
@@ -125,7 +129,7 @@ def a_mkdir(path: PathLike, *args, **kwargs):
     Path(path).mkdir(*args, **kwargs)
 
 logger = logging.getLogger(LOGGER_NAME)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 if DEBUG:
     from rich.logging import RichHandler
     logger.addHandler(RichHandler(show_path=False))

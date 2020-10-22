@@ -3,21 +3,23 @@ import asyncio
 from typing import Type
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import a_write_text, a_read_text, JobStatus
+from ..utils import a_read_text, JobStatus
 
 class SgeJob(Job):
     """SGE job"""
-    async def wrap_cmd(self, scheduler: Scheduler) -> None:
+    def wrap_cmd(self, scheduler: Scheduler) -> str:
         """Wrap the command to enable status, returncode, cleaning when
         job exits
 
         Args:
             scheduler: The scheduler
+
+        Returns:
+            The wrapped script
         """
-        wrapt_script = self.wrapped_script(scheduler)
         options = {key[4:]: val for key, val in scheduler.config.items()
                    if key.startswith('sge_')}
-        options['N'] = self.name(scheduler)
+        options['N'] = f'{scheduler.name}.job.{self.index}'
         options['cwd'] = True
         options['o'] = self.stdout_file
         options['e'] = self.stderr_file
@@ -33,13 +35,11 @@ class SgeJob(Job):
                 options_list.append(f"#$ -{key} {val}")
         options_str = '\n'.join(options_list)
 
-        await a_write_text(wrapt_script, self.CMD_WRAPPER_TEMPLATE.format(
+        return self.CMD_WRAPPER_TEMPLATE.format(
             shebang=f'#!{self.CMD_WRAPPER_SHELL}\n{options_str}\n',
             job=self,
             status=JobStatus
-        ))
-
-        self._wrapped_cmd = wrapt_script
+        )
 
 class SgeScheduler(Scheduler):
     """The sge scheduler
@@ -76,14 +76,13 @@ class SgeScheduler(Scheduler):
             The job id
         """
         proc = await asyncio.create_subprocess_exec(
-            self.qsub, str(job.wrapped_cmd),
+            self.qsub, str(await job.wrapped_script(self)),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
         stdout, _ = await proc.communicate()
         # Your job 613815 (...) has been submitted
         return stdout.decode().split()[2]
-
 
     async def kill_job(self, job: Job):
         """Kill a job on SGE
@@ -112,6 +111,9 @@ class SgeScheduler(Scheduler):
         try:
             uid = await a_read_text(job.lock_file)
         except FileNotFoundError:
+            return False
+
+        if not uid:
             return False
 
         proc = await asyncio.create_subprocess_exec(
