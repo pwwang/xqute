@@ -4,7 +4,8 @@ import signal
 from abc import ABC, abstractmethod
 from typing import List, Type, Union
 from diot import Diot
-from .utils import logger, JobStatus, asyncify, a_write_text
+from .defaults import JobStatus
+from .utils import logger, asyncify, a_write_text
 from .job import Job
 from .plugin import plugin
 

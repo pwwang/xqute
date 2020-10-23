@@ -3,8 +3,9 @@ import pytest
 import os, signal
 from concurrent.futures import ProcessPoolExecutor
 from xqute import *
+from xqute.defaults import JobStatus
 from xqute.schedulers.local_scheduler import LocalScheduler
-from xqute.utils import JobStatus, a_write_text
+from xqute.utils import a_write_text
 
 Xqute.EMPTY_BUFFER_SLEEP_TIME = .1
 

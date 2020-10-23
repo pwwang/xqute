@@ -10,9 +10,11 @@ from .defaults import (
     DEFAULT_JOB_ERROR_STRATEGY,
     DEFAULT_JOB_NUM_RETRIES,
     DEFAULT_SCHEDULER_FORKS,
-    DEFAULT_JOB_SUBMISSION_BATCH
+    DEFAULT_JOB_SUBMISSION_BATCH,
+    JobErrorStrategy,
+    JobStatus
 )
-from .utils import logger, JobErrorStrategy, JobStatus
+from .utils import logger
 from .plugin import plugin
 from .schedulers import get_scheduler
 
@@ -80,14 +82,14 @@ class Xqute:
         if not plugins:
             self.plugin_context = None
         else:
-            no_plugins = [isinstance(plugin, str) and plugin.startswith('no:')
-                          for plugin in plugins]
+            no_plugins = [isinstance(plug, str) and plug.startswith('no:')
+                          for plug in plugins]
             if any(no_plugins) and not all(no_plugins):
                 raise ValueError('Either all plugin names start with "no:" or '
                                  'none of them does.')
             if all(no_plugins):
                 self.plugin_context = plugin.plugins_but_context(
-                    *(plugin[3:] for plugin in plugins)
+                    *(plug[3:] for plug in plugins)
                 )
             else:
                 self.plugin_context = plugin.plugins_only_context(*plugins)

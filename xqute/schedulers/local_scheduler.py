@@ -2,9 +2,10 @@
 import asyncio
 from typing import List, Type
 import psutil
+from ..defaults import JobStatus
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import JobStatus, asyncify, a_read_text
+from ..utils import asyncify, a_read_text
 
 @asyncify
 def a_proc_children(proc: psutil.Process,

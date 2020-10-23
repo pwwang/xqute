@@ -1,9 +1,10 @@
 """The scheduler to run jobs on SGE"""
 import asyncio
 from typing import Type
+from ..defaults import JobStatus
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import a_read_text, JobStatus
+from ..utils import a_read_text
 
 class SgeJob(Job):
     """SGE job"""

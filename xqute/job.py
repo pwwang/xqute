@@ -10,10 +10,11 @@ from .defaults import (
     DEFAULT_JOB_NUM_RETRIES,
     DEFAULT_JOB_CMD_WRAPPER_TEMPLATE,
     DEFAULT_JOB_CMD_WRAPPER_SHELL,
+    JobStatus,
 )
 from .utils import (
-    a_mkdir, logger,
-    JobStatus,
+    logger,
+    a_mkdir,
     a_read_text,
     a_write_text,
     asyncify
