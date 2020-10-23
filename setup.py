@@ -35,7 +35,8 @@ setup(
     package_dir={"": "."},
     package_data={},
     install_requires=[
-        'aiofiles==0.5.*', 'diot', 'psutil==5.*', 'rich==9.*', 'simplug'
+        'aiofiles==0.5.*', 'diot', 'psutil==5.*', 'rich==9.*', 'simplug',
+        'uvloop==0.*'
     ],
     extras_require={"dev": ["pytest", "pytest-asyncio", "pytest-cov"]},
 )

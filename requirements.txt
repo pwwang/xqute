@@ -6,3 +6,4 @@ pytest-asyncio
 pytest-cov
 rich==9.*
 simplug
+uvloop==0.*
