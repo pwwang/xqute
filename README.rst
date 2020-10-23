@@ -29,13 +29,20 @@ A toy example
    from xqute import Xqute
 
    async def main():
-       xqute = Xqute()
-       await xqute.push(['echo', 1])
-       await xqute.push(['echo', 2])
+       # 3 jobs allowed to run at the same time
+       xqute = Xqute(scheduler_forks=3)
+       for _ in range(10):
+           await xqute.put('sleep 1')
        await xqute.run_until_complete()
 
    if __name__ == '__main__':
        asyncio.run(main())
+
+
+.. image:: ./xqute.png
+   :target: ./xqute.png
+   :alt: xqute
+
 
 API
 ---
@@ -45,10 +52,10 @@ https://pwwang.github.io/xqute/
 Usage
 -----
 
-Producer
-^^^^^^^^
+Xqute object
+^^^^^^^^^^^^
 
-A producer is initialized by:
+An xqute is initialized by:
 
 .. code-block:: python
 
@@ -58,11 +65,13 @@ Available arguments are:
 
 
 * scheduler: The scheduler class or name
+* plugins: The plugins to enable/disable for this session
 * job_metadir: The job meta directory (Default: ``./.xqute/``\ )
 * job_error_strategy: The strategy when there is error happened
 * job_num_retries: Max number of retries when job_error_strategy is retry
+* job_submission_batch: The number of consumers to submit jobs
 * scheduler_forks: Max number of job forks
-* **kwargs: Additional keyword arguments for scheduler
+* **scheduler_opts: Additional keyword arguments for scheduler
 
 Note that the producer must be initialized in an event loop.
 
@@ -70,7 +79,7 @@ To push a job into the queue:
 
 .. code-block:: python
 
-   await xqute.push(['echo', 1])
+   await xqute.put(['echo', 1])
 
 Using SGE scheduler
 ^^^^^^^^^^^^^^^^^^^
@@ -104,7 +113,7 @@ To write a plugin for ``xqute``\ , you will need to implement the following hook
 
 
 * ``on_init(scheduler)``\ : Right after scheduler object is initialized
-* ``on_shutdown(scheduler, consumer)``\ : When scheduler is shutting down
+* ``on_shutdown(scheduler, sig)``\ : When scheduler is shutting down
 * ``on_job_init(scheduler, job)``\ : When the job is initialized
 * ``on_job_queued(scheduler, job)``\ : When the job is queued
 * ``on_job_submitted(scheduler, job)``\ : When the job is submitted
@@ -112,9 +121,8 @@ To write a plugin for ``xqute``\ , you will need to implement the following hook
 * ``on_job_killed(scheduler, job)``\ : When the job is killed
 * ``on_job_failed(scheduler, job)``\ : When the job is failed
 * ``on_job_succeeded(scheduler, job)``\ : When the job is succeeded
-* ``on_complete(scheduler)``\ : When all jobs complete
 
-Note that all hooks are corotines, that means you should also implement them as corotines (sync implementations are allowed but will be warned).
+Note that all hooks are corotines except ``on_init`` and ``on_shutdown``\ , that means you should also implement them as corotines (sync implementations are allowed but will be warned).
 
 To implement a hook, you have to fetch the plugin manager:
 
@@ -131,7 +139,7 @@ and then use the decorator ``pm.impl``\ :
 .. code-block:: python
 
    @pm.impl
-   async def on_init(scheduler):
+   def on_init(scheduler):
        ...
 
 Implementing a scheduler
