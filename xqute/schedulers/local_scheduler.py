@@ -83,7 +83,7 @@ class LocalScheduler(Scheduler):
             job: The job
         """
         try:
-            proc = psutil.Process(job.uid)
+            proc = psutil.Process(int(job.uid))
             children = await a_proc_children(proc, recursive=True)
             for child in children:
                 await a_proc_kill(child)

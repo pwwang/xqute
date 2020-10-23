@@ -129,7 +129,7 @@ def a_mkdir(path: PathLike, *args, **kwargs):
     Path(path).mkdir(*args, **kwargs)
 
 logger = logging.getLogger(LOGGER_NAME)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 if DEBUG:
     from rich.logging import RichHandler
     logger.addHandler(RichHandler(show_path=False))

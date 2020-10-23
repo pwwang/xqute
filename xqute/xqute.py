@@ -219,21 +219,18 @@ class Xqute:
             logger.debug('/%s Stoping producer and consumer ...', self.name)
             if self._cancelling not in (True, False): # signaled
                 await self.scheduler.kill_running_jobs(self.jobs)
+
         logger.info('/%s Done!', self.name)
 
     async def run_until_complete(self) -> None:
         """Wait until all jobs complete"""
         logger.debug('/%s Done feeding jobs, waiting for jobs to be done ...',
                      self.name)
-        await asyncio.gather(
-            self._polling_jobs(),
-            self._await_task()
-        )
-
-        if self.plugin_context:
-            self.plugin_context.__exit__()
-
-    # def __del__(self) -> None:
-    #     """Enable the plugins back"""
-    #     if self.plugin_context:
-    #         self.plugin_context.__exit__()
+        try:
+            await asyncio.gather(
+                self._polling_jobs(),
+                self._await_task()
+            )
+        finally:
+            if self.plugin_context:
+                self.plugin_context.__exit__()
