@@ -46,7 +46,11 @@ class LocalJob(Job):
             The wrapped script
         """
         return self.CMD_WRAPPER_TEMPLATE.format(
-            shebang=f'#!{self.CMD_WRAPPER_SHELL}', job=self, status=JobStatus
+            shebang=f'#!{self.CMD_WRAPPER_SHELL}',
+            prescript=scheduler.config.prescript,
+            postscript=scheduler.config.postscript,
+            job=self,
+            status=JobStatus
         )
 
 class LocalScheduler(Scheduler):

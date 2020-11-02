@@ -71,6 +71,15 @@ async def on_job_submitted(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
+@plugin.spec
+async def on_job_running(scheduler: "Scheduler", job: "Job"):
+    """When the job starts to run
+
+    Args:
+        scheduler: The scheduler object
+        job: The job object
+    """
+
 @plugin.spec(result=SimplugResult.FIRST)
 async def on_job_killing(scheduler: "Scheduler", job: "Job"):
     """When the job is being killed

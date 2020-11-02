@@ -2,7 +2,7 @@
 import os
 import signal
 from abc import ABC, abstractmethod
-from typing import List, Type, Union
+from typing import ClassVar, List, Type, Union
 from diot import Diot
 from .defaults import JobStatus
 from .utils import logger, asyncify, a_write_text
@@ -16,38 +16,26 @@ class Scheduler(ABC):
         job_class: The job class
 
     Args:
-        jobs: The reference to the list of jobs
         forks: Max number of job forks
+        prescript: The script to run before the command
+        postscript: The script to run after the command
         **kwargs: Other arguments for the scheduler
     """
     __slots__ = ('config', )
-    name: str
-    job_class: Type[Job]
 
-    def __init__(self, forks: int, **kwargs):
+    name: ClassVar[str]
+    job_class: ClassVar[Type[Job]]
+
+    def __init__(self,
+                 forks: int,
+                 prescript: str = '',
+                 postscript: str = '',
+                 **kwargs):
         """Construct"""
-        self.config = Diot(forks=forks, **kwargs)
-
-    def can_submit(self, jobs: List[Job]) -> bool:
-        """Whether we can submit a job.
-
-        Depending on whether number of running jobs < self.config.forks
-
-        Args:
-            jobs: The list of all jobs
-
-        Returns:
-            True if yes otherwise False
-        """
-        n_running = 0
-        for job in jobs:
-            status = job.status
-            if status in (JobStatus.QUEUED,
-                          JobStatus.SUBMITTED,
-                          JobStatus.RUNNING,
-                          JobStatus.KILLING):
-                n_running += 1
-        return n_running < self.config.forks
+        self.config = Diot(forks=forks,
+                           prescript=prescript,
+                           postscript=postscript,
+                           **kwargs)
 
     async def submit_job_and_update_status(self, job: Job):
         """Submit and update the status
@@ -113,24 +101,41 @@ class Scheduler(ABC):
         job.status = JobStatus.FINISHED
         await plugin.hooks.on_job_killed(self, job)
 
-    async def polling_jobs(self, jobs: List[Job], halt_on_error: bool) -> bool:
-        """Check if all jobs are done
+    async def polling_jobs(self,
+                           jobs: List[Job],
+                           on: str,
+                           halt_on_error: bool) -> bool:
+        """Check if all jobs are done or new jobs can submit
 
         Args:
             jobs: The list of jobs
+            on: query on status: `can_submit` or `all_done`
             halt_on_error: Whether we should halt the whole pipeline on error
 
         Returns:
             True if yes otherwise False.
         """
+        n_running = 0
         ret = True
         for job in jobs:
             status = job.status
-            if not job.status_changed:
+            if on == 'can_submit' and status in (
+                    JobStatus.QUEUED, JobStatus.SUBMITTED,
+                    JobStatus.RUNNING, JobStatus.KILLING
+            ):
+                n_running += 1
+
+            if job.prev_status != status:
                 if status in (JobStatus.FAILED, JobStatus.RETRYING):
+                    if job.prev_status != JobStatus.RUNNING:
+                        await plugin.hooks.on_job_running(self, job)
                     await plugin.hooks.on_job_failed(self, job)
                 elif status == JobStatus.FINISHED:
+                    if job.prev_status != JobStatus.RUNNING:
+                        await plugin.hooks.on_job_running(self, job)
                     await plugin.hooks.on_job_succeeded(self, job)
+                elif status == JobStatus.RUNNING:
+                    await plugin.hooks.on_job_running(self, job)
 
             if halt_on_error and status == JobStatus.FAILED:
                 logger.error('/Scheduler-%s Pipeline will halt '
@@ -144,9 +149,9 @@ class Scheduler(ABC):
                 if status == JobStatus.RETRYING:
                     await self.retry_job(job)
                 ret = False
-                if not halt_on_error:
-                    return False
-        return ret
+                # not returning here
+                # might wait for callbacks or halt on other jobs
+        return n_running < self.config.forks if on == 'can_submit' else ret
 
     async def kill_running_jobs(self, jobs: List[Job]):
         """Try to kill all running jobs

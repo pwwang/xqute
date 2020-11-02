@@ -74,6 +74,8 @@ class Xqute:
             job_error_strategy: str = DEFAULT_JOB_ERROR_STRATEGY,
             job_num_retries: int = DEFAULT_JOB_NUM_RETRIES,
             scheduler_forks: int = DEFAULT_SCHEDULER_FORKS,
+            scheduler_prescript: str = '',
+            scheduler_postscript: str = '',
             **scheduler_opts
     ) -> None:
         """Construct"""
@@ -111,6 +113,8 @@ class Xqute:
         self.buffer_queue = deque()
         self.queue = asyncio.Queue()
         self.scheduler = get_scheduler(scheduler)(scheduler_forks,
+                                                  scheduler_prescript,
+                                                  scheduler_postscript,
                                                   **scheduler_opts)
 
         # requires to be defined in a loop
@@ -156,7 +160,11 @@ class Xqute:
                 continue
 
             job = self.buffer_queue.popleft()
-            if not self.scheduler.can_submit(self.jobs):
+            if not await self.scheduler.polling_jobs(
+                    self.jobs,
+                    'can_submit',
+                    self._job_error_strategy == JobErrorStrategy.HALT
+            ):
                 logger.debug('/%s Hit max forks of scheduler ...', self.name)
                 await asyncio.sleep(.1)
                 self.buffer_queue.appendleft(job)
@@ -178,19 +186,28 @@ class Xqute:
             await self.scheduler.submit_job_and_update_status(job)
             self.queue.task_done()
 
-    async def put(self, cmd: Union[str, List[str]]) -> None:
+    async def put(self, cmd: Union["Job", str, List[str]]) -> None:
         """Put a command into the buffer
 
         Args:
             cmd: The command
         """
-        job = self.scheduler.job_class(
-            len(self.jobs),
-            cmd,
-            self._job_metadir,
-            self._job_error_strategy == JobErrorStrategy.RETRY,
-            self._job_num_retries
-        )
+        if isinstance(cmd, self.scheduler.job_class):
+            job = cmd
+            if job._error_retry is None:
+                job._error_retry = (
+                    self._job_error_strategy == JobErrorStrategy.RETRY
+                )
+            if job._num_retries is None:
+                job._num_retries = self._job_num_retries
+        else:
+            job = self.scheduler.job_class(
+                len(self.jobs),
+                cmd,
+                self._job_metadir,
+                self._job_error_strategy == JobErrorStrategy.RETRY,
+                self._job_num_retries
+            )
         await plugin.hooks.on_job_init(self.scheduler, job)
         self.jobs.append(job)
         logger.info('/%s Pushing job: %r', self.name, job)
@@ -206,6 +223,7 @@ class Xqute:
         while (self._cancelling is False and
                not await self.scheduler.polling_jobs(
                    self.jobs,
+                   'all_done',
                    self._job_error_strategy == JobErrorStrategy.HALT
                )):
             await asyncio.sleep(1.0)

@@ -2,12 +2,11 @@
 from os import PathLike, unlink
 import shlex
 import shutil
-from typing import List, Union
+from typing import ClassVar, List, Optional, Union
 from pathlib import Path
 from abc import ABC, abstractmethod
 from .defaults import (
     DEFAULT_JOB_METADIR,
-    DEFAULT_JOB_NUM_RETRIES,
     DEFAULT_JOB_CMD_WRAPPER_TEMPLATE,
     DEFAULT_JOB_CMD_WRAPPER_SHELL,
     JobStatus,
@@ -55,17 +54,17 @@ class Job(ABC):
         num_retries: Total number of retries
     """
     __slots__ = ('cmd', 'index', 'metadir', 'trial_count', '_uid', '_status',
-                 '_rc', '_error_retry', '_num_retries', 'status_changed')
+                 '_rc', '_error_retry', '_num_retries', 'prev_status')
 
-    CMD_WRAPPER_TEMPLATE: str = DEFAULT_JOB_CMD_WRAPPER_TEMPLATE
-    CMD_WRAPPER_SHELL: str = DEFAULT_JOB_CMD_WRAPPER_SHELL
+    CMD_WRAPPER_TEMPLATE: ClassVar[str] = DEFAULT_JOB_CMD_WRAPPER_TEMPLATE
+    CMD_WRAPPER_SHELL: ClassVar[str] = DEFAULT_JOB_CMD_WRAPPER_SHELL
 
     def __init__(self,
                  index: int,
                  cmd: Union[str, List[str]],
                  metadir: PathLike = DEFAULT_JOB_METADIR,
-                 error_retry: bool = False,
-                 num_retries: int = DEFAULT_JOB_NUM_RETRIES):
+                 error_retry: Optional[bool] = None,
+                 num_retries: Optional[int] = None):
         """Construct"""
         self.cmd = cmd
         self.index = index
@@ -74,7 +73,7 @@ class Job(ABC):
 
         # The name of the job, should be the unique id from the scheduler
         self.trial_count = 0
-        self.status_changed = False
+        self.prev_status = JobStatus.INIT
 
         self._uid = None
         self._status = JobStatus.INIT
@@ -141,7 +140,7 @@ class Job(ABC):
         If the job is submitted, try to query it from the status file
         Make sure the status is updated by trap in wrapped script
         """
-        prev_status = self._status
+        self.prev_status = self._status
         if self.status_file.is_file() and self._status in (
                 JobStatus.SUBMITTED,
                 JobStatus.RUNNING,
@@ -159,15 +158,14 @@ class Job(ABC):
                 self.trial_count < self._num_retries):
             self._status = JobStatus.RETRYING
 
-        self.status_changed = self._status != prev_status
-
-        if self.status_changed and (
+        if self.prev_status != self._status and (
                 self._status == JobStatus.RETRYING or
                 self._status >= JobStatus.KILLING
         ):
             logger.info('/Job-%s Status changed: %r -> %r',
                         self.index,
-                        *JobStatus.get_name(prev_status, self._status))
+                        *JobStatus.get_name(self.prev_status, self._status))
+
         return self._status
 
     @status.setter
@@ -180,7 +178,7 @@ class Job(ABC):
         logger.debug('/Job-%s Status changed: %r -> %r',
                      self.index,
                      *JobStatus.get_name(self._status, stat))
-        self.status_changed = True
+        self.prev_status = self._status
         self._status = stat
 
     @property
@@ -237,7 +235,9 @@ class Job(ABC):
             The path of the wrapped script
         """
         wrapt_script = self.metadir / f'job.wrapped.{scheduler.name}'
-        if not wrapt_script.is_file():
+        wrapt_cmd = self.wrap_cmd(scheduler)
+        if (not wrapt_script.is_file() or
+                await a_read_text(wrapt_script) != wrapt_cmd):
             await a_write_text(wrapt_script, self.wrap_cmd(scheduler))
         return wrapt_script
 

@@ -109,7 +109,7 @@ trap "cleanup" EXIT
 echo {status.RUNNING} > {job.status_file}
 
 # Pre-command place holder
-## XQUTE PRE-COMMAND ##
+{prescript}
 
 # Run the command
 {job.strcmd} \
@@ -117,7 +117,7 @@ echo {status.RUNNING} > {job.status_file}
     2>{job.stderr_file}
 
 # Post-command place holder
-## XQUTE POST-COMMAND ##
+{postscript}
 """
 
 DEFAULT_SCHEDULER_FORKS: int = 1

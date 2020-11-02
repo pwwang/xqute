@@ -38,8 +38,9 @@ class SgeJob(Job):
 
         return self.CMD_WRAPPER_TEMPLATE.format(
             shebang=f'#!{self.CMD_WRAPPER_SHELL}\n{options_str}\n',
-            job=self,
-            status=JobStatus
+            prescript=scheduler.config.prescript,
+            postscript=scheduler.config.postscript,
+            job=self, status=JobStatus
         )
 
 class SgeScheduler(Scheduler):

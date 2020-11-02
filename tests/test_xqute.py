@@ -4,7 +4,7 @@ import os, signal
 from concurrent.futures import ProcessPoolExecutor
 from xqute import *
 from xqute.defaults import JobStatus
-from xqute.schedulers.local_scheduler import LocalScheduler
+from xqute.schedulers.local_scheduler import LocalJob, LocalScheduler
 from xqute.utils import a_write_text
 
 Xqute.EMPTY_BUFFER_SLEEP_TIME = .1
@@ -147,8 +147,8 @@ async def test_halt(tmp_path, caplog):
     with plugin.plugins_only_context(JobFailPlugin):
         xqute = Xqute(job_error_strategy='halt',
                     job_metadir=tmp_path,
-                    scheduler_forks=2)
-        await xqute.put(['sleep', 10])
+                    scheduler_forks=3)
+        await xqute.put(LocalJob(0, ['sleep', 10], tmp_path, False, 1))
         await xqute.put(['echo1', 1])
         await xqute.put(['sleep', 3])
         await xqute.run_until_complete()
@@ -157,7 +157,7 @@ async def test_halt(tmp_path, caplog):
 @pytest.mark.asyncio
 async def test_cancel_submitting(tmp_path, caplog):
     xqute = Xqute(job_metadir=tmp_path, plugins=[JobCancelPlugin])
-    await xqute.put('echo 1')
+    await xqute.put(LocalJob(0, 'echo 1', tmp_path))
     await xqute.run_until_complete()
     assert 'Job 0 submitted' not in caplog.text
 
