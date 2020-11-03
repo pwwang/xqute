@@ -81,9 +81,7 @@ class Xqute:
         """Construct"""
         self.jobs = []
 
-        if not plugins:
-            self.plugin_context = None
-        else:
+        if plugins is not None:
             no_plugins = [isinstance(plug, str) and plug.startswith('no:')
                           for plug in plugins]
             if any(no_plugins) and not all(no_plugins):
@@ -91,10 +89,12 @@ class Xqute:
                                  'none of them does.')
             if all(no_plugins):
                 self.plugin_context = plugin.plugins_but_context(
-                    *(plug[3:] for plug in plugins)
+                    plug[3:] for plug in plugins
                 )
             else:
-                self.plugin_context = plugin.plugins_only_context(*plugins)
+                self.plugin_context = plugin.plugins_only_context(plugins)
+        else:
+            self.plugin_context = plugin.plugins_only_context(plugins)
 
         if self.plugin_context:
             self.plugin_context.__enter__()
