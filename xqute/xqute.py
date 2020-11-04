@@ -1,6 +1,7 @@
 """The xqute module"""
 import functools
 from os import PathLike
+from pathlib import Path
 import signal
 import asyncio
 from typing import Any, List, Optional, Type, Union
@@ -105,6 +106,7 @@ class Xqute:
 
         self.job_submission_batch = job_submission_batch
         self._job_metadir = job_metadir
+        Path(self._job_metadir).mkdir(exist_ok=True)
         self._job_error_strategy = job_error_strategy
         self._job_num_retries = job_num_retries
 

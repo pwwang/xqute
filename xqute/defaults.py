@@ -83,7 +83,6 @@ DEBUG = True
 LOGGER_NAME = 'XQUTE'
 
 DEFAULT_JOB_METADIR: Path = Path('./.xqute')
-DEFAULT_JOB_METADIR.mkdir(parents=True, exist_ok=True)
 DEFAULT_JOB_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
 DEFAULT_JOB_NUM_RETRIES: int = 3
 DEFAULT_JOB_SUBMISSION_BATCH: int = 8

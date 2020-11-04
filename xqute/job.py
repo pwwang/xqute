@@ -21,7 +21,6 @@ from .utils import (
 
 # pylint: disable=invalid-name
 a_shutil_move = asyncify(shutil.move)
-a_shutil_rmtree = asyncify(shutil.rmtree)
 a_os_unlink = asyncify(unlink)
 # pylint: enable=invalid-name
 
@@ -204,7 +203,7 @@ class Job(ABC):
         if retry:
             retry_dir = self.retry_dir / str(self.trial_count)
             if retry_dir.exists():
-                await a_shutil_rmtree(retry_dir)
+                shutil.rmtree(retry_dir)
             await a_mkdir(retry_dir, parents=True)
 
             if self.stdout_file.is_file():
