@@ -20,7 +20,9 @@ class SgeJob(Job):
         """
         options = {key[4:]: val for key, val in scheduler.config.items()
                    if key.startswith('sge_')}
-        options['N'] = f'{scheduler.name}.job.{self.index}'
+        jobname_prefix = scheduler.config.get('scheduler_jobprefix',
+                                              scheduler.name)
+        options['N'] = f'{jobname_prefix}.{self.index}'
         options['cwd'] = True
         options['o'] = self.stdout_file
         options['e'] = self.stderr_file
