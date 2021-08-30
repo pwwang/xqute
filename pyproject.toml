@@ -14,7 +14,7 @@ simplug = "*"
 diot = "*"
 aiofiles = "0.5.*"
 psutil = "5.*"
-rich = "10.*"
+rich = "*"
 uvloop = "0.*"
 
 [tool.poetry.dev-dependencies]
