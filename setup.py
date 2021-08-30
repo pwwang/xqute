@@ -24,7 +24,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='xqute',
-    version='0.0.5',
+    version='0.0.6',
     description='A job management system for python',
     python_requires='==3.*,>=3.7.0',
     project_urls={"homepage": "https://github.com/pwwang/xqute", "repository": "https://github.com/pwwang/xqute"},
