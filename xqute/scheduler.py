@@ -23,8 +23,8 @@ class Scheduler(ABC):
     """
     __slots__ = ('config', )
 
-    name: ClassVar[str]
-    job_class: ClassVar[Type[Job]]
+    name: ClassVar[str]  # pylint: disable=invalid-name
+    job_class: ClassVar[Type[Job]]  # pylint: disable=invalid-name
 
     def __init__(self,
                  forks: int,

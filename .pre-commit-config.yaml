@@ -20,7 +20,7 @@ repos:
         always_run: true
         language: system
 -   repo: https://github.com/pre-commit/mirrors-pylint
-    rev: v2.4.4
+    rev: v2.7.4
     hooks:
     -   id: pylint
         files: ^xqute/.+\.py$
@@ -35,12 +35,12 @@ repos:
         language: system
         files: pyproject.toml
         pass_filenames: false
-    -   id: poetry2requirements
-        name: Convert pyproject.toml to requirements.txt
-        entry: dephell deps convert --from=pyproject.toml --to=requirements.txt
-        language: system
-        files: pyproject.toml
-        pass_filenames: false
+    # -   id: poetry2requirements
+    #     name: Convert pyproject.toml to requirements.txt
+    #     entry: dephell deps convert --from=pyproject.toml --to=requirements.txt
+    #     language: system
+    #     files: pyproject.toml
+    #     pass_filenames: false
     -   id: pytest
         name: Run pytest
         entry: pytest

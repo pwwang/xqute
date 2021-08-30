@@ -1,9 +1,0 @@
-aiofiles==0.5.*
-diot
-psutil==5.*
-pytest
-pytest-asyncio
-pytest-cov
-rich==9.*
-simplug
-uvloop==0.*

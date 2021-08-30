@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xqute"
-version = "0.0.4"
+version = "0.0.5"
 description = "A job management system for python"
 authors = ["pwwang <pwwang@pwwang.com>"]
 license = "MIT"
@@ -14,7 +14,7 @@ simplug = "*"
 diot = "*"
 aiofiles = "0.5.*"
 psutil = "5.*"
-rich = "9.*"
+rich = "10.*"
 uvloop = "0.*"
 
 [tool.poetry.dev-dependencies]
