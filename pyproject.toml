@@ -30,7 +30,7 @@ build-backend = "poetry.masonry.api"
 [tool.pytest.ini_options]
 addopts = "-vv --cov=xqute --cov-report xml:.coverage.xml --cov-report term-missing"
 filterwarnings = [
-    "error"
+    # "error"
 ]
 console_output_style = "progress"
 junit_family = "xunit1"
