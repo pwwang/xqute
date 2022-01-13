@@ -22,10 +22,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry
           poetry config virtualenvs.create false
-          python -m pip install pylint
+          python -m pip install flake8
           poetry install -v
-      - name: Run pylint
-        run: pylint xqute
+      - name: Run flake8
+        run: flake8 xqute
       - name: Test with pytest
         run: poetry run pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
@@ -37,7 +37,7 @@ jobs:
         if: ${{ always() }}
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
-        if: matrix.python-version == 3.8
+        if: matrix.python-version == 3.9
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: .coverage.xml

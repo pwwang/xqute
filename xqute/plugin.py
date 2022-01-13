@@ -1,11 +1,16 @@
 """Hook specifications for scheduler plugins"""
 import signal
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from simplug import Simplug, SimplugResult
 
-# pylint: disable=unused-argument,invalid-name
+if TYPE_CHECKING:
+    from .xqute import Xqute
+    from .job import Job
+    from .scheduler import Scheduler
 
-plugin = Simplug('xqute')
+
+plugin = Simplug("xqute")
+
 
 @plugin.spec
 def on_init(xqute: "Xqute"):
@@ -33,6 +38,7 @@ def on_shutdown(xqute: "Xqute", sig: Optional[signal.Signals]):
         sig: The signal. `None` means a natural shutdown
     """
 
+
 @plugin.spec
 async def on_job_init(scheduler: "Scheduler", job: "Job"):
     """When the job is initialized
@@ -42,6 +48,7 @@ async def on_job_init(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
+
 @plugin.spec
 async def on_job_queued(scheduler: "Scheduler", job: "Job"):
     """When the job is queued
@@ -50,6 +57,7 @@ async def on_job_queued(scheduler: "Scheduler", job: "Job"):
         scheduler: The scheduler object
         job: The job object
     """
+
 
 @plugin.spec(result=SimplugResult.FIRST)
 async def on_job_submitting(scheduler: "Scheduler", job: "Job"):
@@ -62,6 +70,7 @@ async def on_job_submitting(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
+
 @plugin.spec
 async def on_job_submitted(scheduler: "Scheduler", job: "Job"):
     """When the job is submitted
@@ -71,6 +80,7 @@ async def on_job_submitted(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
+
 @plugin.spec
 async def on_job_running(scheduler: "Scheduler", job: "Job"):
     """When the job starts to run
@@ -79,6 +89,7 @@ async def on_job_running(scheduler: "Scheduler", job: "Job"):
         scheduler: The scheduler object
         job: The job object
     """
+
 
 @plugin.spec(result=SimplugResult.FIRST)
 async def on_job_killing(scheduler: "Scheduler", job: "Job"):
@@ -91,6 +102,7 @@ async def on_job_killing(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
+
 @plugin.spec
 async def on_job_killed(scheduler: "Scheduler", job: "Job"):
     """When the job is killed
@@ -99,6 +111,7 @@ async def on_job_killed(scheduler: "Scheduler", job: "Job"):
         scheduler: The scheduler object
         job: The job object
     """
+
 
 @plugin.spec
 async def on_job_failed(scheduler: "Scheduler", job: "Job"):
@@ -109,6 +122,7 @@ async def on_job_failed(scheduler: "Scheduler", job: "Job"):
         job: The job object
     """
 
+
 @plugin.spec
 async def on_job_succeeded(scheduler: "Scheduler", job: "Job"):
     """When the job is succeeded
@@ -117,5 +131,6 @@ async def on_job_succeeded(scheduler: "Scheduler", job: "Job"):
         scheduler: The scheduler object
         job: The job object
     """
+
 
 plugin.load_entrypoints()

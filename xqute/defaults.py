@@ -16,7 +16,7 @@ from typing import Tuple, Union
 import uvloop
 
 uvloop.install()
-# pylint: disable=invalid-name
+
 
 class JobErrorStrategy:
     """The strategy when error happen from jobs
@@ -29,6 +29,7 @@ class JobErrorStrategy:
     IGNORE: str = 'ignore'
     RETRY: str = 'retry'
     HALT: str = 'halt'
+
 
 class JobStatus:
     """The status of a job
@@ -77,7 +78,8 @@ class JobStatus:
         ret_tuple = tuple(ret_dict[status] for status in statuses)
         if len(ret_tuple) > 1:
             return ret_tuple
-        return ret_tuple[0] # pragma: no cover
+        return ret_tuple[0]  # pragma: no cover
+
 
 DEBUG = True
 LOGGER_NAME = 'XQUTE'

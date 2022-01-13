@@ -6,6 +6,7 @@ from ..job import Job
 from ..scheduler import Scheduler
 from ..utils import a_read_text
 
+
 class SgeJob(Job):
     """SGE job"""
     def wrap_cmd(self, scheduler: Scheduler) -> str:
@@ -44,6 +45,7 @@ class SgeJob(Job):
             postscript=scheduler.config.postscript,
             job=self, status=JobStatus
         )
+
 
 class SgeScheduler(Scheduler):
     """The sge scheduler

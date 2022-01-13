@@ -7,6 +7,7 @@ from ..job import Job
 from ..scheduler import Scheduler
 from ..utils import asyncify, a_read_text
 
+
 @asyncify
 def a_proc_children(proc: psutil.Process,
                     recursive: bool = False) -> List[psutil.Process]:
@@ -21,6 +22,7 @@ def a_proc_children(proc: psutil.Process,
     """
     return proc.children(recursive=recursive)
 
+
 @asyncify
 def a_proc_kill(proc: psutil.Process):
     """Kill a process asynchronously
@@ -32,6 +34,7 @@ def a_proc_kill(proc: psutil.Process):
         The result from proc.kill()
     """
     return proc.kill()
+
 
 class LocalJob(Job):
     """Local job"""
@@ -52,6 +55,7 @@ class LocalJob(Job):
             job=self,
             status=JobStatus
         )
+
 
 class LocalScheduler(Scheduler):
     """The local scheduler
@@ -93,7 +97,7 @@ class LocalScheduler(Scheduler):
             for child in children:
                 await a_proc_kill(child)
             await a_proc_kill(proc)
-        except psutil.NoSuchProcess: # pragma: no cover
+        except psutil.NoSuchProcess:  # pragma: no cover
             # job has finished during killing
             pass
 

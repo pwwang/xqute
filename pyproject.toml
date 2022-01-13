@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xqute"
-version = "0.0.6"
+version = "0.0.7"
 description = "A job management system for python"
 authors = ["pwwang <pwwang@pwwang.com>"]
 license = "MIT"
@@ -25,3 +25,17 @@ pytest-asyncio = "*"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+
+[tool.pytest.ini_options]
+addopts = "-vv --cov=xqute --cov-report xml:.coverage.xml --cov-report term-missing"
+filterwarnings = [
+    "error"
+]
+console_output_style = "progress"
+junit_family = "xunit1"
+
+[tool.black]
+line-length = 79
+target-version = ['py37', 'py38', 'py39']
+include = '\.pyi?$'

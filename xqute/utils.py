@@ -10,7 +10,7 @@ from functools import partial, wraps
 import aiofiles as aiof
 
 from .defaults import DEBUG, LOGGER_NAME
-# pylint: disable=invalid-name
+
 
 # helper functions to read and write the whole content of the file
 async def a_read_text(path: PathLike) -> str:
@@ -25,6 +25,7 @@ async def a_read_text(path: PathLike) -> str:
     async with aiof.open(path, mode='rt') as file:
         return await file.read()
 
+
 async def a_write_text(path: PathLike, content: str):
     """Write the text to a file asyncly
 
@@ -34,6 +35,7 @@ async def a_write_text(path: PathLike, content: str):
     """
     async with aiof.open(path, mode='wt') as file:
         await file.write(content)
+
 
 def asyncify(func: Callable) -> Coroutine:
     """Turn a sync function into a Coroutine, can be used as a decorator
@@ -52,6 +54,7 @@ def asyncify(func: Callable) -> Coroutine:
 
     return run
 
+
 @asyncify
 def a_mkdir(path: PathLike, *args, **kwargs):
     """Make a directory asyncly
@@ -62,6 +65,7 @@ def a_mkdir(path: PathLike, *args, **kwargs):
         **kwargs: kwargs for `Path(path).mkdir(...)`
     """
     Path(path).mkdir(*args, **kwargs)
+
 
 logger = logging.getLogger(LOGGER_NAME)
 logger.setLevel(logging.INFO)

@@ -9,6 +9,7 @@ from .utils import logger, asyncify, a_write_text
 from .job import Job
 from .plugin import plugin
 
+
 class Scheduler(ABC):
     """The abstract class for scheduler
 
@@ -23,8 +24,8 @@ class Scheduler(ABC):
     """
     __slots__ = ('config', )
 
-    name: ClassVar[str]  # pylint: disable=invalid-name
-    job_class: ClassVar[Type[Job]]  # pylint: disable=invalid-name
+    name: ClassVar[str]
+    job_class: ClassVar[Type[Job]]
 
     def __init__(self,
                  forks: int,
@@ -52,7 +53,14 @@ class Scheduler(ABC):
             if await plugin.hooks.on_job_submitting(self, job) is False:
                 return
             await job.clean()
-            job.uid = await self.submit_job(job)
+
+            try:
+                # raise the exception immediately
+                # it somehow cannot be catched immediately
+                job.uid = await self.submit_job(job)
+            except Exception as exc:
+                raise RuntimeError(f"Failed to submit job: {exc}")
+
             logger.info('/Scheduler-%s Job %s submitted (uid: %s, wrapped: %s)',
                         self.name,
                         job.index,
@@ -61,7 +69,7 @@ class Scheduler(ABC):
 
             job.status = JobStatus.SUBMITTED
             await plugin.hooks.on_job_submitted(self, job)
-        except Exception as exc: # pragma: no cover
+        except Exception as exc:  # pragma: no cover
             await a_write_text(job.stderr_file, str(exc))
             await a_write_text(job.rc_file, '-2')
             job.status = JobStatus.FAILED
@@ -96,7 +104,7 @@ class Scheduler(ABC):
         try:
             # in case the lock file is removed by the wrapped script
             await asyncify(os.unlink)(job.lock_file)
-        except FileNotFoundError: # pragma: no cover
+        except FileNotFoundError:  # pragma: no cover
             pass
         job.status = JobStatus.FINISHED
         await plugin.hooks.on_job_killed(self, job)
@@ -180,7 +188,6 @@ class Scheduler(ABC):
                 return True
 
         return False
-
 
     @abstractmethod
     async def submit_job(self, job: Job) -> Union[int, str]:

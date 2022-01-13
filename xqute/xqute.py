@@ -1,4 +1,5 @@
 """The xqute module"""
+from typing import TYPE_CHECKING
 import functools
 from os import PathLike
 from pathlib import Path
@@ -13,11 +14,16 @@ from .defaults import (
     DEFAULT_SCHEDULER_FORKS,
     DEFAULT_JOB_SUBMISSION_BATCH,
     JobErrorStrategy,
-    JobStatus
+    JobStatus,
 )
 from .utils import logger
 from .plugin import plugin
 from .schedulers import get_scheduler
+
+if TYPE_CHECKING:
+    from .scheduler import Scheduler
+    from .job import Job
+
 
 class Xqute:
     """The main class of the package
@@ -62,32 +68,36 @@ class Xqute:
         **scheduler_opts: Additional keyword arguments for scheduler
     """
 
-    name: str = 'Xqute'
+    name: str = "Xqute"
     EMPTY_BUFFER_SLEEP_TIME: int = 1
 
     def __init__(
-            self,
-            scheduler: Union[str, Type["Scheduler"]] = 'local',
-            plugins: Optional[List[Any]] = None,
-            *,
-            job_metadir: PathLike = DEFAULT_JOB_METADIR,
-            job_submission_batch: int = DEFAULT_JOB_SUBMISSION_BATCH,
-            job_error_strategy: str = DEFAULT_JOB_ERROR_STRATEGY,
-            job_num_retries: int = DEFAULT_JOB_NUM_RETRIES,
-            scheduler_forks: int = DEFAULT_SCHEDULER_FORKS,
-            scheduler_prescript: str = '',
-            scheduler_postscript: str = '',
-            **scheduler_opts
+        self,
+        scheduler: Union[str, Type["Scheduler"]] = "local",
+        plugins: Optional[List[Any]] = None,
+        *,
+        job_metadir: PathLike = DEFAULT_JOB_METADIR,
+        job_submission_batch: int = DEFAULT_JOB_SUBMISSION_BATCH,
+        job_error_strategy: str = DEFAULT_JOB_ERROR_STRATEGY,
+        job_num_retries: int = DEFAULT_JOB_NUM_RETRIES,
+        scheduler_forks: int = DEFAULT_SCHEDULER_FORKS,
+        scheduler_prescript: str = "",
+        scheduler_postscript: str = "",
+        **scheduler_opts,
     ) -> None:
         """Construct"""
         self.jobs = []
 
         if plugins is not None:
-            no_plugins = [isinstance(plug, str) and plug.startswith('no:')
-                          for plug in plugins]
+            no_plugins = [
+                isinstance(plug, str) and plug.startswith("no:")
+                for plug in plugins
+            ]
             if any(no_plugins) and not all(no_plugins):
-                raise ValueError('Either all plugin names start with "no:" or '
-                                 'none of them does.')
+                raise ValueError(
+                    'Either all plugin names start with "no:" or '
+                    "none of them does."
+                )
             if all(no_plugins):
                 self.plugin_context = plugin.plugins_but_context(
                     plug[3:] for plug in plugins
@@ -100,9 +110,11 @@ class Xqute:
         if self.plugin_context:
             self.plugin_context.__enter__()
 
-        logger.info('/%s Enabled plugins: %s',
-                    self.name,
-                    plugin.get_enabled_plugin_names())
+        logger.info(
+            "/%s Enabled plugins: %s",
+            self.name,
+            plugin.get_enabled_plugin_names(),
+        )
 
         self.job_submission_batch = job_submission_batch
         self._job_metadir = job_metadir
@@ -114,22 +126,21 @@ class Xqute:
 
         self.buffer_queue = deque()
         self.queue = asyncio.Queue()
-        self.scheduler = get_scheduler(scheduler)(scheduler_forks,
-                                                  scheduler_prescript,
-                                                  scheduler_postscript,
-                                                  **scheduler_opts)
+        self.scheduler = get_scheduler(scheduler)(
+            scheduler_forks,
+            scheduler_prescript,
+            scheduler_postscript,
+            **scheduler_opts,
+        )
 
         # requires to be defined in a loop
         loop = asyncio.get_running_loop()
         for sig in (signal.SIGTERM, signal.SIGINT):
-            loop.add_signal_handler(
-                sig,
-                functools.partial(self.cancel, sig)
-            )
+            loop.add_signal_handler(sig, functools.partial(self.cancel, sig))
 
         self.task = asyncio.gather(
             self._producer(),
-            *(self._consumer(i) for i in range(self.job_submission_batch))
+            *(self._consumer(i) for i in range(self.job_submission_batch)),
         )
         plugin.hooks.on_init(self)
 
@@ -145,8 +156,11 @@ class Xqute:
         self._cancelling = True
         if sig:
             self._cancelling = sig
-            logger.warning('/%s Got signal %r, trying a graceful '
-                           'shutdown ...', self.name, sig.name)
+            logger.warning(
+                "/%s Got signal %r, trying a graceful " "shutdown ...",
+                self.name,
+                sig.name,
+            )
 
         if plugin.hooks.on_shutdown(self, sig) is not False:
             self.task.cancel()
@@ -156,19 +170,20 @@ class Xqute:
 
         while True:
             if not self.buffer_queue:
-                logger.debug('/%s Buffer queue is empty, waiting ...',
-                             self.name)
+                logger.debug(
+                    "/%s Buffer queue is empty, waiting ...", self.name
+                )
                 await asyncio.sleep(self.EMPTY_BUFFER_SLEEP_TIME)
                 continue
 
             job = self.buffer_queue.popleft()
             if not await self.scheduler.polling_jobs(
-                    self.jobs,
-                    'can_submit',
-                    self._job_error_strategy == JobErrorStrategy.HALT
+                self.jobs,
+                "can_submit",
+                self._job_error_strategy == JobErrorStrategy.HALT,
             ):
-                logger.debug('/%s Hit max forks of scheduler ...', self.name)
-                await asyncio.sleep(.1)
+                logger.debug("/%s Hit max forks of scheduler ...", self.name)
+                await asyncio.sleep(0.1)
                 self.buffer_queue.appendleft(job)
                 continue
             job.status = JobStatus.QUEUED
@@ -183,8 +198,9 @@ class Xqute:
         """
         while True:
             job = await self.queue.get()
-            logger.debug("/%s 'Consumer-%s' submitting %s",
-                         self.name, index, job)
+            logger.debug(
+                "/%s 'Consumer-%s' submitting %s", self.name, index, job
+            )
             await self.scheduler.submit_job_and_update_status(job)
             self.queue.task_done()
 
@@ -208,11 +224,11 @@ class Xqute:
                 cmd,
                 self._job_metadir,
                 self._job_error_strategy == JobErrorStrategy.RETRY,
-                self._job_num_retries
+                self._job_num_retries,
             )
         await plugin.hooks.on_job_init(self.scheduler, job)
         self.jobs.append(job)
-        logger.info('/%s Pushing job: %r', self.name, job)
+        logger.info("/%s Pushing job: %r", self.name, job)
 
         self.buffer_queue.append(job)
         await plugin.hooks.on_job_queued(self.scheduler, job)
@@ -222,12 +238,14 @@ class Xqute:
 
         If yes, cancel the producer-consumer task natually.
         """
-        while (self._cancelling is False and
-               not await self.scheduler.polling_jobs(
-                   self.jobs,
-                   'all_done',
-                   self._job_error_strategy == JobErrorStrategy.HALT
-               )):
+        while (
+            self._cancelling is False
+            and not await self.scheduler.polling_jobs(
+                self.jobs,
+                "all_done",
+                self._job_error_strategy == JobErrorStrategy.HALT,
+            )
+        ):
             await asyncio.sleep(1.0)
 
         if self._cancelling is False:
@@ -238,21 +256,19 @@ class Xqute:
         try:
             await self.task
         except asyncio.CancelledError:
-            logger.debug('/%s Stoping producer and consumer ...', self.name)
-            if self._cancelling not in (True, False): # signaled
+            logger.debug("/%s Stoping producer and consumer ...", self.name)
+            if self._cancelling not in (True, False):  # signaled
                 await self.scheduler.kill_running_jobs(self.jobs)
 
-        logger.info('/%s Done!', self.name)
+        logger.info("/%s Done!", self.name)
 
     async def run_until_complete(self) -> None:
         """Wait until all jobs complete"""
-        logger.debug('/%s Done feeding jobs, waiting for jobs to be done ...',
-                     self.name)
+        logger.debug(
+            "/%s Done feeding jobs, waiting for jobs to be done ...", self.name
+        )
         try:
-            await asyncio.gather(
-                self._polling_jobs(),
-                self._await_task()
-            )
+            await asyncio.gather(self._polling_jobs(), self._await_task())
         finally:
             if self.plugin_context:
                 self.plugin_context.__exit__()

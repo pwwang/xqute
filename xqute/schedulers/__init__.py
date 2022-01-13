@@ -3,6 +3,7 @@ from importlib import import_module
 from typing import Type, Union
 from ..scheduler import Scheduler
 
+
 def get_scheduler(scheduler: Union[str, Type[Scheduler]]) -> Type[Scheduler]:
     """Get the scheduler class
 

@@ -9,38 +9,28 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
-    -   id: check-added-large-files
+        exclude: 'mkdocs.yml'
 -   repo: local
     hooks:
-    -   id: masterpylintrc
-        name: Overwrite local .pylintrc by master one
-        entry: cp ../.pylintrc ./.pylintrc
-        files: ../.pylintrc
+    -   id: flake8
+        name: Run flake8
+        files: ^xqute/.+$
         pass_filenames: false
-        always_run: true
-        language: system
--   repo: https://github.com/pre-commit/mirrors-pylint
-    rev: v2.7.4
-    hooks:
-    -   id: pylint
-        files: ^xqute/.+\.py$
-        pass_filenames: false
-        types: [python]
+        entry: flake8
         args: [xqute]
--   repo: local
-    hooks:
-    -   id: poetry2setuppy
-        name: Convert pyproject.toml to setup.py
-        entry: dephell deps convert --from=pyproject.toml --to=setup.py
+        types: [python]
         language: system
-        files: pyproject.toml
+    -   id: versionchecker
+        name: Check version agreement in pyproject and __version__
+        entry: bash -c
+        language: system
+        args:
+            - get_ver() { echo $(egrep "^__version|^version" $1 | cut -d= -f2 | sed 's/\"\| //g'); };
+              v1=`get_ver pyproject.toml`;
+              v2=`get_ver xqute/__init__.py`;
+              if [[ $v1 == $v2 ]]; then exit 0; else exit 1; fi
         pass_filenames: false
-    # -   id: poetry2requirements
-    #     name: Convert pyproject.toml to requirements.txt
-    #     entry: dephell deps convert --from=pyproject.toml --to=requirements.txt
-    #     language: system
-    #     files: pyproject.toml
-    #     pass_filenames: false
+        files: ^pyproject\.toml|xqute/__init__\.py$
     -   id: pytest
         name: Run pytest
         entry: pytest

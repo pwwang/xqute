@@ -1,4 +1,5 @@
 """Job to execute"""
+from typing import TYPE_CHECKING
 from os import PathLike, unlink
 import shlex
 import shutil
@@ -11,18 +12,15 @@ from .defaults import (
     DEFAULT_JOB_CMD_WRAPPER_SHELL,
     JobStatus,
 )
-from .utils import (
-    logger,
-    a_mkdir,
-    a_read_text,
-    a_write_text,
-    asyncify
-)
+from .utils import logger, a_mkdir, a_read_text, a_write_text, asyncify
 
-# pylint: disable=invalid-name
+if TYPE_CHECKING:
+    from .scheduler import Scheduler
+
+
 a_shutil_move = asyncify(shutil.move)
 a_os_unlink = asyncify(unlink)
-# pylint: enable=invalid-name
+
 
 class Job(ABC):
     """The abstract class for job
@@ -52,18 +50,31 @@ class Job(ABC):
         error_retry: Whether we should retry if error happened
         num_retries: Total number of retries
     """
-    __slots__ = ('cmd', 'index', 'metadir', 'trial_count', '_uid', '_status',
-                 '_rc', '_error_retry', '_num_retries', 'prev_status')
+
+    __slots__ = (
+        "cmd",
+        "index",
+        "metadir",
+        "trial_count",
+        "_uid",
+        "_status",
+        "_rc",
+        "_error_retry",
+        "_num_retries",
+        "prev_status",
+    )
 
     CMD_WRAPPER_TEMPLATE: ClassVar[str] = DEFAULT_JOB_CMD_WRAPPER_TEMPLATE
     CMD_WRAPPER_SHELL: ClassVar[str] = DEFAULT_JOB_CMD_WRAPPER_SHELL
 
-    def __init__(self,
-                 index: int,
-                 cmd: Union[str, List[str]],
-                 metadir: PathLike = DEFAULT_JOB_METADIR,
-                 error_retry: Optional[bool] = None,
-                 num_retries: Optional[int] = None):
+    def __init__(
+        self,
+        index: int,
+        cmd: Union[str, List[str]],
+        metadir: PathLike = DEFAULT_JOB_METADIR,
+        error_retry: Optional[bool] = None,
+        num_retries: Optional[int] = None,
+    ):
         """Construct"""
         self.cmd = cmd
         self.index = index
@@ -83,9 +94,11 @@ class Job(ABC):
     def __repr__(self) -> str:
         """repr of the job"""
         if not self.uid:
-            return f'<{self.__class__.__name__}-{self.index}: ({self.cmd})>'
-        return (f'<{self.__class__.__name__}-{self.index}({self.uid}): '
-                f'({self.cmd})>')
+            return f"<{self.__class__.__name__}-{self.index}: ({self.cmd})>"
+        return (
+            f"<{self.__class__.__name__}-{self.index}({self.uid}): "
+            f"({self.cmd})>"
+        )
 
     @property
     def uid(self) -> str:
@@ -105,32 +118,32 @@ class Job(ABC):
     @property
     def stdout_file(self) -> Path:
         """The stdout file of the job"""
-        return self.metadir / 'job.stdout'
+        return self.metadir / "job.stdout"
 
     @property
     def stderr_file(self) -> Path:
         """The stderr file of the job"""
-        return self.metadir / 'job.stderr'
+        return self.metadir / "job.stderr"
 
     @property
     def status_file(self) -> Path:
         """The status file of the job"""
-        return self.metadir / 'job.status'
+        return self.metadir / "job.status"
 
     @property
     def rc_file(self) -> Path:
         """The rc file of the job"""
-        return self.metadir / 'job.rc'
+        return self.metadir / "job.rc"
 
     @property
     def lock_file(self) -> Path:
         """The lock file of the job"""
-        return self.metadir / 'job.lock'
+        return self.metadir / "job.lock"
 
     @property
     def retry_dir(self) -> Path:
         """The retry directory of the job"""
-        return self.metadir / 'job.retry'
+        return self.metadir / "job.retry"
 
     @property
     def status(self) -> int:
@@ -141,29 +154,35 @@ class Job(ABC):
         """
         self.prev_status = self._status
         if self.status_file.is_file() and self._status in (
-                JobStatus.SUBMITTED,
-                JobStatus.RUNNING,
-                JobStatus.KILLING
+            JobStatus.SUBMITTED,
+            JobStatus.RUNNING,
+            JobStatus.KILLING,
         ):
             try:
                 self._status = int(self.status_file.read_text())
-            except (FileNotFoundError,
-                    ValueError,
-                    TypeError): # pragma: no cover
+            except (
+                FileNotFoundError,
+                ValueError,
+                TypeError,
+            ):  # pragma: no cover
                 pass
 
-        if (self._status == JobStatus.FAILED and
-                self._error_retry and
-                self.trial_count < self._num_retries):
+        if (
+            self._status == JobStatus.FAILED
+            and self._error_retry
+            and self.trial_count < self._num_retries
+        ):
             self._status = JobStatus.RETRYING
 
         if self.prev_status != self._status and (
-                self._status == JobStatus.RETRYING or
-                self._status >= JobStatus.KILLING
+            self._status == JobStatus.RETRYING
+            or self._status >= JobStatus.KILLING
         ):
-            logger.info('/Job-%s Status changed: %r -> %r',
-                        self.index,
-                        *JobStatus.get_name(self.prev_status, self._status))
+            logger.info(
+                "/Job-%s Status changed: %r -> %r",
+                self.index,
+                *JobStatus.get_name(self.prev_status, self._status),
+            )
 
         return self._status
 
@@ -174,9 +193,11 @@ class Job(ABC):
         Args:
             stat: The status to set
         """
-        logger.debug('/Job-%s Status changed: %r -> %r',
-                     self.index,
-                     *JobStatus.get_name(self._status, stat))
+        logger.debug(
+            "/Job-%s Status changed: %r -> %r",
+            self.index,
+            *JobStatus.get_name(self._status, stat),
+        )
         self.prev_status = self._status
         self._status = stat
 
@@ -184,14 +205,14 @@ class Job(ABC):
     async def rc(self) -> int:
         """The return code of the job"""
         if not self.rc_file.is_file():
-            return self._rc # pragma: no cover
+            return self._rc  # pragma: no cover
         return int(await a_read_text(self.rc_file))
 
     @property
     def strcmd(self) -> str:
         """Get the string representation of the command"""
         if isinstance(self.cmd, list):
-            return ' '.join(shlex.quote(str(cmditem)) for cmditem in self.cmd)
+            return " ".join(shlex.quote(str(cmditem)) for cmditem in self.cmd)
         return self.cmd
 
     async def clean(self, retry=False):
@@ -233,10 +254,12 @@ class Job(ABC):
         Returns:
             The path of the wrapped script
         """
-        wrapt_script = self.metadir / f'job.wrapped.{scheduler.name}'
+        wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
         wrapt_cmd = self.wrap_cmd(scheduler)
-        if (not wrapt_script.is_file() or
-                await a_read_text(wrapt_script) != wrapt_cmd):
+        if (
+            not wrapt_script.is_file()
+            or await a_read_text(wrapt_script) != wrapt_cmd
+        ):
             await a_write_text(wrapt_script, self.wrap_cmd(scheduler))
         return wrapt_script
 
