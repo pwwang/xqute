@@ -10,22 +10,21 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-simplug = "*"
-diot = "*"
-aiofiles = "0.5.*"
-psutil = "5.*"
-rich = "*"
-uvloop = "0.*"
+simplug = "^0.1"
+diot = "^0.1"
+aiofiles = "^0"
+psutil = "^5"
+rich = "^12"
+uvloop = "^0"
 
 [tool.poetry.dev-dependencies]
-pytest = "*"
-pytest-cov = "*"
-pytest-asyncio = "*"
+pytest = "^7"
+pytest-cov = "^3"
+pytest-asyncio = "^0"
 
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
-
 
 [tool.pytest.ini_options]
 addopts = "-vv --cov=xqute --cov-report xml:.coverage.xml --cov-report term-missing"
@@ -34,6 +33,7 @@ filterwarnings = [
 ]
 console_output_style = "progress"
 junit_family = "xunit1"
+asyncio_mode = "auto"
 
 [tool.black]
 line-length = 79
