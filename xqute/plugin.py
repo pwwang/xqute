@@ -24,7 +24,7 @@ def on_init(xqute: "Xqute"):
     """
 
 
-@plugin.spec(result=SimplugResult.FIRST)
+@plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
 def on_shutdown(xqute: "Xqute", sig: Optional[signal.Signals]):
     """When xqute is shutting down
 
@@ -59,7 +59,7 @@ async def on_job_queued(scheduler: "Scheduler", job: "Job"):
     """
 
 
-@plugin.spec(result=SimplugResult.FIRST)
+@plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
 async def on_job_submitting(scheduler: "Scheduler", job: "Job"):
     """When the job is to be submitted
 
@@ -91,7 +91,7 @@ async def on_job_running(scheduler: "Scheduler", job: "Job"):
     """
 
 
-@plugin.spec(result=SimplugResult.FIRST)
+@plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
 async def on_job_killing(scheduler: "Scheduler", job: "Job"):
     """When the job is being killed
 
