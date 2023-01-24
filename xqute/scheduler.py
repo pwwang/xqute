@@ -22,33 +22,44 @@ class Scheduler(ABC):
         postscript: The script to run after the command
         **kwargs: Other arguments for the scheduler
     """
-    __slots__ = ('config', )
+
+    __slots__ = ("config",)
 
     name: ClassVar[str]
     job_class: ClassVar[Type[Job]]
 
-    def __init__(self,
-                 forks: int,
-                 prescript: str = '',
-                 postscript: str = '',
-                 **kwargs):
+    def __init__(
+        self, forks: int, prescript: str = "", postscript: str = "", **kwargs
+    ):
         """Construct"""
-        self.config = Diot(forks=forks,
-                           prescript=prescript,
-                           postscript=postscript,
-                           **kwargs)
+        self.config = Diot(
+            forks=forks, prescript=prescript, postscript=postscript, **kwargs
+        )
 
     async def submit_job_and_update_status(self, job: Job):
         """Submit and update the status
+
+        1. Check if the job is already submitted or running
+        2. If not, run the hook
+        3. If the hook is not cancelled, clean the job
+        4. Submit the job, raising an exception if it fails
+        5. If the job is submitted successfully, update the status
+        6. If the job fails to submit, update the status and write stderr to
+            the job file
 
         Args:
             job: The job
         """
         if await self.job_is_submitted_or_running(job):
-            logger.warning('/Scheduler-%s Skip submitting, '
-                           'job %r is already submitted or running.',
-                           self.name, job)
+            logger.warning(
+                "/Scheduler-%s Skip submitting, "
+                "job %r is already submitted or running.",
+                self.name,
+                job,
+            )
             return
+
+        exception = None
         try:
             if await plugin.hooks.on_job_submitting(self, job) is False:
                 return
@@ -59,22 +70,41 @@ class Scheduler(ABC):
                 # it somehow cannot be catched immediately
                 job.uid = await self.submit_job(job)
             except Exception as exc:
-                raise RuntimeError(f"Failed to submit job: {exc}")
+                exception = RuntimeError(
+                    "Failed to submit job: "
+                    f"[{type(exc).__name__}]{exc}"
+                )
+                exception.__traceback__ = exc.__traceback__
+            else:
+                logger.info(
+                    "/Scheduler-%s Job %s submitted (uid: %s, wrapped: %s)",
+                    self.name,
+                    job.index,
+                    job.uid,
+                    await job.wrapped_script(self),
+                )
 
-            logger.info('/Scheduler-%s Job %s submitted (uid: %s, wrapped: %s)',
-                        self.name,
-                        job.index,
-                        job.uid,
-                        await job.wrapped_script(self))
-
-            job.status = JobStatus.SUBMITTED
-            await plugin.hooks.on_job_submitted(self, job)
+                job.status = JobStatus.SUBMITTED
+                await plugin.hooks.on_job_submitted(self, job)
         except Exception as exc:  # pragma: no cover
-            await a_write_text(job.stderr_file, str(exc))
-            await a_write_text(job.rc_file, '-2')
+            exception = exc
+
+        if exception is not None:
+            from traceback import format_exception
+
+            await a_write_text(
+                job.stderr_file,
+                "".join(
+                    format_exception(
+                        type(exception),
+                        exception,
+                        exception.__traceback__,
+                    )
+                ),
+            )
+            await a_write_text(job.rc_file, "-2")
             job.status = JobStatus.FAILED
             await plugin.hooks.on_job_failed(self, job)
-            raise
 
     async def retry_job(self, job: Job):
         """Retry a job
@@ -82,11 +112,15 @@ class Scheduler(ABC):
         Args:
             job: The job
         """
-        job.uid = ''
+        job.uid = ""
         await job.clean(retry=True)
         job.trial_count += 1
-        logger.warning('/Scheduler-%s Retrying (#%s) job: %r',
-                       self.name, job.trial_count, job)
+        logger.warning(
+            "/Scheduler-%s Retrying (#%s) job: %r",
+            self.name,
+            job.trial_count,
+            job,
+        )
         await self.submit_job_and_update_status(job)
 
     async def kill_job_and_update_status(self, job: Job):
@@ -109,10 +143,9 @@ class Scheduler(ABC):
         job.status = JobStatus.FINISHED
         await plugin.hooks.on_job_killed(self, job)
 
-    async def polling_jobs(self,
-                           jobs: List[Job],
-                           on: str,
-                           halt_on_error: bool) -> bool:
+    async def polling_jobs(
+        self, jobs: List[Job], on: str, halt_on_error: bool
+    ) -> bool:
         """Check if all jobs are done or new jobs can submit
 
         Args:
@@ -127,9 +160,11 @@ class Scheduler(ABC):
         ret = True
         for job in jobs:
             status = job.status
-            if on == 'can_submit' and status in (
-                    JobStatus.QUEUED, JobStatus.SUBMITTED,
-                    JobStatus.RUNNING, JobStatus.KILLING
+            if on == "can_submit" and status in (
+                JobStatus.QUEUED,
+                JobStatus.SUBMITTED,
+                JobStatus.RUNNING,
+                JobStatus.KILLING,
             ):
                 n_running += 1
 
@@ -146,8 +181,11 @@ class Scheduler(ABC):
                     await plugin.hooks.on_job_running(self, job)
 
             if halt_on_error and status == JobStatus.FAILED:
-                logger.error('/Scheduler-%s Pipeline will halt '
-                             'since job failed: %r', self.name, job)
+                logger.error(
+                    "/Scheduler-%s Pipeline will halt " "since job failed: %r",
+                    self.name,
+                    job,
+                )
                 os.kill(os.getpid(), signal.SIGTERM)
                 # job.status = JobStatus.FINISHED
                 break
@@ -159,7 +197,7 @@ class Scheduler(ABC):
                 ret = False
                 # not returning here
                 # might wait for callbacks or halt on other jobs
-        return n_running < self.config.forks if on == 'can_submit' else ret
+        return n_running < self.config.forks if on == "can_submit" else ret
 
     async def kill_running_jobs(self, jobs: List[Job]):
         """Try to kill all running jobs
@@ -167,7 +205,7 @@ class Scheduler(ABC):
         Args:
             jobs: The list of jobs
         """
-        logger.warning('/Scheduler-%s Killing running jobs ...', self.name)
+        logger.warning("/Scheduler-%s Killing running jobs ...", self.name)
         for job in jobs:
             status = job.status
             if status in (JobStatus.SUBMITTED, JobStatus.RUNNING):

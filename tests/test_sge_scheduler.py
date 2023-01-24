@@ -4,9 +4,19 @@ import pytest
 from pathlib import Path
 
 from xqute.schedulers.sge_scheduler import SgeJob, SgeScheduler
-from xqute.defaults import DEFAULT_JOB_METADIR
+from xqute.defaults import DEFAULT_JOB_METADIR, JobStatus
 
 MOCKS = Path(__file__).parent / "mocks"
+
+
+def setup_module():
+    qsub = str(MOCKS / "qsub")
+    qdel = str(MOCKS / "qdel")
+    qstat = str(MOCKS / "qstat")
+
+    for qcmd in (qsub, qdel, qstat):
+        st = os.stat(str(qcmd))
+        os.chmod(str(qcmd), st.st_mode | stat.S_IEXEC)
 
 
 @pytest.mark.asyncio
@@ -33,9 +43,6 @@ async def test_scheduler(capsys):
     qsub = str(MOCKS / "qsub")
     qdel = str(MOCKS / "qdel")
     qstat = str(MOCKS / "qstat")
-    for qcmd in (qsub, qdel, qstat):
-        st = os.stat(str(qcmd))
-        os.chmod(str(qcmd), st.st_mode | stat.S_IEXEC)
 
     scheduler = SgeScheduler(1, qsub=qsub, qdel=qdel, qstat=qstat)
     assert await scheduler.submit_job(job) == "613815"
@@ -51,3 +58,18 @@ async def test_scheduler(capsys):
     assert await scheduler.job_is_running(job) is False
     job.lock_file.write_text("")
     assert await scheduler.job_is_running(job) is False
+
+
+@pytest.mark.asyncio
+async def test_submission_failure(capsys):
+    job = SgeJob(0, ["echo", 1])
+    qsub = str(MOCKS / "no_such_qsub")
+    qdel = str(MOCKS / "qdel")
+    qstat = str(MOCKS / "qstat")
+
+    scheduler = SgeScheduler(1, qsub=qsub, qdel=qdel, qstat=qstat)
+
+    assert await scheduler.submit_job_and_update_status(job) is None
+    assert await scheduler.job_is_running(job) is False
+    assert job.status == JobStatus.FAILED
+    assert "Failed to submit job" in job.stderr_file.read_text()
