@@ -3,7 +3,7 @@ import signal
 from typing import Optional, TYPE_CHECKING
 from simplug import Simplug, SimplugResult
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .xqute import Xqute
     from .job import Job
     from .scheduler import Scheduler

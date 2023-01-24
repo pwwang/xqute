@@ -20,7 +20,7 @@ from .utils import logger
 from .plugin import plugin
 from .schedulers import get_scheduler
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .scheduler import Scheduler
     from .job import Job
 

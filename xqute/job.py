@@ -14,7 +14,7 @@ from .defaults import (
 )
 from .utils import logger, a_mkdir, a_read_text, a_write_text, asyncify
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .scheduler import Scheduler
 
 
