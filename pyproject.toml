@@ -15,7 +15,10 @@ diot = "^0.1"
 psutil = "^5"
 rich = "^13"
 uvloop = "^0"
-aiopath = "^0.5"
+aiopath = [
+    {version = "0.5.*", python = "<3.10"},
+    {version = "^0.6", python = ">=3.10"},
+]
 
 [tool.poetry.dev-dependencies]
 pytest = "^7"
