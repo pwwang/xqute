@@ -6,6 +6,7 @@ import shutil
 from typing import ClassVar, List, Optional, Union
 from pathlib import Path
 from abc import ABC, abstractmethod
+from aiopath import AsyncPath
 from .defaults import (
     DEFAULT_JOB_METADIR,
     DEFAULT_JOB_CMD_WRAPPER_TEMPLATE,
@@ -204,7 +205,7 @@ class Job(ABC):
     @property
     async def rc(self) -> int:
         """The return code of the job"""
-        if not self.rc_file.is_file():
+        if not await AsyncPath(self.rc_file).is_file():
             return self._rc  # pragma: no cover
         return int(await a_read_text(self.rc_file))
 
@@ -223,26 +224,26 @@ class Job(ABC):
         """
         if retry:
             retry_dir = self.retry_dir / str(self.trial_count)
-            if retry_dir.exists():
+            if await AsyncPath(retry_dir).exists():
                 shutil.rmtree(retry_dir)
             await a_mkdir(retry_dir, parents=True)
 
-            if self.stdout_file.is_file():
+            if await AsyncPath(self.stdout_file).is_file():
                 shutil.move(str(self.stdout_file), str(retry_dir))
-            if self.stderr_file.is_file():
+            if await AsyncPath(self.stderr_file).is_file():
                 shutil.move(str(self.stderr_file), str(retry_dir))
-            if self.status_file.is_file():
+            if await AsyncPath(self.status_file).is_file():
                 shutil.move(str(self.status_file), str(retry_dir))
-            if self.rc_file.is_file():
+            if await AsyncPath(self.rc_file).is_file():
                 shutil.move(str(self.rc_file), str(retry_dir))
         else:
-            if self.stdout_file.is_file():
+            if await AsyncPath(self.stdout_file).is_file():
                 unlink(self.stdout_file)
-            if self.stderr_file.is_file():
+            if await AsyncPath(self.stderr_file).is_file():
                 unlink(self.stderr_file)
-            if self.status_file.is_file():
+            if await AsyncPath(self.status_file).is_file():
                 unlink(self.status_file)
-            if self.rc_file.is_file():
+            if await AsyncPath(self.rc_file).is_file():
                 unlink(self.rc_file)
 
     async def wrapped_script(self, scheduler: "Scheduler") -> PathLike:
@@ -257,7 +258,7 @@ class Job(ABC):
         wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
         wrapt_cmd = self.wrap_cmd(scheduler)
         if (
-            not wrapt_script.is_file()
+            not await AsyncPath(wrapt_script).is_file()
             or await a_read_text(wrapt_script) != wrapt_cmd
         ):
             await a_write_text(wrapt_script, self.wrap_cmd(scheduler))

@@ -1,13 +1,13 @@
 """Utilities for xqute"""
 import logging
-from pathlib import Path
 from os import PathLike
 from typing import Callable, Coroutine
 
 import asyncio
 from functools import partial, wraps
 
-import aiofiles as aiof
+import aiopath as aiop
+import aiofile as aiof
 
 from .defaults import DEBUG, LOGGER_NAME
 
@@ -22,7 +22,7 @@ async def a_read_text(path: PathLike) -> str:
     Returns:
         The content of the file
     """
-    async with aiof.open(path, mode='rt') as file:
+    async with aiof.async_open(path, mode='rt') as file:
         return await file.read()
 
 
@@ -33,7 +33,7 @@ async def a_write_text(path: PathLike, content: str):
         path: The path to the file
         content: The content to be written to the file
     """
-    async with aiof.open(path, mode='wt') as file:
+    async with aiof.async_open(path, mode='wt') as file:
         await file.write(content)
 
 
@@ -55,8 +55,7 @@ def asyncify(func: Callable) -> Coroutine:
     return run
 
 
-@asyncify
-def a_mkdir(path: PathLike, *args, **kwargs):
+async def a_mkdir(path: PathLike, *args, **kwargs):
     """Make a directory asyncly
 
     Args:
@@ -64,7 +63,7 @@ def a_mkdir(path: PathLike, *args, **kwargs):
         *args: args for `Path(path).mkdir(...)`
         **kwargs: kwargs for `Path(path).mkdir(...)`
     """
-    Path(path).mkdir(*args, **kwargs)
+    await aiop.AsyncPath(path).mkdir(*args, **kwargs)
 
 
 logger = logging.getLogger(LOGGER_NAME)
