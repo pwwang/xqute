@@ -140,10 +140,7 @@ class MyScheduler(Scheduler):
         """How to kill a job"""
 
     async def job_is_running(self, job):
-        """Check if a job is running
-
-        The uid can be retrieved from job.lock_file
-        """
+        """Check if a job is running"""
 ```
 
 As you may see, we may also need to implement a job class before `MyScheduler`. The only abstract method to be implemented is `wrap_cmd`:

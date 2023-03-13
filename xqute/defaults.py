@@ -101,7 +101,7 @@ cleanup() {{
     else
         echo {status.FAILED} > {job.status_file}
     fi
-    rm -f {job.lock_file}
+    rm -f {job.jid_file}
     exit $rc
 }}
 trap "cleanup" EXIT

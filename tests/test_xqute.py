@@ -17,9 +17,9 @@ class EchoPlugin:
 
     @plugin.impl
     async def on_job_init(scheduler, job):
-        print(job.uid)
+        print(job.jid)
         print(repr(job))
-        await a_write_text(job.lock_file, "-1")
+        await a_write_text(job.jid_file, "-1")
 
     @plugin.impl
     def on_shutdown(xqute, sig):
@@ -61,14 +61,14 @@ class JobFailPlugin:
 class JobIsRunningPlugin:
     @plugin.impl
     async def on_job_init(scheduler, job):
-        await a_write_text(job.lock_file, str(os.getpid()))
+        await a_write_text(job.jid_file, str(os.getpid()))
 
 
 class JobCancelPlugin:
     @plugin.impl
     async def on_job_submitting(scheduler, job):
         await job.clean()
-        job.uid = await scheduler.submit_job(job)
+        job.jid = await scheduler.submit_job(job)
         job.status = JobStatus.SUBMITTED
         return False
 

@@ -33,7 +33,7 @@ class Job(ABC):
         cmd: The command
         index: The index of the job
         metadir: The metadir of the job
-        uid: The uid of the job in scheduler system
+        jid: The jid of the job in scheduler system
         trial_count: The count for re-tries
         hook_done: Mark whether hooks have already been. Since we don't have
             a trigger for job finished/failed, so we do a polling on it. This
@@ -57,7 +57,7 @@ class Job(ABC):
         "index",
         "metadir",
         "trial_count",
-        "_uid",
+        "_jid",
         "_status",
         "_rc",
         "_error_retry",
@@ -86,7 +86,7 @@ class Job(ABC):
         self.trial_count = 0
         self.prev_status = JobStatus.INIT
 
-        self._uid = None
+        self._jid = None
         self._status = JobStatus.INIT
         self._rc = -1
         self._error_retry = error_retry
@@ -94,27 +94,27 @@ class Job(ABC):
 
     def __repr__(self) -> str:
         """repr of the job"""
-        if not self.uid:
+        if not self.jid:
             return f"<{self.__class__.__name__}-{self.index}: ({self.cmd})>"
         return (
-            f"<{self.__class__.__name__}-{self.index}({self.uid}): "
+            f"<{self.__class__.__name__}-{self.index}({self.jid}): "
             f"({self.cmd})>"
         )
 
     @property
-    def uid(self) -> str:
-        """Get the uid of the job in scheduler system"""
-        if self._uid is None and not self.lock_file.is_file():
+    def jid(self) -> str:
+        """Get the jid of the job in scheduler system"""
+        if self._jid is None and not self.jid_file.is_file():
             return None
-        if self._uid is not None:
-            return self._uid
-        self._uid = self.lock_file.read_text()
-        return self._uid
+        if self._jid is not None:
+            return self._jid
+        self._jid = self.jid_file.read_text()
+        return self._jid
 
-    @uid.setter
-    def uid(self, uniqid: Union[int, str]):
-        self._uid = uniqid
-        self.lock_file.write_text(str(uniqid))
+    @jid.setter
+    def jid(self, uniqid: Union[int, str]):
+        self._jid = uniqid
+        self.jid_file.write_text(str(uniqid))
 
     @property
     def stdout_file(self) -> Path:
@@ -137,9 +137,9 @@ class Job(ABC):
         return self.metadir / "job.rc"
 
     @property
-    def lock_file(self) -> Path:
-        """The lock file of the job"""
-        return self.metadir / "job.lock"
+    def jid_file(self) -> Path:
+        """The jid file of the job"""
+        return self.metadir / "job.jid"
 
     @property
     def retry_dir(self) -> Path:

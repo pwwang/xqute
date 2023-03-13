@@ -97,16 +97,16 @@ class SgeScheduler(Scheduler):
             job: The job
         """
         proc = await asyncio.create_subprocess_exec(
-            self.qdel, job.uid,
+            self.qdel, job.jid,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
         await proc.wait()
 
     async def job_is_running(self, job: Job) -> bool:
-        """Tell if a job is really running, not only the job.lock_file
+        """Tell if a job is really running, not only the job.jid_file
 
-        In case where the lockfile is not cleaned when job is done.
+        In case where the jid file is not cleaned when job is done.
 
         Args:
             job: The job
@@ -115,15 +115,15 @@ class SgeScheduler(Scheduler):
             True if it is, otherwise False
         """
         try:
-            uid = await a_read_text(job.lock_file)
+            jid = await a_read_text(job.jid_file)
         except FileNotFoundError:
             return False
 
-        if not uid:
+        if not jid:
             return False
 
         proc = await asyncio.create_subprocess_exec(
-            self.qstat, '-j', uid,
+            self.qstat, '-j', jid,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )

@@ -46,17 +46,17 @@ async def test_scheduler(capsys):
 
     scheduler = SgeScheduler(1, qsub=qsub, qdel=qdel, qstat=qstat)
     assert await scheduler.submit_job(job) == "613815"
-    job.uid = "613815"
+    job.jid = "613815"
     await scheduler.kill_job(job)
-    if job.lock_file.is_file():
-        os.unlink(job.lock_file)
+    if job.jid_file.is_file():
+        os.unlink(job.jid_file)
     assert await scheduler.job_is_running(job) is False
 
-    job.lock_file.write_text("0")
+    job.jid_file.write_text("0")
     assert await scheduler.job_is_running(job) is True
-    job.lock_file.write_text("1")
+    job.jid_file.write_text("1")
     assert await scheduler.job_is_running(job) is False
-    job.lock_file.write_text("")
+    job.jid_file.write_text("")
     assert await scheduler.job_is_running(job) is False
 
 

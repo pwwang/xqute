@@ -92,7 +92,7 @@ class LocalScheduler(Scheduler):
             job: The job
         """
         try:
-            proc = psutil.Process(int(job.uid))
+            proc = psutil.Process(int(job.jid))
             children = await a_proc_children(proc, recursive=True)
             for child in children:
                 await a_proc_kill(child)
@@ -102,9 +102,9 @@ class LocalScheduler(Scheduler):
             pass
 
     async def job_is_running(self, job: Job) -> bool:
-        """Tell if a job is really running, not only the job.lock_file
+        """Tell if a job is really running, not only the job.jid_file
 
-        In case where the lockfile is not cleaned when job is done.
+        In case where the jid file is not cleaned when job is done.
 
         Args:
             job: The job
@@ -113,8 +113,8 @@ class LocalScheduler(Scheduler):
             True if it is, otherwise False
         """
         try:
-            uid = int(await a_read_text(job.lock_file))
+            jid = int(await a_read_text(job.jid_file))
         except (ValueError, TypeError, FileNotFoundError):
             return False
 
-        return await asyncify(psutil.pid_exists)(uid)
+        return await asyncify(psutil.pid_exists)(jid)

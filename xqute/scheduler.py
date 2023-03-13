@@ -69,7 +69,7 @@ class Scheduler(ABC):
             try:
                 # raise the exception immediately
                 # it somehow cannot be catched immediately
-                job.uid = await self.submit_job(job)
+                job.jid = await self.submit_job(job)
             except Exception as exc:
                 exception = RuntimeError(
                     "Failed to submit job: "
@@ -78,10 +78,10 @@ class Scheduler(ABC):
                 exception.__traceback__ = exc.__traceback__
             else:
                 logger.info(
-                    "/Scheduler-%s Job %s submitted (uid: %s, wrapped: %s)",
+                    "/Scheduler-%s Job %s submitted (jid: %s, wrapped: %s)",
                     self.name,
                     job.index,
-                    job.uid,
+                    job.jid,
                     await job.wrapped_script(self),
                 )
 
@@ -113,7 +113,7 @@ class Scheduler(ABC):
         Args:
             job: The job
         """
-        job.uid = ""
+        job.jid = ""
         await job.clean(retry=True)
         job.trial_count += 1
         logger.warning(
@@ -138,7 +138,7 @@ class Scheduler(ABC):
         await self.kill_job(job)
         try:
             # in case the lock file is removed by the wrapped script
-            await asyncify(os.unlink)(job.lock_file)
+            await asyncify(os.unlink)(job.jid_file)
         except FileNotFoundError:  # pragma: no cover
             pass
         job.status = JobStatus.FINISHED
@@ -221,7 +221,7 @@ class Scheduler(ABC):
         Returns:
             True if yes otherwise False.
         """
-        if job.lock_file.is_file():
+        if job.jid_file.is_file():
             if await self.job_is_running(job):
                 job.status = JobStatus.SUBMITTED
                 return True

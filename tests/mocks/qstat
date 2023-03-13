@@ -2,5 +2,5 @@
 
 import sys
 
-uid = sys.argv[2]
-sys.exit(int(uid))
+jid = sys.argv[2]
+sys.exit(int(jid))
