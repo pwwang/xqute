@@ -1,6 +1,8 @@
 """Hook specifications for scheduler plugins"""
+from __future__ import annotations
+
 import signal
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from simplug import Simplug, SimplugResult
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -13,7 +15,7 @@ plugin = Simplug("xqute")
 
 
 @plugin.spec
-def on_init(xqute: "Xqute"):
+def on_init(xqute: Xqute):
     """When xqute is initialized
 
     Note that this hook will run at the same time when producer and consumer
@@ -25,7 +27,7 @@ def on_init(xqute: "Xqute"):
 
 
 @plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
-def on_shutdown(xqute: "Xqute", sig: Optional[signal.Signals]):
+def on_shutdown(xqute: Xqute, sig: signal.Signals | None):
     """When xqute is shutting down
 
     Return False to stop shutting down, but you have to shut it down
@@ -40,7 +42,7 @@ def on_shutdown(xqute: "Xqute", sig: Optional[signal.Signals]):
 
 
 @plugin.spec
-async def on_job_init(scheduler: "Scheduler", job: "Job"):
+async def on_job_init(scheduler: Scheduler, job: Job):
     """When the job is initialized
 
     Args:
@@ -50,7 +52,7 @@ async def on_job_init(scheduler: "Scheduler", job: "Job"):
 
 
 @plugin.spec
-async def on_job_queued(scheduler: "Scheduler", job: "Job"):
+async def on_job_queued(scheduler: Scheduler, job: Job):
     """When the job is queued
 
     Args:
@@ -60,7 +62,7 @@ async def on_job_queued(scheduler: "Scheduler", job: "Job"):
 
 
 @plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
-async def on_job_submitting(scheduler: "Scheduler", job: "Job"):
+async def on_job_submitting(scheduler: Scheduler, job: Job):
     """When the job is to be submitted
 
     Return False to cancel submitting. Only the first return value is used.
@@ -72,17 +74,23 @@ async def on_job_submitting(scheduler: "Scheduler", job: "Job"):
 
 
 @plugin.spec
-async def on_job_submitted(scheduler: "Scheduler", job: "Job"):
+async def on_job_submitted(
+    scheduler: Scheduler,
+    job: Job,
+    skipped: bool = False,
+):
     """When the job is submitted
 
     Args:
         scheduler: The scheduler object
         job: The job object
+        skipped: Whether the submitting was skipped. For example, the job is
+            already submitted or running.
     """
 
 
 @plugin.spec
-async def on_job_running(scheduler: "Scheduler", job: "Job"):
+async def on_job_running(scheduler: Scheduler, job: Job):
     """When the job starts to run
 
     Args:
@@ -92,7 +100,7 @@ async def on_job_running(scheduler: "Scheduler", job: "Job"):
 
 
 @plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
-async def on_job_killing(scheduler: "Scheduler", job: "Job"):
+async def on_job_killing(scheduler: Scheduler, job: Job):
     """When the job is being killed
 
     Return False to stop killing the job.
@@ -104,7 +112,7 @@ async def on_job_killing(scheduler: "Scheduler", job: "Job"):
 
 
 @plugin.spec
-async def on_job_killed(scheduler: "Scheduler", job: "Job"):
+async def on_job_killed(scheduler: Scheduler, job: Job):
     """When the job is killed
 
     Args:
@@ -114,7 +122,7 @@ async def on_job_killed(scheduler: "Scheduler", job: "Job"):
 
 
 @plugin.spec
-async def on_job_failed(scheduler: "Scheduler", job: "Job"):
+async def on_job_failed(scheduler: Scheduler, job: Job):
     """When the job is failed
 
     Args:
@@ -124,7 +132,7 @@ async def on_job_failed(scheduler: "Scheduler", job: "Job"):
 
 
 @plugin.spec
-async def on_job_succeeded(scheduler: "Scheduler", job: "Job"):
+async def on_job_succeeded(scheduler: Scheduler, job: Job):
     """When the job is succeeded
 
     Args:

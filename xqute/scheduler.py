@@ -57,6 +57,7 @@ class Scheduler(ABC):
                 self.name,
                 job,
             )
+            await plugin.hooks.on_job_submitted(self, job, skipped=True)
             return
 
         exception = None

@@ -20,6 +20,9 @@ aiopath = [
     {version = "^0.6", python = ">=3.10"},
 ]
 
+[tool.poetry.build]
+generate-setup-file = true
+
 [tool.poetry.dev-dependencies]
 pytest = "^7"
 pytest-cov = "^4"

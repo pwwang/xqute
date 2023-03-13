@@ -28,7 +28,7 @@ class EchoPlugin:
 
 class ShutdownPlugin:
     @plugin.impl
-    async def on_job_submitted(scheduler, job):
+    async def on_job_submitted(scheduler, job, skipped=False):
         if job.index == 0:
             os.kill(os.getpid(), signal.SIGTERM)
 
