@@ -3,7 +3,9 @@ import os
 import signal
 from abc import ABC, abstractmethod
 from typing import ClassVar, List, Type, Union
+
 from diot import Diot
+
 from .defaults import JobStatus
 from .utils import logger, asyncify, a_write_text
 from .job import Job
@@ -57,7 +59,6 @@ class Scheduler(ABC):
                 self.name,
                 job,
             )
-            await plugin.hooks.on_job_submitted(self, job, skipped=True)
             return
 
         exception = None
@@ -137,10 +138,11 @@ class Scheduler(ABC):
 
         await self.kill_job(job)
         try:
-            # in case the lock file is removed by the wrapped script
+            # in case the jid file is removed by the wrapped script
             await asyncify(os.unlink)(job.jid_file)
         except FileNotFoundError:  # pragma: no cover
             pass
+
         job.status = JobStatus.FINISHED
         await plugin.hooks.on_job_killed(self, job)
 
@@ -225,7 +227,6 @@ class Scheduler(ABC):
             if await self.job_is_running(job):
                 job.status = JobStatus.SUBMITTED
                 return True
-
         return False
 
     @abstractmethod

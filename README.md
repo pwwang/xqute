@@ -153,4 +153,4 @@ class MyJob(Job):
         ...
 ```
 
-You have to use the trap command in the wrapped script to update job status, return code and clear the lock file.
+You have to use the trap command in the wrapped script to update job status, return code and clear the job id file.

@@ -1,12 +1,14 @@
 """The xqute module"""
-from typing import TYPE_CHECKING
+from __future__ import annotations
+
+import asyncio
 import functools
+import signal
+from collections import deque
 from os import PathLike
 from pathlib import Path
-import signal
-import asyncio
-from typing import Any, List, Optional, Type, Union
-from collections import deque
+from typing import TYPE_CHECKING, Any, List, Type
+
 from .defaults import (
     DEFAULT_JOB_METADIR,
     DEFAULT_JOB_ERROR_STRATEGY,
@@ -73,8 +75,8 @@ class Xqute:
 
     def __init__(
         self,
-        scheduler: Union[str, Type["Scheduler"]] = "local",
-        plugins: Optional[List[Any]] = None,
+        scheduler: str | Type[Scheduler] = "local",
+        plugins: List[Any] | None = None,
         *,
         job_metadir: PathLike = DEFAULT_JOB_METADIR,
         job_submission_batch: int = DEFAULT_JOB_SUBMISSION_BATCH,
@@ -144,7 +146,7 @@ class Xqute:
         )
         plugin.hooks.on_init(self)
 
-    def cancel(self, sig: Optional[signal.Signals] = None) -> None:
+    def cancel(self, sig: signal.Signals | None = None) -> None:
         """Cancel the producer-consumer task
 
         `self._cancelling` will be set to `signaled` if sig is provided,
@@ -186,8 +188,8 @@ class Xqute:
                 await asyncio.sleep(0.1)
                 self.buffer_queue.appendleft(job)
                 continue
-            job.status = JobStatus.QUEUED
 
+            job.status = JobStatus.QUEUED
             await self.queue.put(job)
 
     async def _consumer(self, index: int) -> None:
@@ -204,7 +206,7 @@ class Xqute:
             await self.scheduler.submit_job_and_update_status(job)
             self.queue.task_done()
 
-    async def put(self, cmd: Union["Job", str, List[str]]) -> None:
+    async def put(self, cmd: Job | str | List[str]) -> None:
         """Put a command into the buffer
 
         Args:

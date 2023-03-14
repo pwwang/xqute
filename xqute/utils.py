@@ -70,4 +70,4 @@ logger = logging.getLogger(LOGGER_NAME)
 logger.setLevel(logging.INFO)
 if DEBUG:
     from rich.logging import RichHandler
-    logger.addHandler(RichHandler(show_path=False))
+    logger.addHandler(RichHandler(show_path=False, omit_repeated_times=False))

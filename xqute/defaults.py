@@ -92,7 +92,7 @@ DEFAULT_JOB_CMD_WRAPPER_SHELL: str = '/bin/bash'
 DEFAULT_JOB_CMD_WRAPPER_TEMPLATE: str = r"""{shebang}
 
 # Trap command to capture status, rc
-# And remove lock file
+# And remove job id file
 cleanup() {{
     rc=$?
     echo $rc > {job.rc_file}

@@ -1,12 +1,15 @@
 """Job to execute"""
-from typing import TYPE_CHECKING
-from os import PathLike, unlink
+from __future__ import annotations
+
 import shlex
 import shutil
-from typing import ClassVar, List, Optional, Union
-from pathlib import Path
 from abc import ABC, abstractmethod
+from os import PathLike, unlink
+from pathlib import Path
+from typing import TYPE_CHECKING, ClassVar, List, Optional, Union
+
 from aiopath import AsyncPath
+
 from .defaults import (
     DEFAULT_JOB_METADIR,
     DEFAULT_JOB_CMD_WRAPPER_TEMPLATE,
@@ -246,7 +249,7 @@ class Job(ABC):
             if await AsyncPath(self.rc_file).is_file():
                 unlink(self.rc_file)
 
-    async def wrapped_script(self, scheduler: "Scheduler") -> PathLike:
+    async def wrapped_script(self, scheduler: Scheduler) -> PathLike:
         """Get the wrapped script
 
         Args:
@@ -265,7 +268,7 @@ class Job(ABC):
         return wrapt_script
 
     @abstractmethod
-    def wrap_cmd(self, scheduler: "Scheduler") -> None:
+    def wrap_cmd(self, scheduler: Scheduler) -> None:
         """Wrap the command for the scheduler to submit and run
 
         Args:
