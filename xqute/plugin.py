@@ -74,18 +74,12 @@ async def on_job_submitting(scheduler: Scheduler, job: Job):
 
 
 @plugin.spec
-async def on_job_submitted(
-    scheduler: Scheduler,
-    job: Job,
-    skipped: bool = False,
-):
+async def on_job_submitted(scheduler: Scheduler, job: Job):
     """When the job is submitted
 
     Args:
         scheduler: The scheduler object
         job: The job object
-        skipped: Whether the submitting was skipped. For example, the job is
-            already submitted or running.
     """
 
 
