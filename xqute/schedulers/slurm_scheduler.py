@@ -49,6 +49,12 @@ class SlurmJob(Job):
             for key, val in scheduler.config.items()
             if key.startswith('slurm_')
         }
+        sbatch_options = {
+            key[7:]: val
+            for key, val in scheduler.config.items()
+            if key.startswith('sbatch_')
+        }
+        options.update(sbatch_options)
         # use_srun = options.pop('use_srun', False)
         # if not use_srun:
         #     self._srun_opts = None

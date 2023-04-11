@@ -23,7 +23,7 @@ def setup_module():
 async def test_job():
     job = SlurmJob(0, ["echo", 1])
     scheduler = SlurmScheduler(
-        forks=1, slurm_mem="4G", slurm_p="gpu"
+        forks=1, slurm_mem="4G", sbatch_p="gpu"
     )
     assert (
         await job.wrapped_script(scheduler)

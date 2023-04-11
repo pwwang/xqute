@@ -9,6 +9,7 @@ from ..utils import a_read_text
 
 class SgeJob(Job):
     """SGE job"""
+
     def wrap_cmd(self, scheduler: Scheduler) -> str:
         """Wrap the command to enable status, returncode, cleaning when
         job exits
@@ -19,14 +20,24 @@ class SgeJob(Job):
         Returns:
             The wrapped script
         """
-        options = {key[4:]: val for key, val in scheduler.config.items()
-                   if key.startswith('sge_')}
-        jobname_prefix = scheduler.config.get('scheduler_jobprefix',
-                                              scheduler.name)
-        options['N'] = f'{jobname_prefix}.{self.index}'
-        options['cwd'] = True
-        options['o'] = self.stdout_file
-        options['e'] = self.stderr_file
+        options = {
+            key[4:]: val
+            for key, val in scheduler.config.items()
+            if key.startswith("sge_")
+        }
+        qsub_options = {
+            key[5:]: val
+            for key, val in scheduler.config.items()
+            if key.startswith("qsub_")
+        }
+        options.update(qsub_options)
+        jobname_prefix = scheduler.config.get(
+            "scheduler_jobprefix", scheduler.name
+        )
+        options["N"] = f"{jobname_prefix}.{self.index}"
+        options["cwd"] = True
+        options["o"] = self.stdout_file
+        options["e"] = self.stderr_file
 
         options_list = []
         for key, val in options.items():
@@ -37,13 +48,14 @@ class SgeJob(Job):
                     options_list.append(f"#$ -{key} {optval}")
             else:
                 options_list.append(f"#$ -{key} {val}")
-        options_str = '\n'.join(options_list)
+        options_str = "\n".join(options_list)
 
         return self.CMD_WRAPPER_TEMPLATE.format(
-            shebang=f'#!{self.CMD_WRAPPER_SHELL}\n{options_str}\n',
+            shebang=f"#!{self.CMD_WRAPPER_SHELL}\n{options_str}\n",
             prescript=scheduler.config.prescript,
             postscript=scheduler.config.postscript,
-            job=self, status=JobStatus
+            job=self,
+            status=JobStatus,
         )
 
 
@@ -63,14 +75,15 @@ class SgeScheduler(Scheduler):
             `-l h_vmem=2G -l gpu=1`
         ... other Scheduler args
     """
-    name: str = 'sge'
+
+    name: str = "sge"
     job_class: Type[Job] = SgeJob
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.qsub = self.config.get('qsub', 'qsub')
-        self.qdel = self.config.get('qdel', 'qdel')
-        self.qstat = self.config.get('qstat', 'qstat')
+        self.qsub = self.config.get("qsub", "qsub")
+        self.qdel = self.config.get("qdel", "qdel")
+        self.qstat = self.config.get("qstat", "qstat")
 
     async def submit_job(self, job: Job) -> str:
         """Submit a job to SGE
@@ -82,9 +95,10 @@ class SgeScheduler(Scheduler):
             The job id
         """
         proc = await asyncio.create_subprocess_exec(
-            self.qsub, str(await job.wrapped_script(self)),
+            self.qsub,
+            str(await job.wrapped_script(self)),
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
         )
         stdout, _ = await proc.communicate()
         # Your job 613815 (...) has been submitted
@@ -97,9 +111,10 @@ class SgeScheduler(Scheduler):
             job: The job
         """
         proc = await asyncio.create_subprocess_exec(
-            self.qdel, job.jid,
+            self.qdel,
+            job.jid,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
         )
         await proc.wait()
 
@@ -123,9 +138,11 @@ class SgeScheduler(Scheduler):
             return False
 
         proc = await asyncio.create_subprocess_exec(
-            self.qstat, '-j', jid,
+            self.qstat,
+            "-j",
+            jid,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
         )
         await proc.wait()
         return proc.returncode == 0

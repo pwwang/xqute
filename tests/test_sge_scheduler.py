@@ -23,7 +23,7 @@ def setup_module():
 async def test_job():
     job = SgeJob(0, ["echo", 1])
     scheduler = SgeScheduler(
-        forks=1, sge_notify=True, sge_l=["vmem=2G", "gpu=1"], sge_m="abe"
+        forks=1, qsub_notify=True, sge_l=["vmem=2G", "gpu=1"], sge_m="abe"
     )
     assert (
         await job.wrapped_script(scheduler)
