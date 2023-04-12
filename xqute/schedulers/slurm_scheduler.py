@@ -103,9 +103,9 @@ class SlurmScheduler(Scheduler):
         job_class: The job class
 
     Args:
-        qsub: path to qsub command
-        qstat: path to qstat command
-        qdel: path to qdel command
+        sbatch: path to sbatch command
+        squeue: path to squeue command
+        scancel: path to scancel command
         slurm_*: Slurm options for sbatch.
         ... other Scheduler args
     """

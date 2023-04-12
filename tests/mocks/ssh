@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import sys
+
+def parse_args():
+    options = []
+    cmds = []
+    server = None
+    for arg in sys.argv[1:]:
+        if arg.startswith('-'):
+            options.append(f"{arg}=<placeholder>")
+        elif options and "<placeholder>" in options[-1]:
+            options[-1] = options[-1].replace("<placeholder>", arg)
+        elif not server:
+            server = arg
+        else:
+            cmds.append(arg)
+
+    return options, cmds, server
+
+if __name__ == '__main__':
+    options, cmds, server = parse_args()
+
+    print("OPTIONS:")
+    for opt in options:
+        print(opt)
+    print(f"SERVER: {server}")
+    print(f"CMD: {' '.join(cmds)}")
+    sys.exit(0)

@@ -10,13 +10,13 @@ MOCKS = Path(__file__).parent / "mocks"
 
 
 def setup_module():
-    qsub = str(MOCKS / "qsub")
-    qdel = str(MOCKS / "qdel")
-    qstat = str(MOCKS / "qstat")
+    sbatch = str(MOCKS / "sbatch")
+    scancel = str(MOCKS / "scancel")
+    squeue = str(MOCKS / "squeue")
 
-    for qcmd in (qsub, qdel, qstat):
-        st = os.stat(str(qcmd))
-        os.chmod(str(qcmd), st.st_mode | stat.S_IEXEC)
+    for cmd in (sbatch, scancel, squeue):
+        st = os.stat(str(cmd))
+        os.chmod(str(cmd), st.st_mode | stat.S_IEXEC)
 
 
 @pytest.mark.asyncio
