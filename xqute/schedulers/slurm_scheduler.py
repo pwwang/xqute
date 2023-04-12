@@ -47,12 +47,12 @@ class SlurmJob(Job):
         options = {
             key[6:]: val
             for key, val in scheduler.config.items()
-            if key.startswith('slurm_')
+            if key.startswith("slurm_")
         }
         sbatch_options = {
             key[7:]: val
             for key, val in scheduler.config.items()
-            if key.startswith('sbatch_')
+            if key.startswith("sbatch_")
         }
         options.update(sbatch_options)
         # use_srun = options.pop('use_srun', False)
@@ -67,27 +67,27 @@ class SlurmJob(Job):
         #     self._srun_opts['srun'] = srun
 
         jobname_prefix = scheduler.config.get(
-            'scheduler_jobprefix',
+            "scheduler_jobprefix",
             scheduler.name,
         )
-        options['job-name'] = f'{jobname_prefix}.{self.index}'
-        options['chdir'] = str(Path.cwd().resolve())
-        options['output'] = self.stdout_file
-        options['error'] = self.stderr_file
+        options["job-name"] = f"{jobname_prefix}.{self.index}"
+        options["chdir"] = str(Path.cwd().resolve())
+        options["output"] = self.stdout_file
+        options["error"] = self.stderr_file
 
         options_list = []
         for key, val in options.items():
-            key = key.replace('_', '-')
+            key = key.replace("_", "-")
             if len(key) == 1:
-                fmt = '#SBATCH -{key} {val}'
+                fmt = "#SBATCH -{key} {val}"
             else:
-                fmt = '#SBATCH --{key}={val}'
+                fmt = "#SBATCH --{key}={val}"
             options_list.append(fmt.format(key=key, val=val))
 
-        options_str = '\n'.join(options_list)
+        options_str = "\n".join(options_list)
 
         return self.CMD_WRAPPER_TEMPLATE.format(
-            shebang=f'#!{self.CMD_WRAPPER_SHELL}\n{options_str}\n',
+            shebang=f"#!{self.CMD_WRAPPER_SHELL}\n{options_str}\n",
             prescript=scheduler.config.prescript,
             postscript=scheduler.config.postscript,
             job=self,
@@ -109,15 +109,16 @@ class SlurmScheduler(Scheduler):
         slurm_*: Slurm options for sbatch.
         ... other Scheduler args
     """
-    name: str = 'slurm'
+
+    name: str = "slurm"
     job_class: Type[Job] = SlurmJob
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.sbatch = self.config.get('sbatch', 'sbatch')
+        self.sbatch = self.config.get("sbatch", "sbatch")
         # self.srun = self.config.get('srun', 'srun')
-        self.scancel = self.config.get('scancel', 'scancel')
-        self.squeue = self.config.get('squeue', 'squeue')
+        self.scancel = self.config.get("scancel", "scancel")
+        self.squeue = self.config.get("squeue", "squeue")
 
     async def submit_job(self, job: Job) -> str:
         """Submit a job to Slurm
@@ -133,7 +134,7 @@ class SlurmScheduler(Scheduler):
             # str(await job.wrapped_script(self. self.srun)),
             str(await job.wrapped_script(self)),
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
         )
         stdout, _ = await proc.communicate()
         # salloc: Granted job allocation 65537
@@ -148,9 +149,9 @@ class SlurmScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.scancel,
-            job.jid,
+            str(job.jid),
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
         )
         await proc.wait()
 
@@ -175,45 +176,61 @@ class SlurmScheduler(Scheduler):
 
         proc = await asyncio.create_subprocess_exec(
             self.squeue,
-            '-j',
+            "-j",
             jid,
-            '--noheader',
+            "--noheader",
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
         )
         await proc.wait()
         if proc.returncode != 0:
             return False
 
         # ['8792', 'queue', 'merge', 'user', 'R', '7:34:34', '1', 'server']
-        st = (await proc.stdout.read()).decode().strip().split()[4]
+        st = (
+            await proc.stdout.read()  # type: ignore
+        ).decode().strip().split()[4]
         # If job is still take resources, it is running
         return st in (
-            'R', 'RUNNING',
-            'PD', 'PENDING',
-            'CG', 'COMPLETING',
-            'S', 'SUSPENDED',
-            'CF', 'CONFIGURING',
+            "R",
+            "RUNNING",
+            "PD",
+            "PENDING",
+            "CG",
+            "COMPLETING",
+            "S",
+            "SUSPENDED",
+            "CF",
+            "CONFIGURING",
             # Job is being held after requested reservation was deleted.
-            'RD', 'RESV_DEL_HOLD',
+            "RD",
+            "RESV_DEL_HOLD",
             # Job is being requeued by a federation.
-            'RF', 'REQUEUE_FED',
+            "RF",
+            "REQUEUE_FED",
             # Held job is being requeued.
-            'RH', 'REQUEUE_HOLD',
+            "RH",
+            "REQUEUE_HOLD",
             # Completing job is being requeued.
-            'RQ', 'REQUEUED',
+            "RQ",
+            "REQUEUED",
             # Job is about to change size.
-            'RS', 'RESIZING',
+            "RS",
+            "RESIZING",
             # Sibling was removed from cluster due to other cluster
             # starting the job.
-            'RV', 'REVOKED',
+            "RV",
+            "REVOKED",
             # The job was requeued in a special state. This state can be set by
             # users, typically in EpilogSlurmctld, if the job has terminated
             # with a particular exit value.
-            'SE', 'SPECIAL_EXIT',
+            "SE",
+            "SPECIAL_EXIT",
             # Job is staging out files.
-            'SO', 'STAGE_OUT',
+            "SO",
+            "STAGE_OUT",
             # Job has an allocation, but execution has been stopped with
             # SIGSTOP signal. CPUS have been retained by this job.
-            'ST', 'STOPPED',
+            "ST",
+            "STOPPED",
         )

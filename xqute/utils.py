@@ -1,12 +1,12 @@
 """Utilities for xqute"""
 import logging
 from os import PathLike
-from typing import Callable, Coroutine
+from typing import Callable
 
 import asyncio
 from functools import partial, wraps
 
-import aiopath as aiop
+import aiopath as aiop  # type: ignore
 import aiofile as aiof
 
 from .defaults import DEBUG, LOGGER_NAME
@@ -22,7 +22,7 @@ async def a_read_text(path: PathLike) -> str:
     Returns:
         The content of the file
     """
-    async with aiof.async_open(path, mode='rt') as file:
+    async with aiof.async_open(path, mode='rt') as file:  # type: ignore
         return await file.read()
 
 
@@ -33,11 +33,11 @@ async def a_write_text(path: PathLike, content: str):
         path: The path to the file
         content: The content to be written to the file
     """
-    async with aiof.async_open(path, mode='wt') as file:
+    async with aiof.async_open(path, mode='wt') as file:  # type: ignore
         await file.write(content)
 
 
-def asyncify(func: Callable) -> Coroutine:
+def asyncify(func: Callable) -> Callable:
     """Turn a sync function into a Coroutine, can be used as a decorator
 
     Args:

@@ -1,10 +1,12 @@
 """The scheduler to schedule jobs"""
+from __future__ import annotations
+
 import os
 import signal
 from abc import ABC, abstractmethod
-from typing import ClassVar, List, Type, Union
+from typing import List, Type
 
-from diot import Diot
+from diot import Diot  # type: ignore
 
 from .defaults import JobStatus
 from .utils import logger, asyncify, a_write_text
@@ -27,8 +29,8 @@ class Scheduler(ABC):
 
     __slots__ = ("config",)
 
-    name: ClassVar[str]
-    job_class: ClassVar[Type[Job]]
+    name: str
+    job_class: Type[Job]
 
     def __init__(
         self, forks: int, prescript: str = "", postscript: str = "", **kwargs
@@ -61,7 +63,7 @@ class Scheduler(ABC):
             )
             return
 
-        exception = None
+        exception: Exception | None = None
         try:
             if await plugin.hooks.on_job_submitting(self, job) is False:
                 return
@@ -230,7 +232,7 @@ class Scheduler(ABC):
         return False
 
     @abstractmethod
-    async def submit_job(self, job: Job) -> Union[int, str]:
+    async def submit_job(self, job: Job) -> int | str:
         """Submit a job
 
         Args:

@@ -88,7 +88,7 @@ class Xqute:
         **scheduler_opts,
     ) -> None:
         """Construct"""
-        self.jobs = []
+        self.jobs: List[Job] = []
 
         if plugins is not None:
             no_plugins = [
@@ -124,10 +124,10 @@ class Xqute:
         self._job_error_strategy = job_error_strategy
         self._job_num_retries = job_num_retries
 
-        self._cancelling = False
+        self._cancelling: bool | signal.Signals = False
 
-        self.buffer_queue = deque()
-        self.queue = asyncio.Queue()
+        self.buffer_queue: deque = deque()
+        self.queue: asyncio.Queue = asyncio.Queue()
         self.scheduler = get_scheduler(scheduler)(
             scheduler_forks,
             scheduler_prescript,
@@ -223,7 +223,7 @@ class Xqute:
         else:
             job = self.scheduler.job_class(
                 len(self.jobs),
-                cmd,
+                cmd,  # type: ignore
                 self._job_metadir,
                 self._job_error_strategy == JobErrorStrategy.RETRY,
                 self._job_num_retries,

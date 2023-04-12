@@ -98,7 +98,10 @@ class SshScheduler(Scheduler):
 
         svr_id = job.index % len(self.servers)
         server = self.servers[svr_id]
-        proc = await self._create_proc(server, await job.wrapped_script(self))
+        proc = await self._create_proc(
+            server,
+            str(await job.wrapped_script(self)),
+        )
         return f"{server}-{proc.pid}"
 
     async def kill_job(self, job: Job):
@@ -108,7 +111,7 @@ class SshScheduler(Scheduler):
             job: The job
         """
         try:
-            server, _, pid = job.jid.rpartition('-')
+            server, _, pid = str(job.jid).rpartition('-')
             proc = await self._create_proc(server, ['kill', '-9', f'-{pid}'])
             await proc.wait()
         except Exception:  # pragma: no cover

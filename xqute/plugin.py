@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import signal
 from typing import TYPE_CHECKING
-from simplug import Simplug, SimplugResult
+from simplug import Simplug, SimplugResult  # type: ignore
 
 if TYPE_CHECKING:  # pragma: no cover
     from .xqute import Xqute

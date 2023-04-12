@@ -1,10 +1,13 @@
 """Builtin schedulers"""
+from __future__ import annotations
+
 from importlib import import_module
-from typing import Type, Union
+from typing import Type
+
 from ..scheduler import Scheduler
 
 
-def get_scheduler(scheduler: Union[str, Type[Scheduler]]) -> Type[Scheduler]:
+def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:
     """Get the scheduler class
 
     Args:

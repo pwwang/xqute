@@ -6,9 +6,9 @@ import shutil
 from abc import ABC, abstractmethod
 from os import PathLike, unlink
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, List, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, List, Optional
 
-from aiopath import AsyncPath
+from aiopath import AsyncPath  # type: ignore
 
 from .defaults import (
     DEFAULT_JOB_METADIR,
@@ -74,7 +74,7 @@ class Job(ABC):
     def __init__(
         self,
         index: int,
-        cmd: Union[str, List[str]],
+        cmd: str | List[str],
         metadir: PathLike = DEFAULT_JOB_METADIR,
         error_retry: Optional[bool] = None,
         num_retries: Optional[int] = None,
@@ -89,7 +89,7 @@ class Job(ABC):
         self.trial_count = 0
         self.prev_status = JobStatus.INIT
 
-        self._jid = None
+        self._jid: int | str | None = None
         self._status = JobStatus.INIT
         self._rc = -1
         self._error_retry = error_retry
@@ -105,7 +105,7 @@ class Job(ABC):
         )
 
     @property
-    def jid(self) -> str:
+    def jid(self) -> int | str | None:
         """Get the jid of the job in scheduler system"""
         if self._jid is None and not self.jid_file.is_file():
             return None
@@ -115,7 +115,7 @@ class Job(ABC):
         return self._jid
 
     @jid.setter
-    def jid(self, uniqid: Union[int, str]):
+    def jid(self, uniqid: int | str):
         self._jid = uniqid
         self.jid_file.write_text(str(uniqid))
 
@@ -174,7 +174,7 @@ class Job(ABC):
         if (
             self._status == JobStatus.FAILED
             and self._error_retry
-            and self.trial_count < self._num_retries
+            and self.trial_count < self._num_retries  # type: ignore
         ):
             self._status = JobStatus.RETRYING
 
@@ -268,7 +268,7 @@ class Job(ABC):
         return wrapt_script
 
     @abstractmethod
-    def wrap_cmd(self, scheduler: Scheduler) -> None:
+    def wrap_cmd(self, scheduler: Scheduler) -> str:
         """Wrap the command for the scheduler to submit and run
 
         Args:

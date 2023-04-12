@@ -11,8 +11,10 @@ Attributes:
     DEFAULT_SCHEDULER_FORKS: Default number of job forks for scheduler
     DEFAULT_JOB_SUBMISSION_BATCH: Default consumer workers
 """
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Tuple
 import uvloop
 
 uvloop.install()
@@ -61,7 +63,7 @@ class JobStatus:
     FAILED: int = 7
 
     @classmethod
-    def get_name(cls, *statuses: Tuple[int]) -> Union[Tuple[str], str]:
+    def get_name(cls, *statuses: int) -> Tuple[str, ...] | str:
         """Get the name of the status
 
         Args:

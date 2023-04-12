@@ -1,7 +1,8 @@
 """The scheduler to run jobs locally"""
 import asyncio
 from typing import List, Type
-import psutil
+
+import psutil  # type: ignore
 from ..defaults import JobStatus
 from ..job import Job
 from ..scheduler import Scheduler
@@ -9,8 +10,10 @@ from ..utils import asyncify, a_read_text
 
 
 @asyncify
-def a_proc_children(proc: psutil.Process,
-                    recursive: bool = False) -> List[psutil.Process]:
+def a_proc_children(
+    proc: psutil.Process,
+    recursive: bool = False,
+) -> List[psutil.Process]:
     """Get the children of a process asyncly
 
     Args:
@@ -39,7 +42,7 @@ def a_proc_kill(proc: psutil.Process):
 class LocalJob(Job):
     """Local job"""
 
-    def wrap_cmd(self, scheduler: "Scheduler") -> str:
+    def wrap_cmd(self, scheduler: Scheduler) -> str:
         """Wrap the command for the scheduler to submit and run
 
         Args:
@@ -49,11 +52,11 @@ class LocalJob(Job):
             The wrapped script
         """
         return self.CMD_WRAPPER_TEMPLATE.format(
-            shebang=f'#!{self.CMD_WRAPPER_SHELL}',
+            shebang=f"#!{self.CMD_WRAPPER_SHELL}",
             prescript=scheduler.config.prescript,
             postscript=scheduler.config.postscript,
             job=self,
-            status=JobStatus
+            status=JobStatus,
         )
 
 
@@ -64,7 +67,8 @@ class LocalScheduler(Scheduler):
         name: The name of the scheduler
         job_class: The job class
     """
-    name = 'local'
+
+    name = "local"
     job_class: Type[Job] = LocalJob
 
     async def submit_job(self, job: Job) -> int:
@@ -92,8 +96,11 @@ class LocalScheduler(Scheduler):
             job: The job
         """
         try:
-            proc = psutil.Process(int(job.jid))
-            children = await a_proc_children(proc, recursive=True)
+            proc = psutil.Process(int(job.jid))  # type: ignore
+            children = await a_proc_children(
+                proc,
+                recursive=True,
+            )
             for child in children:
                 await a_proc_kill(child)
             await a_proc_kill(proc)
