@@ -12,7 +12,6 @@ readme = "README.md"
 python = "^3.8"
 simplug = "^0.3"
 diot = "^0.1"
-psutil = "^5"
 rich = "^13"
 uvloop = "^0"
 aiopath = [

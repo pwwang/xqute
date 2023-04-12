@@ -26,13 +26,6 @@ class EchoPlugin:
         print("DONE", sig)
 
 
-class ShutdownPlugin:
-    @plugin.impl
-    async def on_job_submitted(scheduler, job):
-        if job.index == 0:
-            os.kill(os.getpid(), signal.SIGTERM)
-
-
 class CancelShutdownPlugin:
     @plugin.impl
     def on_shutdown(xqute, sig):
@@ -104,12 +97,12 @@ def test_not_init_in_loop():
 @pytest.mark.asyncio
 async def test_shutdown(tmp_path, caplog):
     with plugin.plugins_only_context(
-        [EchoPlugin, ShutdownPlugin, JobFailPlugin]
+        [EchoPlugin, JobFailPlugin]
     ):
         xqute = Xqute(scheduler_forks=2, job_metadir=tmp_path)
         await xqute.put(["sleep", 1])
-
         await xqute.put(["echo", 2])
+        asyncio.get_event_loop().call_later(0.5, xqute.cancel, signal.SIGTERM)
         await xqute.run_until_complete()
         assert "Got signal 'SIGTERM'" in caplog.text
 
@@ -117,11 +110,12 @@ async def test_shutdown(tmp_path, caplog):
 @pytest.mark.asyncio
 async def test_cancel_shutdown(tmp_path, caplog, capsys):
     with plugin.plugins_only_context(
-        [EchoPlugin, ShutdownPlugin, CancelShutdownPlugin, JobFailPlugin]
+        [EchoPlugin, CancelShutdownPlugin, JobFailPlugin]
     ):
         xqute = Xqute(job_metadir=tmp_path)
-        await xqute.put(["echo", 1])
+        await xqute.put(["sleep", 1])
         await xqute.put(["echo", 2])
+        asyncio.get_event_loop().call_later(0.5, xqute.cancel, signal.SIGTERM)
         await xqute.run_until_complete()
         assert capsys.readouterr().out.count("Cancelling shutdown") == 1
         assert caplog.text.count("Got signal 'SIGTERM'") == 1

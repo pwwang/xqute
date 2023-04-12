@@ -1,42 +1,12 @@
 """The scheduler to run jobs locally"""
 import asyncio
-from typing import List, Type
+import os
+from typing import Type
 
-import psutil  # type: ignore
 from ..defaults import JobStatus
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import asyncify, a_read_text
-
-
-@asyncify
-def a_proc_children(
-    proc: psutil.Process,
-    recursive: bool = False,
-) -> List[psutil.Process]:
-    """Get the children of a process asyncly
-
-    Args:
-        proc: The process
-        recursive: Whether get the children recursively
-
-    Returns:
-        The children of the process
-    """
-    return proc.children(recursive=recursive)
-
-
-@asyncify
-def a_proc_kill(proc: psutil.Process):
-    """Kill a process asynchronously
-
-    Args:
-        proc: The process
-
-    Returns:
-        The result from proc.kill()
-    """
-    return proc.kill()
+from ..utils import a_read_text
 
 
 class LocalJob(Job):
@@ -96,16 +66,8 @@ class LocalScheduler(Scheduler):
             job: The job
         """
         try:
-            proc = psutil.Process(int(job.jid))  # type: ignore
-            children = await a_proc_children(
-                proc,
-                recursive=True,
-            )
-            for child in children:
-                await a_proc_kill(child)
-            await a_proc_kill(proc)
-        except psutil.NoSuchProcess:  # pragma: no cover
-            # job has finished during killing
+            os.killpg(int(job.jid), 9)
+        except Exception:  # pragma: no cover
             pass
 
     async def job_is_running(self, job: Job) -> bool:
@@ -124,4 +86,12 @@ class LocalScheduler(Scheduler):
         except (ValueError, TypeError, FileNotFoundError):
             return False
 
-        return await asyncify(psutil.pid_exists)(jid)
+        if jid <= 0:
+            return False
+
+        try:
+            os.kill(jid, 0)
+        except Exception:  # pragma: no cover
+            return False
+
+        return True
