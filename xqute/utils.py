@@ -66,8 +66,21 @@ async def a_mkdir(path: PathLike, *args, **kwargs):
     await aiop.AsyncPath(path).mkdir(*args, **kwargs)
 
 
+class DuplicateFilter(logging.Filter):
+    def __init__(self):
+        super().__init__()
+        self.prev_msg = None
+
+    def filter(self, record):
+        if record.msg == self.prev_msg:
+            return False
+        self.prev_msg = record.msg
+        return True
+
+
 logger = logging.getLogger(LOGGER_NAME)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 if DEBUG:
     from rich.logging import RichHandler
     logger.addHandler(RichHandler(show_path=False, omit_repeated_times=False))
+logger.addFilter(DuplicateFilter())

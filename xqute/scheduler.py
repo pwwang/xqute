@@ -76,7 +76,7 @@ class Scheduler(ABC):
             except Exception as exc:
                 exception = RuntimeError(
                     "Failed to submit job: "
-                    f"[{type(exc).__name__}]{exc}"
+                    f"[{type(exc).__name__}] {exc}"
                 )
                 exception.__traceback__ = exc.__traceback__
             else:
