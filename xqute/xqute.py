@@ -18,7 +18,7 @@ from .defaults import (
     JobErrorStrategy,
     JobStatus,
 )
-from .utils import logger
+from .utils import logger, DuplicateFilter
 from .plugin import plugin
 from .schedulers import get_scheduler
 
@@ -78,6 +78,7 @@ class Xqute:
         scheduler: str | Type[Scheduler] = "local",
         plugins: List[Any] | None = None,
         *,
+        loglevel: str = "INFO",
         job_metadir: PathLike = DEFAULT_JOB_METADIR,
         job_submission_batch: int = DEFAULT_JOB_SUBMISSION_BATCH,
         job_error_strategy: str = DEFAULT_JOB_ERROR_STRATEGY,
@@ -88,6 +89,9 @@ class Xqute:
         **scheduler_opts,
     ) -> None:
         """Construct"""
+        # Set log level
+        logger.setLevel(loglevel.upper())
+
         self.jobs: List[Job] = []
 
         if plugins is not None:

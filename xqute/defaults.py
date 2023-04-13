@@ -83,7 +83,6 @@ class JobStatus:
         return ret_tuple[0]  # pragma: no cover
 
 
-DEBUG = True
 LOGGER_NAME = 'XQUTE'
 
 DEFAULT_JOB_METADIR: Path = Path('./.xqute')

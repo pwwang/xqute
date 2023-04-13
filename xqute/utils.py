@@ -8,8 +8,9 @@ from functools import partial, wraps
 
 import aiopath as aiop  # type: ignore
 import aiofile as aiof
+from rich.logging import RichHandler
 
-from .defaults import DEBUG, LOGGER_NAME
+from .defaults import LOGGER_NAME
 
 
 # helper functions to read and write the whole content of the file
@@ -80,8 +81,5 @@ class DuplicateFilter(logging.Filter):
 
 
 logger = logging.getLogger(LOGGER_NAME)
-logger.setLevel(logging.DEBUG)
-if DEBUG:
-    from rich.logging import RichHandler
-    logger.addHandler(RichHandler(show_path=False, omit_repeated_times=False))
+logger.addHandler(RichHandler(show_path=False, omit_repeated_times=False))
 logger.addFilter(DuplicateFilter())

@@ -125,7 +125,10 @@ async def test_cancel_shutdown(tmp_path, caplog, capsys):
 async def test_job_failed_hook(tmp_path, caplog, capsys):
     with plugin.plugins_only_context([JobFailPlugin]):
         xqute = Xqute(
-            job_error_strategy="retry", job_num_retries=1, job_metadir=tmp_path
+            job_error_strategy="retry",
+            job_num_retries=1,
+            job_metadir=tmp_path,
+            loglevel="DEBUG",
         )
         await xqute.put(["echo1", 1])
         await xqute.put(["echo", 1])
