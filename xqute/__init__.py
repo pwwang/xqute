@@ -6,4 +6,4 @@ from .utils import logger
 from .job import Job
 from .scheduler import Scheduler
 
-__version__ = "0.1.5"
+__version__ = "0.2.0"
