@@ -26,8 +26,10 @@ class SSHClient:
         self.keyfile = keyfile
         self.ctrl_persist = ctrl_persist
         port = port or 22
-        user = user or os.getlogin()
-        self.name = f"{user}@{server}:{port}"
+        if user:
+            self.name = f"{user}@{server}:{port}"
+        else:
+            self.name = f"{server}:{port}"
         self.ctrl_file = Path(ctrl_dir) / f'ssh-{self.name}.sock'
         self._conn_lock = asyncio.Lock()
 
@@ -79,7 +81,7 @@ class SSHClient:
             command.extend(['-i', str(self.keyfile)])
         if self.user:
             command.extend([f'{self.user}@{self.server}', *cmds])
-        else:
+        else:  # pragma: no cover
             command.extend([self.server, *cmds])
 
         return await asyncio.create_subprocess_exec(
