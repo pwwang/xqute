@@ -47,6 +47,7 @@ xqute = Xqute(...)
 ```
 Available arguments are:
 
+- loglevel: The log level (Default: `INFO`)
 - scheduler: The scheduler class or name
 - plugins: The plugins to enable/disable for this session
 - job_metadir: The job meta directory (Default: `./.xqute/`)
@@ -84,6 +85,22 @@ Keyword-arguments with names starting with `sge_` will be interpreted as `qsub` 
 #$ -l gpu=1
 
 # ...
+```
+
+
+### Using Slurm scheduler
+
+```python
+xqute = Xqute(
+    'slurm',
+    scheduler_forks=100,
+    sbatch='path to sbatch',
+    scancel='path to scancel',
+    squeue='path to squeue',
+    sbatch_partition='1-day',  # or slurm_partition='1-day'
+    sbatch_time='01:00:00',
+    ...
+)
 ```
 
 ### Using ssh scheduler

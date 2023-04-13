@@ -18,7 +18,7 @@ from .defaults import (
     JobErrorStrategy,
     JobStatus,
 )
-from .utils import logger, DuplicateFilter
+from .utils import logger
 from .plugin import plugin
 from .schedulers import get_scheduler
 
@@ -56,6 +56,7 @@ class Xqute:
         task: The task of producer and consumers
 
     Args:
+        loglevel: The log level
         scheduler: The scheduler class or name
         plugins: The plugins to be enabled or disabled
             to disable a plugin, using `no:plugin_name`
