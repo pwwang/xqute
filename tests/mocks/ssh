@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from pathlib import Path
+from subprocess import run
 import sys
 
 def parse_args():
@@ -21,9 +23,20 @@ def parse_args():
 if __name__ == '__main__':
     options, cmds, server = parse_args()
 
-    print("OPTIONS:")
+    # print("OPTIONS:")
     for opt in options:
-        print(opt)
-    print(f"SERVER: {server}")
-    print(f"CMD: {' '.join(cmds)}")
-    sys.exit(0)
+        if (
+            opt.startswith("-o=ControlPath")
+            and '-o=ControlMaster=yes' in options
+        ):
+            cpath = opt.split('=')[-1]
+            Path(cpath).touch()
+        # print(opt)
+        elif opt.startswith("-p="):
+            # fake connection error
+            sys.exit(1)
+    # print(f"SERVER: {server}")
+    # print(f"CMD: {' '.join(cmds)}")
+    # sys.exit(0)
+    # run the command:
+    run(cmds, stdout=sys.stdout, stderr=sys.stderr)

@@ -72,9 +72,10 @@ class DuplicateFilter(logging.Filter):
         self.prev_msg = None
 
     def filter(self, record):
-        if record.msg == self.prev_msg:
+        message = record.getMessage()
+        if message == self.prev_msg:
             return False
-        self.prev_msg = record.msg
+        self.prev_msg = message
         return True
 
 

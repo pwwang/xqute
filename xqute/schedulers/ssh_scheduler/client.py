@@ -14,7 +14,7 @@ class SSHClient:
         ssh: str,
         server: str,
         port: int | None = None,
-        username: str | None = None,
+        user: str | None = None,
         keyfile: str | None = None,
         ctrl_persist: int = 600,  # seconds
         ctrl_dir: str | Path = gettempdir()
@@ -22,12 +22,12 @@ class SSHClient:
         self.ssh = ssh
         self.server = server
         self.port = port
-        self.username = username
+        self.user = user
         self.keyfile = keyfile
         self.ctrl_persist = ctrl_persist
         port = port or 22
-        username = username or os.getlogin()
-        self.name = f"{username}@{server}:{port}"
+        user = user or os.getlogin()
+        self.name = f"{user}@{server}:{port}"
         self.ctrl_file = Path(ctrl_dir) / f'ssh-{self.name}.sock'
         self._conn_lock = asyncio.Lock()
 
@@ -50,9 +50,9 @@ class SSHClient:
                 command.extend(['-p', str(self.port)])
             if self.keyfile:
                 command.extend(['-i', str(self.keyfile)])
-            if self.username:
-                command.extend([f'{self.username}@{self.server}', 'true'])
-            else:
+            if self.user:
+                command.extend([f'{self.user}@{self.server}', 'true'])
+            else:  # pragma: no cover
                 command.extend([self.server, 'true'])
 
             proc = await asyncio.create_subprocess_exec(*command)
@@ -73,12 +73,12 @@ class SSHClient:
             self.ssh,
             '-o', f'ControlPath={self.ctrl_file}',
         ]
-        if self.port:
+        if self.port:  # pragma: no cover
             command.extend(['-p', str(self.port)])
         if self.keyfile:
             command.extend(['-i', str(self.keyfile)])
-        if self.username:
-            command.extend([f'{self.username}@{self.server}', *cmds])
+        if self.user:
+            command.extend([f'{self.user}@{self.server}', *cmds])
         else:
             command.extend([self.server, *cmds])
 

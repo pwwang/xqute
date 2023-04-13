@@ -65,13 +65,15 @@ await xqute.put(['echo', 1])
 
 ### Using SGE scheduler
 ```python
-xqute = Xqute('sge',
-              scheduler_forks=100,
-              qsub='path to qsub',
-              qdel='path to qdel',
-              qstat='path to qstat',
-              sge_q='1-day',
-              ...)
+xqute = Xqute(
+    'sge',
+    scheduler_forks=100,
+    qsub='path to qsub',
+    qdel='path to qdel',
+    qstat='path to qstat',
+    sge_q='1-day',  # or qsub_q='1-day'
+    ...
+)
 ```
 Keyword-arguments with names starting with `sge_` will be interpreted as `qsub` options. `list` or `tuple` option values will be expanded. For example:
 `sge_l=['h_vmem=2G', 'gpu=1']` will be expanded in wrapped script like this:
@@ -83,6 +85,31 @@ Keyword-arguments with names starting with `sge_` will be interpreted as `qsub` 
 
 # ...
 ```
+
+### Using ssh scheduler
+
+```python
+xqute = Xqute(
+    'ssh',
+    scheduler_forks=100,
+    ssh='path to ssh',
+    ssh_servers={
+        "server1": {
+            "user": ...,
+            "port": 22,
+            "keyfile": ...,
+            # How long to keep the ssh connection alive
+            "ctrl_persist": 600,
+            # Where to store the control socket
+            "ctrl_dir": "/tmp",
+        },
+        ...
+    }
+    ...
+)
+```
+
+SSH servers must share the same filesystem and using keyfile authentication.
 
 ### Plugins
 
