@@ -47,7 +47,6 @@ xqute = Xqute(...)
 ```
 Available arguments are:
 
-- loglevel: The log level (Default: `INFO`)
 - scheduler: The scheduler class or name
 - plugins: The plugins to enable/disable for this session
 - job_metadir: The job meta directory (Default: `./.xqute/`)

@@ -128,7 +128,6 @@ async def test_job_failed_hook(tmp_path, caplog, capsys):
             job_error_strategy="retry",
             job_num_retries=1,
             job_metadir=tmp_path,
-            loglevel="DEBUG",
         )
         await xqute.put(["echo1", 1])
         await xqute.put(["echo", 1])

@@ -83,3 +83,4 @@ class DuplicateFilter(logging.Filter):
 logger = logging.getLogger(LOGGER_NAME)
 logger.addHandler(RichHandler(show_path=False, omit_repeated_times=False))
 logger.addFilter(DuplicateFilter())
+logger.setLevel(logging.INFO)
