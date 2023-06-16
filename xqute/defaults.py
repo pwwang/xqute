@@ -92,6 +92,8 @@ DEFAULT_JOB_SUBMISSION_BATCH: int = 8
 DEFAULT_JOB_CMD_WRAPPER_SHELL: str = '/bin/bash'
 DEFAULT_JOB_CMD_WRAPPER_TEMPLATE: str = r"""{shebang}
 
+set -u -e -E -o pipefail
+
 # Trap command to capture status, rc
 # And remove job id file
 cleanup() {{
