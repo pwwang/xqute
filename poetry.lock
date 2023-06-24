@@ -197,14 +197,14 @@ toml = ["tomli"]
 
 [[package]]
 name = "diot"
-version = "0.2.0"
+version = "0.2.1"
 description = "Python dictionary with dot notation."
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "diot-0.2.0-py3-none-any.whl", hash = "sha256:9e869127cd798694f5ae7b193ec78fd5f329395b2763f823d50d12c32211ee63"},
-    {file = "diot-0.2.0.tar.gz", hash = "sha256:cbf7f76a77b7dced9935ca72785bc5d06d5f645f363feb231aa5cb2d74427880"},
+    {file = "diot-0.2.1-py3-none-any.whl", hash = "sha256:d37bf5df36a257386e4836ab33f393f7ee945f262587b8c5b88ad86e1d3eb261"},
+    {file = "diot-0.2.1.tar.gz", hash = "sha256:e8767e712f29886d7dcff1866a383a2ed9eeb9699ae58486ec58f3e6247afa06"},
 ]
 
 [package.dependencies]
@@ -424,14 +424,14 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "simplug"
-version = "0.3.1"
+version = "0.3.2"
 description = "A simple plugin system for python with async hooks supported"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "simplug-0.3.1-py3-none-any.whl", hash = "sha256:3cedd433bd91520f42192d2bb3f34032880c78e100b656b847b5994ae379ea84"},
-    {file = "simplug-0.3.1.tar.gz", hash = "sha256:41d2ce5bdf135554ed18b82a080258a0375587b648087b53bda257aee0944d94"},
+    {file = "simplug-0.3.2-py3-none-any.whl", hash = "sha256:8897b7bb41c0527bc58cdad11d19d6b4bc9efe4e5076363eb25b514e6f83beaa"},
+    {file = "simplug-0.3.2.tar.gz", hash = "sha256:a940503e3ce4bb8f381403383eb47ba1b38fc2360c66f6c3b930da03bcb841c0"},
 ]
 
 [package.dependencies]
