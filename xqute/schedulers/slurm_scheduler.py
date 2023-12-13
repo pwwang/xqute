@@ -136,6 +136,11 @@ class SlurmScheduler(Scheduler):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
+        rc = await proc.wait()
+        if rc != 0:
+            stderr = await proc.stderr.read()
+            raise Exception(stderr.decode().strip())
+
         stdout = await proc.stdout.read()
         # salloc: Granted job allocation 65537
         # sbatch: Submitted batch job 65537
