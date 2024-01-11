@@ -16,7 +16,8 @@ rich = "^13"
 uvloop = "^0"
 aiopath = [
     {version = "0.5.*", python = "<3.10"},
-    {version = "^0.6", python = ">=3.10"},
+    {version = "0.6.*", python = ">=3.10,<3.12"},
+    {version = "0.7.*", python = ">=3.12"},
 ]
 
 [tool.poetry.build]

@@ -13,11 +13,12 @@ Attributes:
 """
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Tuple
 import uvloop
 
-uvloop.install()
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
 class JobErrorStrategy:
