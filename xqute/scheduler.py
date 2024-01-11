@@ -176,14 +176,14 @@ class Scheduler(ABC):
             if job.prev_status != status:
                 if status in (JobStatus.FAILED, JobStatus.RETRYING):
                     if job.prev_status != JobStatus.RUNNING:
-                        await plugin.hooks.on_job_running(self, job)
+                        await plugin.hooks.on_job_started(self, job)
                     await plugin.hooks.on_job_failed(self, job)
                 elif status == JobStatus.FINISHED:
                     if job.prev_status != JobStatus.RUNNING:
-                        await plugin.hooks.on_job_running(self, job)
+                        await plugin.hooks.on_job_started(self, job)
                     await plugin.hooks.on_job_succeeded(self, job)
                 elif status == JobStatus.RUNNING:
-                    await plugin.hooks.on_job_running(self, job)
+                    await plugin.hooks.on_job_started(self, job)
 
             if halt_on_error and status == JobStatus.FAILED:
                 logger.error(

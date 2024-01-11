@@ -84,8 +84,22 @@ async def on_job_submitted(scheduler: Scheduler, job: Job):
 
 
 @plugin.spec
-async def on_job_running(scheduler: Scheduler, job: Job):
-    """When the job starts to run
+async def on_job_started(scheduler: Scheduler, job: Job):
+    """When the job starts to run.
+
+    Note that this is not when exactly the job starts to run, but when the
+    scheduler starts to wait for the job to finish. So this hook is not
+    suitable for measuring the time of the job.
+
+    Args:
+        scheduler: The scheduler object
+        job: The job object
+    """
+
+
+@plugin.spec
+async def on_job_polling(scheduler: Scheduler, job: Job):
+    """When the system is polling job status
 
     Args:
         scheduler: The scheduler object
