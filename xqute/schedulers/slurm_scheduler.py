@@ -137,7 +137,7 @@ class SlurmScheduler(Scheduler):
             stderr=asyncio.subprocess.PIPE,
         )
         rc = await proc.wait()
-        if rc != 0:
+        if rc != 0:  # pragma: no cover
             stderr = await proc.stderr.read()
             raise Exception(stderr.decode().strip())
 

@@ -136,6 +136,8 @@ To write a plugin for `xqute`, you will need to implement the following hooks:
 - `on_job_init(scheduler, job)`: When the job is initialized
 - `on_job_queued(scheduler, job)`: When the job is queued
 - `on_job_submitted(scheduler, job)`: When the job is submitted
+- `on_job_started(scheduler, job)`: When the job is started (when status changed to running)
+- `on_job_polling(scheduler, job)`: When job status is being polled
 - `on_job_killing(scheduler, job)`: When the job is being killed
 - `on_job_killed(scheduler, job)`: When the job is killed
 - `on_job_failed(scheduler, job)`: When the job is failed

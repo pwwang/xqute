@@ -22,6 +22,14 @@ class EchoPlugin:
         await a_write_text(job.jid_file, "-1")
 
     @plugin.impl
+    async def on_job_started(scheduler, job):
+        print("Job %s started" % job.index)
+
+    @plugin.impl
+    async def on_job_polling(scheduler, job):
+        print("Job %s polling" % job.index)
+
+    @plugin.impl
     def on_shutdown(xqute, sig):
         print("DONE", sig)
 
@@ -81,12 +89,15 @@ async def test_plugin(tmp_path, capsys):
     with plugin.plugins_only_context([EchoPlugin, JobFailPlugin]):
         xqute = Xqute("local", scheduler_forks=1, job_metadir=tmp_path)
         await xqute.put("echo 2")
-        await xqute.put(["sleep", 1])
+        await xqute.put(["sleep", 3])
         await xqute.run_until_complete()
 
         out = capsys.readouterr().out
         assert "init from echoplugin" in out
+        assert "Job 1 started" in out
+        assert out.count("Job 1 polling") > 1
         assert "DONE" in out
+        print(out)
 
 
 def test_not_init_in_loop():
