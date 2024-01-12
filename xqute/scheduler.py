@@ -164,8 +164,6 @@ class Scheduler(ABC):
         n_running = 0
         ret = True
         for job in jobs:
-            await plugin.hooks.on_job_polling(self, job)
-
             status = job.status
             if on == "can_submit" and status in (
                 JobStatus.QUEUED,
@@ -186,6 +184,8 @@ class Scheduler(ABC):
                     await plugin.hooks.on_job_succeeded(self, job)
                 elif status == JobStatus.RUNNING:
                     await plugin.hooks.on_job_started(self, job)
+            elif status == JobStatus.RUNNING:
+                await plugin.hooks.on_job_polling(self, job)
 
             if halt_on_error and status == JobStatus.FAILED:
                 logger.error(
