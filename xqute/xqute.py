@@ -37,8 +37,8 @@ class Xqute:
 
         jobs: The jobs registry
         plugins: The plugins to be enabled or disabled
-            to disable a plugin, using `no:plugin_name`
-            either all plugin names should be prefixed with 'no:' or none
+            to disable a plugin, using `-plugin_name`
+            either all plugin names should be prefixed with '+'/'-' or none
             of them should
         job_submission_batch: The number of consumers to submit jobs
 
@@ -58,8 +58,8 @@ class Xqute:
     Args:
         scheduler: The scheduler class or name
         plugins: The plugins to be enabled or disabled
-            to disable a plugin, using `no:plugin_name`
-            either all plugin names should be prefixed with 'no:' or none
+            to disable a plugin, using `-plugin_name`
+            either all plugin names should be prefixed with '+'/'-' or none
             of them should
             To enabled plugins, objects are
         job_metadir: The job meta directory
@@ -90,27 +90,9 @@ class Xqute:
         """Construct"""
         self.jobs: List[Job] = []
 
-        if plugins is not None:
-            no_plugins = [
-                isinstance(plug, str) and plug.startswith("no:")
-                for plug in plugins
-            ]
-            if any(no_plugins) and not all(no_plugins):
-                raise ValueError(
-                    'Either all plugin names start with "no:" or '
-                    "none of them does."
-                )
-            if all(no_plugins):
-                self.plugin_context = plugin.plugins_but_context(
-                    plug[3:] for plug in plugins
-                )
-            else:
-                self.plugin_context = plugin.plugins_only_context(plugins)
-        else:
-            self.plugin_context = plugin.plugins_only_context(plugins)
+        self.plugin_context = plugin.plugins_context(plugins)
 
-        if self.plugin_context:
-            self.plugin_context.__enter__()
+        self.plugin_context.__enter__()
 
         logger.info(
             "/%s Enabled plugins: %s",

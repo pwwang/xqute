@@ -2,6 +2,7 @@ import os
 import asyncio
 import signal
 import pytest
+from simplug import NoSuchPlugin
 from xqute import Xqute, plugin
 from xqute.defaults import JobStatus
 from xqute.schedulers.local_scheduler import LocalJob, LocalScheduler
@@ -76,7 +77,7 @@ class JobCancelPlugin:
 
 @pytest.mark.asyncio
 async def test_main(tmp_path):
-    with plugin.plugins_only_context([EchoPlugin]):
+    with plugin.plugins_context([EchoPlugin]):
         xqute = Xqute(LocalScheduler, scheduler_forks=2, job_metadir=tmp_path)
         await xqute.put(["bash", "-c", "echo 1"])
         await xqute.put(["echo", 2])
@@ -86,7 +87,7 @@ async def test_main(tmp_path):
 
 @pytest.mark.asyncio
 async def test_plugin(tmp_path, capsys):
-    with plugin.plugins_only_context([EchoPlugin, JobFailPlugin]):
+    with plugin.plugins_context([EchoPlugin, JobFailPlugin]):
         xqute = Xqute("local", scheduler_forks=1, job_metadir=tmp_path)
         await xqute.put("echo 2")
         await xqute.put(["sleep", 3])
@@ -107,7 +108,7 @@ def test_not_init_in_loop():
 
 @pytest.mark.asyncio
 async def test_shutdown(tmp_path, caplog):
-    with plugin.plugins_only_context(
+    with plugin.plugins_context(
         [EchoPlugin, JobFailPlugin]
     ):
         xqute = Xqute(scheduler_forks=2, job_metadir=tmp_path)
@@ -120,7 +121,7 @@ async def test_shutdown(tmp_path, caplog):
 
 @pytest.mark.asyncio
 async def test_cancel_shutdown(tmp_path, caplog, capsys):
-    with plugin.plugins_only_context(
+    with plugin.plugins_context(
         [EchoPlugin, CancelShutdownPlugin, JobFailPlugin]
     ):
         xqute = Xqute(job_metadir=tmp_path)
@@ -134,7 +135,7 @@ async def test_cancel_shutdown(tmp_path, caplog, capsys):
 
 @pytest.mark.asyncio
 async def test_job_failed_hook(tmp_path, caplog, capsys):
-    with plugin.plugins_only_context([JobFailPlugin]):
+    with plugin.plugins_context([JobFailPlugin]):
         xqute = Xqute(
             job_error_strategy="retry",
             job_num_retries=1,
@@ -160,7 +161,7 @@ async def test_job_failed_hook(tmp_path, caplog, capsys):
 
 @pytest.mark.asyncio
 async def test_job_is_running(tmp_path, caplog):
-    with plugin.plugins_only_context([JobIsRunningPlugin]):
+    with plugin.plugins_context([JobIsRunningPlugin]):
         xqute = Xqute(job_metadir=tmp_path)
         await xqute.put(["echo", 1])
         loop = asyncio.get_event_loop()
@@ -172,7 +173,7 @@ async def test_job_is_running(tmp_path, caplog):
 @pytest.mark.asyncio
 async def test_halt(tmp_path, caplog):
     await asyncio.sleep(1)
-    with plugin.plugins_only_context([JobFailPlugin]):
+    with plugin.plugins_context([JobFailPlugin]):
         xqute = Xqute(
             job_error_strategy="halt", job_metadir=tmp_path, scheduler_forks=3
         )
@@ -193,8 +194,8 @@ async def test_cancel_submitting(tmp_path, caplog):
 
 @pytest.mark.asyncio
 async def test_plugin_context():
-    with pytest.raises(ValueError):
-        Xqute(plugins=["a", "no:b"])
+    with pytest.raises(NoSuchPlugin):
+        Xqute(plugins=["+a", "-b"])
 
-    xqute = Xqute(plugins=["no:a", "no:b"])
+    xqute = Xqute(plugins=["-a", "-b"])
     await xqute.run_until_complete()
