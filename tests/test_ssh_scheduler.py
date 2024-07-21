@@ -45,6 +45,8 @@ async def test_scheduler(capsys):
         },
     )
     assert (await scheduler.submit_job(job)).startswith("me@myserver:22/")
+    # trigger skipping re-connect
+    assert (await scheduler.submit_job(job)).startswith("me@myserver:22/")
     job.jid = "me@myserver:22/1234"
     await scheduler.kill_job(job)
     if job.jid_file.is_file():
