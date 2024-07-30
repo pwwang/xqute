@@ -30,9 +30,9 @@ async def test_job():
         == DEFAULT_JOB_METADIR / "0" / "job.wrapped.slurm"
     )
 
-    wrapt = job.wrap_cmd(scheduler)
-    assert "#SBATCH --mem=4G" in wrapt
-    assert "#SBATCH -p gpu" in wrapt
+    shebang = job.shebang(scheduler)
+    assert "#SBATCH --mem=4G" in shebang
+    assert "#SBATCH -p gpu" in shebang
 
 
 @pytest.mark.asyncio

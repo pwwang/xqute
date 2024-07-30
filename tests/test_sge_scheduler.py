@@ -30,11 +30,11 @@ async def test_job():
         == DEFAULT_JOB_METADIR / "0" / "job.wrapped.sge"
     )
 
-    wrapt = job.wrap_cmd(scheduler)
-    assert "#$ -notify" in wrapt
-    assert "#$ -l vmem=2G" in wrapt
-    assert "#$ -l gpu=1" in wrapt
-    assert "#$ -m abe" in wrapt
+    shebang = job.shebang(scheduler)
+    assert "#$ -notify" in shebang
+    assert "#$ -l vmem=2G" in shebang
+    assert "#$ -l gpu=1" in shebang
+    assert "#$ -m abe" in shebang
 
 
 @pytest.mark.asyncio

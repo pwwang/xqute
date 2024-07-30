@@ -10,15 +10,14 @@ from ..utils import a_read_text
 class SgeJob(Job):
     """SGE job"""
 
-    def wrap_cmd(self, scheduler: Scheduler) -> str:
-        """Wrap the command to enable status, returncode, cleaning when
-        job exits
+    def shebang(self, scheduler: Scheduler) -> str:
+        """Make the shebang with options
 
         Args:
             scheduler: The scheduler
 
         Returns:
-            The wrapped script
+            The shebang with options
         """
         options = {
             key[4:]: val
@@ -50,13 +49,7 @@ class SgeJob(Job):
                 options_list.append(f"#$ -{key} {val}")
         options_str = "\n".join(options_list)
 
-        return self.CMD_WRAPPER_TEMPLATE.format(
-            shebang=f"#!{self.CMD_WRAPPER_SHELL}\n{options_str}\n",
-            prescript=scheduler.config.prescript,
-            postscript=scheduler.config.postscript,
-            job=self,
-            status=JobStatus,
-        )
+        return f"{super().shebang(scheduler)}\n{options_str}\n"
 
 
 class SgeScheduler(Scheduler):

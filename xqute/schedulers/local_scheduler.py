@@ -12,23 +12,6 @@ from ..utils import a_read_text
 class LocalJob(Job):
     """Local job"""
 
-    def wrap_cmd(self, scheduler: Scheduler) -> str:
-        """Wrap the command for the scheduler to submit and run
-
-        Args:
-            scheduler: The scheduler
-
-        Returns:
-            The wrapped script
-        """
-        return self.CMD_WRAPPER_TEMPLATE.format(
-            shebang=f"#!{self.CMD_WRAPPER_SHELL}",
-            prescript=scheduler.config.prescript,
-            postscript=scheduler.config.postscript,
-            job=self,
-            status=JobStatus,
-        )
-
 
 class LocalScheduler(Scheduler):
     """The local scheduler

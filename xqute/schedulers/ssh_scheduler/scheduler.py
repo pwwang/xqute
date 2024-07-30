@@ -56,7 +56,7 @@ class SshScheduler(Scheduler):
         await server.connect()
 
         return await server.submit(
-            job.CMD_WRAPPER_SHELL,
+            job.__class__.CMD_WRAPPER_SHELL,
             await job.wrapped_script(self),
         )
 

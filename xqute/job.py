@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import shlex
 import shutil
-from abc import ABC, abstractmethod
+from abc import ABC
 from os import PathLike, unlink
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, List, Optional
@@ -68,8 +68,8 @@ class Job(ABC):
         "prev_status",
     )
 
-    CMD_WRAPPER_TEMPLATE: ClassVar[str] = DEFAULT_JOB_CMD_WRAPPER_TEMPLATE
     CMD_WRAPPER_SHELL: ClassVar[str] = DEFAULT_JOB_CMD_WRAPPER_SHELL
+    CMD_WRAPPER_TEMPLATE: ClassVar[str] = DEFAULT_JOB_CMD_WRAPPER_TEMPLATE
 
     def __init__(
         self,
@@ -219,6 +219,10 @@ class Job(ABC):
             return " ".join(shlex.quote(str(cmditem)) for cmditem in self.cmd)
         return self.cmd
 
+    def shebang(self, scheduler: Scheduler) -> str:
+        """The shebang of the wrapped script"""
+        return f"#!{self.__class__.CMD_WRAPPER_SHELL}"
+
     async def clean(self, retry=False):
         """Clean up the meta files
 
@@ -259,18 +263,12 @@ class Job(ABC):
             The path of the wrapped script
         """
         wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
-        wrapt_cmd = self.wrap_cmd(scheduler)
-        if (
-            not await AsyncPath(wrapt_script).is_file()
-            or await a_read_text(wrapt_script) != wrapt_cmd
-        ):
-            await a_write_text(wrapt_script, self.wrap_cmd(scheduler))
+        wrapt_cmd = self.__class__.CMD_WRAPPER_TEMPLATE.format(
+            shebang=self.shebang(scheduler),
+            job=self,
+            prescript=scheduler.config.prescript,
+            postscript=scheduler.config.postscript,
+            status=JobStatus,
+        )
+        await a_write_text(wrapt_script, wrapt_cmd)
         return wrapt_script
-
-    @abstractmethod
-    def wrap_cmd(self, scheduler: Scheduler) -> str:
-        """Wrap the command for the scheduler to submit and run
-
-        Args:
-            scheduler: The scheduler
-        """

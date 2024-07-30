@@ -12,37 +12,14 @@ from ..utils import a_read_text
 class SlurmJob(Job):
     """Slurm job"""
 
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     self._srun_opts = None
-
-    # @property
-    # def strcmd(self) -> str:
-    #     """Get the string representation of the command"""
-    #     cmd = super().strcmd
-    #     if self._srun_opts is None:
-    #         return cmd
-
-    #     srun_opts = self._srun_opts.copy()
-    #     cmd_parts = [srun_opts.pop('srun', 'srun')]
-    #     for key, val in self._srun_opts.items():
-    #         if len(key) == 1:
-    #             fmt = f'-{key} {val}'
-    #         else:
-    #             fmt = f'--{key}={val}'
-    #         cmd_parts.append(fmt.format(key=key, val=val))
-    #     cmd_parts.append(cmd)
-    #     return ' '.join(cmd_parts)
-    # def wrap_cmd(self, scheduler: Scheduler, srun: str) -> str:
-    def wrap_cmd(self, scheduler: Scheduler) -> str:
-        """Wrap the command to enable status, returncode, cleaning when
-        job exits
+    def shebang(self, scheduler: Scheduler) -> str:
+        """Make the shebang with options
 
         Args:
             scheduler: The scheduler
 
         Returns:
-            The wrapped script
+            The shebang with options
         """
         options = {
             key[6:]: val
@@ -55,16 +32,6 @@ class SlurmJob(Job):
             if key.startswith("sbatch_")
         }
         options.update(sbatch_options)
-        # use_srun = options.pop('use_srun', False)
-        # if not use_srun:
-        #     self._srun_opts = None
-        # else:
-        #     self._srun_opts = {
-        #         key[5:]: val
-        #         for key, val in scheduler.config.items()
-        #         if key.startswith('srun_')
-        #     }
-        #     self._srun_opts['srun'] = srun
 
         jobname_prefix = scheduler.config.get(
             "scheduler_jobprefix",
@@ -86,13 +53,7 @@ class SlurmJob(Job):
 
         options_str = "\n".join(options_list)
 
-        return self.CMD_WRAPPER_TEMPLATE.format(
-            shebang=f"#!{self.CMD_WRAPPER_SHELL}\n{options_str}\n",
-            prescript=scheduler.config.prescript,
-            postscript=scheduler.config.postscript,
-            job=self,
-            status=JobStatus,
-        )
+        return f"{super().shebang(scheduler)}\n{options_str}\n"
 
 
 class SlurmScheduler(Scheduler):

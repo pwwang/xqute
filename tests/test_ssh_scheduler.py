@@ -28,8 +28,8 @@ async def test_job():
         == DEFAULT_JOB_METADIR / "0" / "job.wrapped.ssh"
     )
 
-    wrapt = job.wrap_cmd(scheduler)
-    assert "cleanup()" in wrapt
+    shebang = job.shebang(scheduler)
+    assert "#!" in shebang
 
 
 @pytest.mark.asyncio
