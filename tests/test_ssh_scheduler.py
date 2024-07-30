@@ -86,6 +86,9 @@ async def test_connection_failure():
             "myserverx": {'port': 44, 'keyfile': 'id_rsa', 'user': "me"}
         },
     )
+    server = scheduler.servers["me@myserverx:44"]
+    await server.connect()
+    assert server.is_connected
     await scheduler.servers["me@myserverx:44"].disconnect()
     with pytest.raises(RuntimeError):
         await scheduler.submit_job(job)
