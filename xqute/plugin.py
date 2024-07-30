@@ -149,4 +149,71 @@ async def on_job_succeeded(scheduler: Scheduler, job: Job):
     """
 
 
+@plugin.spec(result=SimplugResult.ALL_AVAILS)
+def on_jobcmd_init(scheduler: Scheduler, job: Job) -> str:
+    """When the job command wrapping script is initialized before the prescript is run
+
+    This should return a piece of bash code to be inserted in the wrapped job
+    script (template), which is a python template string, with the following
+    variables available: `status` and `job`. `status` is the class `JobStatus` from
+    `xqute.defaults.py` and `job` is the `Job` instance.
+
+    For multiple plugins, the code will be inserted in the order of the plugin priority.
+
+    Args:
+        scheduler: The scheduler object
+        job: The job object
+
+    Returns:
+        The bash code to be inserted
+    """
+
+
+@plugin.spec(result=SimplugResult.ALL_AVAILS)
+def on_jobcmd_prep(scheduler: Scheduler, job: Job) -> str:
+    """When the job command right about to be run
+
+    This should return a piece of bash code to be inserted in the wrapped job
+    script (template), which is a python template string, with the following
+    variables available: `status` and `job`. `status` is the class `JobStatus` from
+    `xqute.defaults.py` and `job` is the `Job` instance.
+
+    The bash variable `$cmd` is accessible in the context. It is also possible to
+    modify the `cmd` variable. Just remember to assign the modified value to `cmd`.
+
+    For multiple plugins, the code will be inserted in the order of the plugin priority.
+    Keep in mind that the `$cmd` may be modified by other plugins.
+
+    Args:
+        scheduler: The scheduler object
+        job: The job object
+
+    Returns:
+        The bash code to be inserted
+    """
+
+
+@plugin.spec(result=SimplugResult.ALL_AVAILS)
+def on_jobcmd_end(scheduler: Scheduler, job: Job):
+    """When the job command finishes and after the postscript is run
+
+    This should return a piece of bash code to be inserted in the wrapped job
+    script (template), which is a python template string, with the following
+    variables available: `status` and `job`. `status` is the class `JobStatus` from
+    `xqute.defaults.py` and `job` is the `Job` instance.
+
+    The bash variable `$rc` is accessible in the context, which is the return code
+    of the job command.
+
+    For multiple plugins, the code will be inserted in the order of the plugin priority.
+
+    Args:
+        scheduler: The scheduler object
+        job: The job object
+
+    Returns:
+        The bash code to be inserted
+    """
+
+
 plugin.load_entrypoints()

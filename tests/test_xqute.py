@@ -34,6 +34,18 @@ class EchoPlugin:
     def on_shutdown(xqute, sig):
         print("DONE", sig)
 
+    @plugin.impl
+    def on_jobcmd_init(scheduler, job):
+        return "echo jobcmd init > {job.metadir}/jobcmd.log"
+
+    @plugin.impl
+    def on_jobcmd_prep(scheduler, job):
+        return 'echo jobcmd prep >> {job.metadir}/jobcmd.log\ncmd="$cmd"'
+
+    @plugin.impl
+    def on_jobcmd_end(scheduler, job):
+        return "echo jobcmd end >> {job.metadir}/jobcmd.log"
+
 
 class CancelShutdownPlugin:
     @plugin.impl
@@ -83,6 +95,14 @@ async def test_main(tmp_path):
         await xqute.put(["echo", 2])
         await xqute.run_until_complete()
         assert await xqute.jobs[0].rc == 0
+
+        jobcmd_logfile0 = tmp_path / "0" / "jobcmd.log"
+        assert jobcmd_logfile0.is_file()
+        assert jobcmd_logfile0.read_text() == "jobcmd init\njobcmd prep\njobcmd end\n"
+
+        jobcmd_logfile1 = tmp_path / "0" / "jobcmd.log"
+        assert jobcmd_logfile1.is_file()
+        assert jobcmd_logfile1.read_text() == "jobcmd init\njobcmd prep\njobcmd end\n"
 
 
 @pytest.mark.asyncio

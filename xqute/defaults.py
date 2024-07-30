@@ -91,7 +91,7 @@ DEFAULT_JOB_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
 DEFAULT_JOB_NUM_RETRIES: int = 3
 DEFAULT_JOB_SUBMISSION_BATCH: int = 8
 DEFAULT_JOB_CMD_WRAPPER_SHELL: str = '/bin/bash'
-DEFAULT_JOB_CMD_WRAPPER_TEMPLATE: str = r"""{shebang}
+DEFAULT_JOB_CMD_WRAPPER_TEMPLATE: str = r"""#[shebang]
 
 set -u -e -E -o pipefail
 
@@ -99,8 +99,12 @@ set -u -e -E -o pipefail
 echo {status.RUNNING} > {job.status_file}
 # END: Update job status
 
+# BEGIN: plugins.on_jobcmd_init
+#[jobcmd_init]
+# END: plugins.on_jobcmd_init
+
 # BEGIN: Pre-command place holder
-{prescript}
+#[prescript]
 # END: Pre-command place holder
 
 # BEGIN: Trap command
@@ -115,8 +119,12 @@ cleanup() {{
     rm -f {job.jid_file}
 
     # BEGIN: Post-command place holder
-    {postscript}
+    #[postscript]
     # END: Post-command place holder
+
+    # BEGIN: plugins.on_jobcmd_end
+    #[jobcmd_end]
+    # END: plugins.on_jobcmd_end
 
     exit $rc
 }}
@@ -129,6 +137,11 @@ trap "cleanup" EXIT
 cmd="{job.strcmd} \
     1>{job.stdout_file} \
     2>{job.stderr_file}"
+
+# BEGIN: plugins.on_jobcmd_start
+#[jobcmd_prep]
+# END: plugins.on_jobcmd_start
+
 # BEGIN: Run the command
 eval "$cmd"
 # END: Run the command

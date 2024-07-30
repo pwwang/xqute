@@ -17,6 +17,7 @@ from .defaults import (
     JobStatus,
 )
 from .utils import logger, a_mkdir, a_read_text, a_write_text, asyncify
+from .plugin import plugin
 
 if TYPE_CHECKING:  # pragma: no cover
     from .scheduler import Scheduler
@@ -263,12 +264,24 @@ class Job(ABC):
             The path of the wrapped script
         """
         wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
-        wrapt_cmd = self.__class__.CMD_WRAPPER_TEMPLATE.format(
-            shebang=self.shebang(scheduler),
-            job=self,
-            prescript=scheduler.config.prescript,
-            postscript=scheduler.config.postscript,
-            status=JobStatus,
+        shebang = self.shebang(scheduler)
+        jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
+        jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
+        jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
+        wrapt_cmd = self.__class__.CMD_WRAPPER_TEMPLATE.replace(
+            "#[shebang]", shebang
+        ).replace(
+            "#[jobcmd_init]", "\n\n".join(jobcmd_init)
+        ).replace(
+            "#[jobcmd_prep]", "\n\n".join(jobcmd_prep)
+        ).replace(
+            "#[jobcmd_end]", "\n\n".join(jobcmd_end)
+        ).replace(
+            "#[prescript]", scheduler.config.prescript
+        ).replace(
+            "#[postscript]", scheduler.config.postscript
         )
+
+        wrapt_cmd = wrapt_cmd.format(job=self, status=JobStatus)
         await a_write_text(wrapt_script, wrapt_cmd)
         return wrapt_script
