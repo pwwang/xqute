@@ -95,6 +95,12 @@ DEFAULT_JOB_CMD_WRAPPER_TEMPLATE: str = r"""{shebang}
 
 set -u -e -E -o pipefail
 
+# Update job status
+echo {status.RUNNING} > {job.status_file}
+
+# Pre-command place holder
+{prescript}
+
 # Trap command to capture status, rc
 # And remove job id file
 cleanup() {{
@@ -106,23 +112,18 @@ cleanup() {{
         echo {status.FAILED} > {job.status_file}
     fi
     rm -f {job.jid_file}
+
+    # Post-command place holder
+    {postscript}
+
     exit $rc
 }}
 trap "cleanup" EXIT
-
-# Update job status
-echo {status.RUNNING} > {job.status_file}
-
-# Pre-command place holder
-{prescript}
 
 # Run the command
 {job.strcmd} \
     1>{job.stdout_file} \
     2>{job.stderr_file}
-
-# Post-command place holder
-{postscript}
 """
 
 DEFAULT_SCHEDULER_FORKS: int = 1
