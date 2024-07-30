@@ -60,6 +60,8 @@ class SSHClient:
             proc = await asyncio.create_subprocess_exec(*command)
             await proc.wait()
 
+            print(command)
+            print(proc.returncode, self.is_connected)
             if proc.returncode != 0 or not self.is_connected:
                 raise RuntimeError(
                     f'Failed to connect to SSH server: {self.server}'
