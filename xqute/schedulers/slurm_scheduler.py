@@ -3,7 +3,6 @@ import asyncio
 from pathlib import Path
 from typing import Type
 
-from ..defaults import JobStatus
 from ..job import Job
 from ..scheduler import Scheduler
 from ..utils import a_read_text

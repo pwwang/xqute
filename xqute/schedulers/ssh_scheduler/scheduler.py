@@ -29,8 +29,8 @@ class SshScheduler(Scheduler):
     name: str = "ssh"
     job_class: Type[Job] = SshJob
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, forks: int, prescript: str = "", postscript: str = "", **kwargs):
+        super().__init__(forks, prescript, postscript, **kwargs)
         self.servers: Mapping[str, SSHClient] = {}
         ssh = self.config.get('ssh', 'ssh')
         for key, val in self.config.get('ssh_servers', {}).items():

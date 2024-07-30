@@ -95,7 +95,7 @@ class SSHClient:
         await proc.wait()
         return proc.returncode
 
-    async def submit(self, *cmds: str) -> str:
+    async def submit(self, *cmds: Any) -> str:
         """Submit a job to SSH, get the pid of the job on the remote server"""
         submitter = Path(__file__).parent.resolve() / 'submitter.py'
 
