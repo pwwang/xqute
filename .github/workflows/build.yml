@@ -27,7 +27,7 @@ jobs:
       - name: Run flake8
         run: flake8 xqute
       - name: Test with pytest
-        run: poetry run pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+        run: poetry run pytest tests/ -s --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
         with:
