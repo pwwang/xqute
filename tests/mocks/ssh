@@ -4,6 +4,7 @@ from pathlib import Path
 from subprocess import run
 import sys
 
+
 def parse_args():
     options = []
     cmds = []
@@ -19,6 +20,7 @@ def parse_args():
             cmds.append(arg)
 
     return options, cmds, server
+
 
 if __name__ == '__main__':
     options, cmds, server = parse_args()

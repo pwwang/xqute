@@ -87,9 +87,12 @@ async def test_connection_failure():
         },
     )
     server = scheduler.servers["me@myserverx:44"]
-    await server.connect()
-    assert server.is_connected
-    await scheduler.servers["me@myserverx:44"].disconnect()
+    # in case previous connection file exists
+    scheduler.servers["me@myserverx:44"].disconnect()
+    # port will make it fail in mock
+    # await server.connect()
+    assert not server.is_connected
+    scheduler.servers["me@myserverx:44"].disconnect()
     with pytest.raises(RuntimeError):
         await scheduler.submit_job(job)
 

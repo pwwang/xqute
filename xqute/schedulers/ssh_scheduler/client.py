@@ -38,6 +38,7 @@ class SSHClient:
         return self.ctrl_file.exists()
 
     async def connect(self):
+        """Make sure the server is alive"""
         if self.is_connected:
             return
 
@@ -60,14 +61,12 @@ class SSHClient:
             proc = await asyncio.create_subprocess_exec(*command)
             await proc.wait()
 
-            print(command)
-            print(proc.returncode, self.is_connected)
             if proc.returncode != 0 or not self.is_connected:
                 raise RuntimeError(
                     f'Failed to connect to SSH server: {self.server}'
                 )
 
-    async def disconnect(self):
+    def disconnect(self):
         if self.is_connected:
             self.ctrl_file.unlink()
 

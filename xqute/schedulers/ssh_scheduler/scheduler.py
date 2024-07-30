@@ -43,6 +43,11 @@ class SshScheduler(Scheduler):
                 "please define at least one server",
             )
 
+    def __del__(self):
+        for server in self.servers.values():
+            if server.is_connected:
+                server.disconnect()
+
     async def submit_job(self, job: Job) -> str:
         """Submit a job to SSH
 
