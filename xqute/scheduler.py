@@ -75,8 +75,7 @@ class Scheduler(ABC):
                 job.jid = await self.submit_job(job)
             except Exception as exc:
                 exception = RuntimeError(
-                    "Failed to submit job: "
-                    f"[{type(exc).__name__}] {exc}"
+                    f"Failed to submit job: [{type(exc).__name__}] {exc}"
                 )
                 exception.__traceback__ = exc.__traceback__
             else:
