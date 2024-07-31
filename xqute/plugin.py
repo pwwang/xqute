@@ -151,7 +151,7 @@ async def on_job_succeeded(scheduler: Scheduler, job: Job):
 
 @plugin.spec(result=SimplugResult.ALL_AVAILS)
 def on_jobcmd_init(scheduler: Scheduler, job: Job) -> str:
-    """When the job command wrapping script is initialized before the prescript is run
+    """When the job command wrapper script is initialized before the prescript is run
 
     This should return a piece of bash code to be inserted in the wrapped job
     script (template), which is a python template string, with the following
@@ -194,7 +194,7 @@ def on_jobcmd_prep(scheduler: Scheduler, job: Job) -> str:
 
 
 @plugin.spec(result=SimplugResult.ALL_AVAILS)
-def on_jobcmd_end(scheduler: Scheduler, job: Job):
+def on_jobcmd_end(scheduler: Scheduler, job: Job) -> str:
     """When the job command finishes and after the postscript is run
 
     This should return a piece of bash code to be inserted in the wrapped job

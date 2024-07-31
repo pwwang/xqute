@@ -11,11 +11,12 @@ A job management system for python
 
 ## Installation
 
-```
+```shell
 pip install xqute
 ```
 
 ## A toy example
+
 ```python
 import asyncio
 from xqute import Xqute
@@ -33,18 +34,20 @@ if __name__ == '__main__':
 
 ![xqute](./xqute.png)
 
-
 ## API
-https://pwwang.github.io/xqute/
+
+<https://pwwang.github.io/xqute/>
 
 ## Usage
 
 ### Xqute object
 
 An xqute is initialized by:
+
 ```python
 xqute = Xqute(...)
 ```
+
 Available arguments are:
 
 - scheduler: The scheduler class or name
@@ -59,11 +62,13 @@ Available arguments are:
 Note that the producer must be initialized in an event loop.
 
 To push a job into the queue:
+
 ```python
 await xqute.put(['echo', 1])
 ```
 
 ### Using SGE scheduler
+
 ```python
 xqute = Xqute(
     'sge',
@@ -75,8 +80,10 @@ xqute = Xqute(
     ...
 )
 ```
+
 Keyword-arguments with names starting with `sge_` will be interpreted as `qsub` options. `list` or `tuple` option values will be expanded. For example:
 `sge_l=['h_vmem=2G', 'gpu=1']` will be expanded in wrapped script like this:
+
 ```shell
 # ...
 
@@ -85,7 +92,6 @@ Keyword-arguments with names starting with `sge_` will be interpreted as `qsub` 
 
 # ...
 ```
-
 
 ### Using Slurm scheduler
 
@@ -131,17 +137,20 @@ SSH servers must share the same filesystem and using keyfile authentication.
 
 To write a plugin for `xqute`, you will need to implement the following hooks:
 
-- `on_init(scheduler)`: Right after scheduler object is initialized
-- `on_shutdown(scheduler, sig)`: When scheduler is shutting down
-- `on_job_init(scheduler, job)`: When the job is initialized
-- `on_job_queued(scheduler, job)`: When the job is queued
-- `on_job_submitted(scheduler, job)`: When the job is submitted
-- `on_job_started(scheduler, job)`: When the job is started (when status changed to running)
-- `on_job_polling(scheduler, job)`: When job status is being polled
-- `on_job_killing(scheduler, job)`: When the job is being killed
-- `on_job_killed(scheduler, job)`: When the job is killed
-- `on_job_failed(scheduler, job)`: When the job is failed
-- `on_job_succeeded(scheduler, job)`: When the job is succeeded
+- `def on_init(scheduler)`: Right after scheduler object is initialized
+- `def on_shutdown(scheduler, sig)`: When scheduler is shutting down
+- `async def on_job_init(scheduler, job)`: When the job is initialized
+- `async def on_job_queued(scheduler, job)`: When the job is queued
+- `async def on_job_submitted(scheduler, job)`: When the job is submitted
+- `async def on_job_started(scheduler, job)`: When the job is started (when status changed to running)
+- `async def on_job_polling(scheduler, job)`: When job status is being polled
+- `async def on_job_killing(scheduler, job)`: When the job is being killed
+- `async def on_job_killed(scheduler, job)`: When the job is killed
+- `async def on_job_failed(scheduler, job)`: When the job is failed
+- `async def on_job_succeeded(scheduler, job)`: When the job is succeeded
+- `def on_jobcmd_init(scheduler, job) -> str`: When the job command wrapper script is initialized before the prescript is run. This will replace the placeholder `#![jobcmd_init]` in the wrapper script.
+- `def on_jobcmd_prep(scheduler, job) -> str`: When the job command is right about to run in the wrapper script. This will replace the placeholder `#![jobcmd_prep]` in the wrapper script.
+- `def on_jobcmd_end(scheduler, job) -> str`: When the job command wrapper script is about to end and after the postscript is run. This will replace the placeholder `#![jobcmd_end]` in the wrapper script.
 
 Note that all hooks are corotines except `on_init` and `on_shutdown`, that means you should also implement them as corotines (sync implementations are allowed but will be warned).
 
@@ -189,13 +198,12 @@ class MyScheduler(Scheduler):
 ```
 
 As you may see, we may also need to implement a job class before `MyScheduler`. The only abstract method to be implemented is `wrap_cmd`:
+
 ```python
 from xqute import Job
 
 class MyJob(Job):
 
-    async def wrap_cmd(self, scheduler):
-        ...
+    def shebang(self, scheduler: Scheduler) -> str:
+        """The shebang and the options for the job script"""
 ```
-
-You have to use the trap command in the wrapped script to update job status, return code and clear the job id file.
