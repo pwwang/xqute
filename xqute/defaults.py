@@ -95,7 +95,7 @@ DEFAULT_JOB_CMD_WRAPPER_SHELL: str = '/bin/bash'
 DEFAULT_JOB_CMD_WRAPPER_TEMPLATE: str = r"""#[shebang]
 
 set -u -e -E -o pipefail
-echo 123
+
 # BEGIN: Update job status
 echo {status.RUNNING} > {job.status_file}
 # END: Update job status
@@ -107,10 +107,9 @@ echo {status.RUNNING} > {job.status_file}
 # BEGIN: Pre-command place holder
 #[prescript]
 # END: Pre-command place holder
-echo 456
+
 # BEGIN: Trap command
 cleanup() {{
-    echo 124
     rc=$?
     echo $rc > {job.rc_file}
     if [[ $rc -eq 0 ]]; then
@@ -119,7 +118,7 @@ cleanup() {{
         echo {status.FAILED} > {job.status_file}
     fi
     rm -f {job.jid_file}
-    echo 125
+
     # BEGIN: Post-command place holder
     #[postscript]
     # END: Post-command place holder
@@ -127,7 +126,7 @@ cleanup() {{
     # BEGIN: plugins.on_jobcmd_end
     #[jobcmd_end]
     # END: plugins.on_jobcmd_end
-    echo 126
+
     exit $rc
 }}
 # END: Trap command
@@ -136,17 +135,14 @@ cleanup() {{
 trap "cleanup" EXIT
 # END: Trap
 
-echo 789
 cmd="{job.strcmd} \
     1>{job.stdout_file} \
     2>{job.stderr_file}"
 
-echo 1234
 # BEGIN: plugins.on_jobcmd_start
 #[jobcmd_prep]
 # END: plugins.on_jobcmd_start
 
-echo 7890
 # BEGIN: Run the command
 eval "$cmd"
 # END: Run the command
