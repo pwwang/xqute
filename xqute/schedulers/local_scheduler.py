@@ -35,8 +35,8 @@ class LocalScheduler(Scheduler):
         proc = await asyncio.create_subprocess_exec(
             job.CMD_WRAPPER_SHELL,
             str(await job.wrapped_script(self)),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            # stdout=asyncio.subprocess.PIPE,
+            # stderr=asyncio.subprocess.PIPE,
         )
         # don't await for the results, as this will run the real command
         return proc.pid
