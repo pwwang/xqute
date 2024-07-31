@@ -111,6 +111,7 @@ echo {status.RUNNING} > {job.status_file}
 # BEGIN: Trap command
 cleanup() {{
     rc=$?
+    echo "trapped"
     echo $rc > {job.rc_file}
     if [[ $rc -eq 0 ]]; then
         echo {status.FINISHED} > {job.status_file}
