@@ -35,9 +35,13 @@ class LocalScheduler(Scheduler):
         proc = await asyncio.create_subprocess_exec(
             job.CMD_WRAPPER_SHELL,
             str(await job.wrapped_script(self)),
-            # stdout=asyncio.subprocess.PIPE,
-            # stderr=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
+        # wait for a while to make sure the process is running
+        # this is to avoid the command is not run when proc is recycled too early
+        # this happens for python < 3.12
+        await asyncio.sleep(0.01)
         # don't await for the results, as this will run the real command
         return proc.pid
 

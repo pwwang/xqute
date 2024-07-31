@@ -118,7 +118,6 @@ async def test_plugin(tmp_path, capsys):
         assert "Job 1 started" in out
         assert out.count("Job 1 polling") > 1
         assert "DONE" in out
-        print(out)
 
 
 def test_not_init_in_loop():
@@ -154,28 +153,27 @@ async def test_cancel_shutdown(tmp_path, caplog, capsys):
 
 
 @pytest.mark.asyncio
-# async def test_job_failed_hook(tmp_path, caplog, capsys):
-async def test_job_failed_hook(tmp_path, caplog):
+async def test_job_failed_hook(tmp_path, caplog, capsys):
     with plugin.plugins_context([JobFailPlugin]):
         xqute = Xqute(
             job_error_strategy="retry",
             job_num_retries=1,
             job_metadir=tmp_path,
         )
-        await xqute.put(["exit", 1])
+        await xqute.put(["echo1", 1])
         await xqute.put(["echo", 1])
         await xqute.run_until_complete()
-        # assert "Job Failed: <LocalJob-0" in capsys.readouterr().out
-        # assert "/Job-0 Status changed: 'SUBMITTED' -> 'FAILED'" in caplog.text
-        # assert (
-        #     "/Job-1 Status changed: 'SUBMITTED' -> 'FINISHED'" in caplog.text
-        # )
+        assert "Job Failed: <LocalJob-0" in capsys.readouterr().out
+        assert "/Job-0 Status changed: 'SUBMITTED' -> 'FAILED'" in caplog.text
+        assert (
+            "/Job-1 Status changed: 'SUBMITTED' -> 'FINISHED'" in caplog.text
+        )
 
         # should clean retry directories
         xqute = Xqute(
             job_error_strategy="retry", job_num_retries=1, job_metadir=tmp_path
         )
-        await xqute.put(["exit", 1])
+        await xqute.put(["echo1", 1])
         await xqute.put(["echo", 1])
         await xqute.run_until_complete()
 

@@ -269,17 +269,17 @@ class Job(ABC):
         jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
         jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
         wrapt_cmd = self.__class__.CMD_WRAPPER_TEMPLATE.replace(
-            "#[shebang]", shebang
+            "#![shebang]", shebang
         ).replace(
-            "#[jobcmd_init]", "\n\n".join(jobcmd_init)
+            "#![jobcmd_init]", "\n\n".join(jobcmd_init)
         ).replace(
-            "#[jobcmd_prep]", "\n\n".join(jobcmd_prep)
+            "#![jobcmd_prep]", "\n\n".join(jobcmd_prep)
         ).replace(
-            "#[jobcmd_end]", "\n\n".join(jobcmd_end)
+            "#![jobcmd_end]", "\n\n".join(jobcmd_end)
         ).replace(
-            "#[prescript]", scheduler.config.prescript
+            "#![prescript]", scheduler.config.prescript
         ).replace(
-            "#[postscript]", scheduler.config.postscript
+            "#![postscript]", scheduler.config.postscript
         )
 
         wrapt_cmd = wrapt_cmd.format(job=self, status=JobStatus)
