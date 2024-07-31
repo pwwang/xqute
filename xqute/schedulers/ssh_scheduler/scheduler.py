@@ -75,7 +75,7 @@ class SshScheduler(Scheduler):
             server, pid = str(job.jid).split('/')
             await self.servers[server].kill(pid)
         except Exception:  # pragma: no cover
-            raise
+            pass
 
     async def job_is_running(self, job: Job) -> bool:
         """Tell if a job is really running, not only the job.jid_file
