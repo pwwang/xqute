@@ -27,6 +27,8 @@ jobs:
           poetry install -v
       - name: Run flake8
         run: flake8 xqute
+      - name: Show bash version
+        run: /bin/bash --version
       - name: Test with pytest
         # run: poetry run pytest tests/ -s --junitxml=junit/test-results-${{ matrix.python-version }}.xml
         run: poetry run pytest tests/test_xqute.py::test_job_failed_hook -s --junitxml=junit/test-results-${{ matrix.python-version }}.xml
