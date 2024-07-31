@@ -86,6 +86,7 @@ class JobStatus:
 
 LOGGER_NAME = 'XQUTE'
 
+DEFAULT_SCHEDULER_FORKS: int = 1
 DEFAULT_JOB_METADIR: Path = Path('./.xqute')
 DEFAULT_JOB_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
 DEFAULT_JOB_NUM_RETRIES: int = 3
@@ -143,8 +144,6 @@ cmd="{job.strcmd} \
 # END: plugins.on_jobcmd_start
 
 # BEGIN: Run the command
-$cmd
+eval "$cmd"
 # END: Run the command
 """
-
-DEFAULT_SCHEDULER_FORKS: int = 1
