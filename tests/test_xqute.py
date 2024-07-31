@@ -155,14 +155,14 @@ async def test_cancel_shutdown(tmp_path, caplog, capsys):
 
 @pytest.mark.asyncio
 # async def test_job_failed_hook(tmp_path, caplog, capsys):
-async def test_job_failed_hook(tmp_path):
+async def test_job_failed_hook(tmp_path, caplog):
     with plugin.plugins_context([JobFailPlugin]):
         xqute = Xqute(
             job_error_strategy="retry",
             job_num_retries=1,
             job_metadir=tmp_path,
         )
-        await xqute.put(["echo1123213", 1])
+        await xqute.put(["exit", 1])
         await xqute.put(["echo", 1])
         await xqute.run_until_complete()
         # assert "Job Failed: <LocalJob-0" in capsys.readouterr().out
@@ -175,7 +175,7 @@ async def test_job_failed_hook(tmp_path):
         xqute = Xqute(
             job_error_strategy="retry", job_num_retries=1, job_metadir=tmp_path
         )
-        await xqute.put(["echo1123213", 1])
+        await xqute.put(["exit", 1])
         await xqute.put(["echo", 1])
         await xqute.run_until_complete()
 
