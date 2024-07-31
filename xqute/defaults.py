@@ -143,7 +143,7 @@ cmd="{job.strcmd} \
 # END: plugins.on_jobcmd_start
 
 # BEGIN: Run the command
-eval "$cmd"
+$cmd
 # END: Run the command
 """
 
