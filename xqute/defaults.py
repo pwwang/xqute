@@ -150,5 +150,4 @@ echo 7890
 # BEGIN: Run the command
 eval "$cmd"
 # END: Run the command
-echo 78901
 """
