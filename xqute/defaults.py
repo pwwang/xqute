@@ -141,9 +141,9 @@ cmd="{job.strcmd} \
     1>{job.stdout_file} \
     2>{job.stderr_file}"
 
-# BEGIN: plugins.on_jobcmd_start
+# BEGIN: plugins.on_jobcmd_prep
 #![jobcmd_prep]
-# END: plugins.on_jobcmd_start
+# END: plugins.on_jobcmd_prep
 
 # BEGIN: Run the command
 eval "$cmd"
