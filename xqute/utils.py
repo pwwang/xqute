@@ -1,5 +1,6 @@
 """Utilities for xqute"""
 import logging
+import re
 from os import PathLike
 from typing import Callable
 
@@ -65,6 +66,31 @@ async def a_mkdir(path: PathLike, *args, **kwargs):
         **kwargs: kwargs for `Path(path).mkdir(...)`
     """
     await aiop.AsyncPath(path).mkdir(*args, **kwargs)
+
+
+def replace_with_leading_space(s: str, old: str, new: str) -> str:
+    """Replace a substring with leading spaces and keep the original spaces
+
+    Example:
+       >>> replace_with_leading_space("a\n  b\nc", "b", "x\ny")
+         'a\n  x\n  y\nc'
+
+    Args:
+        s: The string
+        old: The old substring
+        new: The new substring
+
+    Returns:
+        The new string
+    """
+    return re.sub(
+        rf"^(\s*){re.escape(old)}",
+        lambda m: "\n".join(
+            f"{m.group(1)}{line}" if line else "" for line in new.splitlines()
+        ),
+        s,
+        flags=re.MULTILINE,
+    )
 
 
 class DuplicateFilter(logging.Filter):

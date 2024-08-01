@@ -16,7 +16,14 @@ from .defaults import (
     DEFAULT_JOB_CMD_WRAPPER_SHELL,
     JobStatus,
 )
-from .utils import logger, a_mkdir, a_read_text, a_write_text, asyncify
+from .utils import (
+    logger,
+    a_mkdir,
+    a_read_text,
+    a_write_text,
+    asyncify,
+    replace_with_leading_space,
+)
 from .plugin import plugin
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -268,18 +275,21 @@ class Job(ABC):
         jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
         jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
         jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
-        wrapt_cmd = self.__class__.CMD_WRAPPER_TEMPLATE.replace(
-            "#![shebang]", shebang
-        ).replace(
-            "#![jobcmd_init]", "\n\n".join(jobcmd_init)
-        ).replace(
-            "#![jobcmd_prep]", "\n\n".join(jobcmd_prep)
-        ).replace(
-            "#![jobcmd_end]", "\n\n".join(jobcmd_end)
-        ).replace(
-            "#![prescript]", scheduler.config.prescript
-        ).replace(
-            "#![postscript]", scheduler.config.postscript
+        wrapt_cmd = self.__class__.CMD_WRAPPER_TEMPLATE.replace("#![shebang]", shebang)
+        wrapt_cmd = replace_with_leading_space(
+            wrapt_cmd, "#![jobcmd_init]", "\n\n".join(jobcmd_init)
+        )
+        wrapt_cmd = replace_with_leading_space(
+            wrapt_cmd, "#![jobcmd_prep]", "\n\n".join(jobcmd_prep)
+        )
+        wrapt_cmd = replace_with_leading_space(
+            wrapt_cmd, "#![jobcmd_end]", "\n\n".join(jobcmd_end)
+        )
+        wrapt_cmd = replace_with_leading_space(
+            wrapt_cmd, "#![prescript]", scheduler.config.prescript
+        )
+        wrapt_cmd = replace_with_leading_space(
+            wrapt_cmd, "#![postscript]", scheduler.config.postscript
         )
 
         wrapt_cmd = wrapt_cmd.format(job=self, status=JobStatus)
