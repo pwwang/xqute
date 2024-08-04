@@ -98,8 +98,6 @@ set -u -e -E -o pipefail
 
 # BEGIN: Update job status
 echo {status.RUNNING} > {job.status_file}
-touch {job.stdout_file}
-touch {job.stderr_file}
 # END: Update job status
 
 # BEGIN: plugins.on_jobcmd_init

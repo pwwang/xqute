@@ -39,9 +39,10 @@ class LocalScheduler(Scheduler):
             stderr=asyncio.subprocess.PIPE,
         )
         # wait for a while to make sure the process is running
-        # this is to avoid the command is not run when proc is recycled too early
+        # this is to avoid the real command is not run when proc is recycled too early
         # this happens for python < 3.12
-        await asyncio.sleep(0.01)
+        while not job.stderr_file.exists() or not job.stdout_file.exists():
+            await asyncio.sleep(0.05)
         # don't await for the results, as this will run the real command
         return proc.pid
 
