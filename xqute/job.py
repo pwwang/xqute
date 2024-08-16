@@ -224,8 +224,10 @@ class Job(ABC):
     def strcmd(self) -> str:
         """Get the string representation of the command"""
         if isinstance(self.cmd, list):
-            return " ".join(shlex.quote(str(cmditem)) for cmditem in self.cmd)
-        return self.cmd
+            cmd = " ".join(shlex.quote(str(cmditem)) for cmditem in self.cmd)
+        else:
+            cmd = self.cmd
+        return cmd or "echo 'No script provided'"
 
     def shebang(self, scheduler: Scheduler) -> str:
         """The shebang of the wrapped script"""
