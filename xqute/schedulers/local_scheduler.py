@@ -8,6 +8,15 @@ from ..scheduler import Scheduler
 from ..utils import a_read_text
 
 
+def _pid_exists(pid: int) -> bool:
+    """Check if a process with a given pid exists"""
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
 class LocalJob(Job):
     """Local job"""
 
@@ -32,9 +41,10 @@ class LocalScheduler(Scheduler):
         Returns:
             The process id
         """
+        wrapped_script = str(await job.wrapped_script(self))
         proc = await asyncio.create_subprocess_exec(
             job.CMD_WRAPPER_SHELL,
-            str(await job.wrapped_script(self)),
+            wrapped_script,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -42,6 +52,14 @@ class LocalScheduler(Scheduler):
         # this is to avoid the real command is not run when proc is recycled too early
         # this happens for python < 3.12
         while not job.stderr_file.exists() or not job.stdout_file.exists():
+            if not _pid_exists(proc.pid):
+                stderr = await proc.stderr.read()
+                raise RuntimeError(
+                    "Submission failed immediately and errors were not captured by "
+                    f"stderr file: {stderr}.\n  "
+                    "Something probably went wrong with the wrapped "
+                    f"script: {wrapped_script}"
+                )
             await asyncio.sleep(0.05)
         # don't await for the results, as this will run the real command
         return proc.pid
