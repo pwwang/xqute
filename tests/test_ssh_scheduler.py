@@ -113,3 +113,42 @@ async def test_connection_failure():
 def test_no_servers():
     with pytest.raises(ValueError):
         SshScheduler(1, ssh_servers={})
+
+
+@pytest.mark.asyncio
+async def test_immediate_submission_failure():
+    ssh = str(MOCKS / "ssh")
+
+    class BadSshJob(SshJob):
+        async def wrapped_script(self, scheduler):
+            wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
+            wrapt_script.write_text("bad_non_existent_command")
+            return wrapt_script
+
+    job = BadSshJob(0, ["echo", 1])
+    job.stderr_file.unlink(missing_ok=True)
+    job.stdout_file.unlink(missing_ok=True)
+    scheduler = SshScheduler(1, ssh=ssh, ssh_servers=["myserver"])
+
+    with pytest.raises(RuntimeError, match="Failed to submit job"):
+        await scheduler.submit_job(job)
+
+
+@pytest.mark.asyncio
+async def test_immediate_submission_failure2():
+    """No stdout/stderr files generated but submission finished"""
+    ssh = str(MOCKS / "ssh")
+
+    class BadSshJob(SshJob):
+        async def wrapped_script(self, scheduler):
+            wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
+            wrapt_script.write_text("echo 1")
+            return wrapt_script
+
+    job = BadSshJob(0, ["echo", 1])
+    job.stderr_file.unlink(missing_ok=True)
+    job.stdout_file.unlink(missing_ok=True)
+    scheduler = SshScheduler(1, ssh=ssh, ssh_servers=["myserver"])
+
+    with pytest.raises(RuntimeError, match="Failed to submit job"):
+        await scheduler.submit_job(job)

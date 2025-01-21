@@ -85,21 +85,20 @@ class SSHClient:
         else:  # pragma: no cover
             command.extend([self.server, *cmds])
 
+        print(" ".join(command))
         return await asyncio.create_subprocess_exec(
             *command,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
+            stderr=asyncio.subprocess.PIPE,
         )
 
     async def run(self, *cmds: Any) -> int:
         proc = await self.create_proc(*cmds)
-        await proc.wait()
-        return proc.returncode
+        return await proc.wait()
 
-    async def submit(self, *cmds: Any) -> str:
+    async def submit(self, *cmds: Any) -> tuple[int, bytes, bytes]:
         """Submit a job to SSH, get the pid of the job on the remote server"""
         submitter = Path(__file__).parent.resolve() / 'submitter.py'
-
         proc = await self.create_proc(
             sys.executable,
             submitter,
@@ -107,12 +106,12 @@ class SSHClient:
             os.getcwd(),
             *cmds,
         )
-        await proc.wait()
-        return (await proc.stdout.read()).decode().strip()
+        stdout, stderr = await proc.communicate()
+        return proc.returncode, stdout, stderr
 
     async def kill(self, pid: str):
         """Kill a job on SSH"""
-        await self.run('kill', '-9', f"-{pid}")
+        await self.run('kill', '-9', f"{pid}")
 
     async def is_running(self, pid: str) -> bool:
         return await self.run('kill', '-0', pid) == 0

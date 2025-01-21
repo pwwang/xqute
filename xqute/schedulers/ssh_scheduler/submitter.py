@@ -18,8 +18,19 @@ if __name__ == "__main__":
     proc = subprocess.Popen(
         cmds,
         cwd=cwd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         preexec_fn=os.setpgrp,
     )
-    print(f"{server}/{proc.pid}")
+    stdout = proc.stdout.read().decode()
+    stderr = proc.stderr.read().decode()
+    sys.stdout.write(f"{server}/{proc.pid}")
+    if stderr:
+        sys.stderr.write(f"STDOUT: {stdout}\nSTDERR: {stderr}")
+        # Do not wait for the return code, as we want it to keep running
+        # for the real job
+        rc = 1
+    else:
+        rc = 0
+
+    sys.exit(rc)

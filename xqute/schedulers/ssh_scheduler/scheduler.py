@@ -1,6 +1,7 @@
 """The scheduler to run jobs on SSH"""
 from __future__ import annotations
 
+import asyncio
 from typing import Mapping, Type
 
 from ...scheduler import Scheduler
@@ -63,10 +64,39 @@ class SshScheduler(Scheduler):
         server = list(self.servers.values())[job.index % len(self.servers)]
         await server.connect()
 
-        return await server.submit(
+        wrapped_script = str(await job.wrapped_script(self))
+        rc, stdout, stderr = await server.submit(
             job.__class__.CMD_WRAPPER_SHELL,
-            await job.wrapped_script(self),
+            wrapped_script,
         )
+        if rc != 0:
+            job.stdout_file.write_bytes(stdout)
+            job.stderr_file.write_bytes(stderr)
+            raise RuntimeError(
+                f"Failed to submit job #{job.index}: {stderr.decode()}"
+            )
+        try:
+            server, pid = stdout.decode().split('/')
+        except (ValueError, TypeError):  # pragma: no cover
+            raise RuntimeError(
+                f"Failed to submit job #{job.index}: "
+                f"expecting 'server/pid', got {stdout.decode()}"
+            )
+        else:
+            # wait for a while to make sure the process is running
+            # this is to avoid the real command is not run when proc is recycled
+            # too early
+            # this happens for python < 3.12
+            while not job.stderr_file.exists() or not job.stdout_file.exists():
+                if not await self.servers[server].is_running(pid):
+                    job.stdout_file.write_bytes(stdout)
+                    job.stderr_file.write_bytes(stderr)
+
+                    raise RuntimeError(
+                        f"Failed to submit job #{job.index}: {stderr.decode()}"
+                    )
+                await asyncio.sleep(0.05)  # pragma: no cover
+        return stdout.decode()
 
     async def kill_job(self, job: Job):
         """Kill a job on SSH

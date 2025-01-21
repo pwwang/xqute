@@ -10,9 +10,9 @@ def parse_args():
     cmds = []
     server = None
     for arg in sys.argv[1:]:
-        if arg.startswith('-'):
+        if arg.startswith('-') and not server:
             options.append(f"{arg}=<placeholder>")
-        elif options and "<placeholder>" in options[-1]:
+        elif options and "<placeholder>" in options[-1] and not server:
             options[-1] = options[-1].replace("<placeholder>", arg)
         elif not server:
             server = arg
@@ -41,4 +41,5 @@ if __name__ == '__main__':
     # print(f"CMD: {' '.join(cmds)}")
     # sys.exit(0)
     # run the command:
-    run(cmds, stdout=sys.stdout, stderr=sys.stderr)
+    p = run(cmds, stdout=sys.stdout, stderr=sys.stderr)
+    sys.exit(p.returncode)
