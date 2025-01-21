@@ -33,7 +33,10 @@ class SshScheduler(Scheduler):
         super().__init__(forks, prescript, postscript, **kwargs)
         self.servers: Mapping[str, SSHClient] = {}
         ssh = self.config.get('ssh', 'ssh')
-        for key, val in self.config.get('ssh_servers', {}).items():
+        ssh_servers = self.config.get('ssh_servers', {})
+        if isinstance(ssh_servers, (tuple, list)):
+            ssh_servers = {server: {} for server in ssh_servers}
+        for key, val in ssh_servers.items():
             client = SSHClient(ssh, key, **val)
             self.servers[client.name] = client
 

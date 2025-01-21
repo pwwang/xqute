@@ -75,6 +75,19 @@ async def test_submission_failure(capsys):
 
 
 @pytest.mark.asyncio
+async def test_submission_failure_with_server_list(capsys):
+    job = SshJob(0, ["echo", 1])
+    ssh = str(MOCKS / "nosuch_ssh")
+
+    scheduler = SshScheduler(1, ssh=ssh, ssh_servers=["myserver"])
+
+    assert await scheduler.submit_job_and_update_status(job) is None
+    assert await scheduler.job_is_running(job) is False
+    assert job.status == JobStatus.FAILED
+    assert "Failed to submit job" in job.stderr_file.read_text()
+
+
+@pytest.mark.asyncio
 async def test_connection_failure():
     job = SshJob(0, ["echo", 1])
     ssh = str(MOCKS / "ssh")
