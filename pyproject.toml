@@ -37,6 +37,7 @@ addopts = "-vv --cov=xqute --cov-report xml:.coverage.xml --cov-report term-miss
 filterwarnings = [
     # "error"
 ]
+asyncio_default_fixture_loop_scope = "function"
 console_output_style = "progress"
 junit_family = "xunit1"
 asyncio_mode = "auto"
