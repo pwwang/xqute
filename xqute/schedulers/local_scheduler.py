@@ -12,7 +12,7 @@ def _pid_exists(pid: int) -> bool:
     """Check if a process with a given pid exists"""
     try:
         os.kill(pid, 0)
-    except OSError:
+    except Exception:
         return False
     return True
 
@@ -53,12 +53,13 @@ class LocalScheduler(Scheduler):
         # this happens for python < 3.12
         while not job.stderr_file.exists() or not job.stdout_file.exists():
             if not _pid_exists(proc.pid):
+                stdout = await proc.stdout.read()
                 stderr = await proc.stderr.read()
+                job.stdout_file.write_bytes(stdout)
+                job.stderr_file.write_bytes(stderr)
+
                 raise RuntimeError(
-                    "Submission failed immediately and errors were not captured by "
-                    f"stderr file: {stderr}.\n  "
-                    "Something probably went wrong with the wrapped "
-                    f"script: {wrapped_script}"
+                    f"Failed to submit job #{job.index}: {stderr.decode()}"
                 )
             await asyncio.sleep(0.05)
         # don't await for the results, as this will run the real command
@@ -94,9 +95,4 @@ class LocalScheduler(Scheduler):
         if jid <= 0:
             return False
 
-        try:
-            os.kill(jid, 0)
-        except Exception:  # pragma: no cover
-            return False
-
-        return True
+        return _pid_exists(jid)
