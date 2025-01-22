@@ -129,7 +129,12 @@ class SshScheduler(Scheduler):
         if not jid:
             return False
 
-        pid, server = jid.split('@', 1)
+        try:
+            pid, server = jid.split('@', 1)
+        except (ValueError, TypeError):  # pragma: no cover
+            # Can be the jid file by a different scheduler from previous runs
+            return False
+
         if server not in self.servers:
             return False
 
