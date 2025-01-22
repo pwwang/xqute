@@ -52,16 +52,17 @@ class LocalScheduler(Scheduler):
         # this is to avoid the real command is not run when proc is recycled too early
         # this happens for python < 3.12
         while not job.stderr_file.exists() or not job.stdout_file.exists():
-            if not _pid_exists(proc.pid):
+            if proc.returncode is not None:
+                # The process has already finished and no stdout/stderr files are
+                # generated
+                # Something went wrong
                 stdout = await proc.stdout.read()
                 stderr = await proc.stderr.read()
                 job.stdout_file.write_bytes(stdout)
                 job.stderr_file.write_bytes(stderr)
 
-                raise RuntimeError(
-                    f"Failed to submit job #{job.index}: {stderr.decode()}"
-                )
-            await asyncio.sleep(0.05)
+                raise RuntimeError(stderr.decode())
+            await asyncio.sleep(0.1)
         # don't await for the results, as this will run the real command
         return proc.pid
 

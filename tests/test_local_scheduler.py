@@ -26,5 +26,7 @@ async def test_immediate_submission_failure():
     job.stdout_file.unlink(missing_ok=True)
     scheduler = LocalScheduler(1)
 
-    with pytest.raises(RuntimeError, match="Failed to submit job"):
+    with pytest.raises(
+        RuntimeError, match="bad_non_existent_command: command not found"
+    ):
         await scheduler.submit_job(job)
