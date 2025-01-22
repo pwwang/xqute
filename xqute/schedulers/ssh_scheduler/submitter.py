@@ -11,6 +11,7 @@ Find a way to pass envs?
 """
 import os
 import sys
+import time
 import subprocess
 
 if __name__ == "__main__":
@@ -24,13 +25,13 @@ if __name__ == "__main__":
     )
     stdout = proc.stdout.read().decode()
     stderr = proc.stderr.read().decode()
-    sys.stdout.write(f"{server}/{proc.pid}")
-    if stderr:
-        sys.stderr.write(f"STDOUT: {stdout}\nSTDERR: {stderr}")
-        # Do not wait for the return code, as we want it to keep running
-        # for the real job
-        rc = 1
+    sys.stdout.write(f"{proc.pid}@{server}")
+    # wait for a while to make sure the process is running
+    time.sleep(0.1)
+    rc = proc.poll()
+    if rc is None or rc == 0:
+        # still running or already finished
+        sys.exit(0)
     else:
-        rc = 0
-
-    sys.exit(rc)
+        sys.stderr.write(f"STDOUT: {stdout}\nSTDERR: {stderr}")
+        sys.exit(rc)

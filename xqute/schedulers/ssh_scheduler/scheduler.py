@@ -76,11 +76,11 @@ class SshScheduler(Scheduler):
                 f"Failed to submit job #{job.index}: {stderr.decode()}"
             )
         try:
-            server, pid = stdout.decode().split('/')
+            pid, server = stdout.decode().split('@', 1)
         except (ValueError, TypeError):  # pragma: no cover
             raise RuntimeError(
                 f"Failed to submit job #{job.index}: "
-                f"expecting 'server/pid', got {stdout.decode()}"
+                f"expecting 'pid@server', got {stdout.decode()}"
             )
         else:
             # wait for a while to make sure the process is running
@@ -95,7 +95,7 @@ class SshScheduler(Scheduler):
                     raise RuntimeError(
                         f"Failed to submit job #{job.index}: {stderr.decode()}"
                     )
-                await asyncio.sleep(0.05)  # pragma: no cover
+                await asyncio.sleep(0.1)  # pragma: no cover
         return stdout.decode()
 
     async def kill_job(self, job: Job):
@@ -105,7 +105,7 @@ class SshScheduler(Scheduler):
             job: The job
         """
         try:
-            server, pid = str(job.jid).split('/')
+            pid, server = str(job.jid).split('@', 1)
             await self.servers[server].kill(pid)
         except Exception:  # pragma: no cover
             pass
@@ -129,7 +129,7 @@ class SshScheduler(Scheduler):
         if not jid:
             return False
 
-        server, pid = jid.split('/')
+        pid, server = jid.split('@', 1)
         if server not in self.servers:
             return False
 

@@ -44,10 +44,10 @@ async def test_scheduler(capsys):
             "myserver": {'keyfile': 'id_rsa', 'user': 'me'}
         },
     )
-    assert (await scheduler.submit_job(job)).startswith("me@myserver:22/")
+    assert (await scheduler.submit_job(job)).endswith("@me@myserver:22")
     # trigger skipping re-connect
-    assert (await scheduler.submit_job(job)).startswith("me@myserver:22/")
-    job.jid = "me@myserver:22/1234"
+    assert (await scheduler.submit_job(job)).endswith("@me@myserver:22")
+    job.jid = "1234@me@myserver:22"
     await scheduler.kill_job(job)
     if job.jid_file.is_file():
         os.unlink(job.jid_file)
@@ -55,9 +55,9 @@ async def test_scheduler(capsys):
 
     job.jid_file.write_text("")
     assert await scheduler.job_is_running(job) is False
-    job.jid_file.write_text("me@myserver:22/0")
+    job.jid_file.write_text("0@me@myserver:22")
     assert await scheduler.job_is_running(job) is True
-    job.jid_file.write_text("me@other:22/0")
+    job.jid_file.write_text("0@me@other:22")
     assert await scheduler.job_is_running(job) is False
 
 
@@ -122,7 +122,7 @@ async def test_immediate_submission_failure():
     class BadSshJob(SshJob):
         async def wrapped_script(self, scheduler):
             wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
-            wrapt_script.write_text("bad_non_existent_command")
+            wrapt_script.write_text("sleep 1; bad_non_existent_command")
             return wrapt_script
 
     job = BadSshJob(0, ["echo", 1])

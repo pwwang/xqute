@@ -85,7 +85,6 @@ class SSHClient:
         else:  # pragma: no cover
             command.extend([self.server, *cmds])
 
-        print(" ".join(command))
         return await asyncio.create_subprocess_exec(
             *command,
             stdout=asyncio.subprocess.PIPE,
