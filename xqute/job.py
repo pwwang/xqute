@@ -254,7 +254,7 @@ class Job(ABC):
 
             for file in files_to_clean:
                 if await AsyncPath(file).is_file():
-                    await a_shutil_move(file, str(retry_dir))
+                    await a_shutil_move(str(file), str(retry_dir))
         else:
             for file in files_to_clean:
                 if await AsyncPath(file).is_file():
