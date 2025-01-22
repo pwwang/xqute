@@ -239,29 +239,26 @@ class Job(ABC):
         Args:
             retry: Whether clean it for retrying
         """
+        files_to_clean = [
+            self.stdout_file,
+            self.stderr_file,
+            self.status_file,
+            self.rc_file,
+        ]
+
         if retry:
             retry_dir = self.retry_dir / str(self.trial_count)
             if await AsyncPath(retry_dir).exists():
                 shutil.rmtree(retry_dir)
             await a_mkdir(retry_dir, parents=True)
 
-            if await AsyncPath(self.stdout_file).is_file():
-                shutil.move(str(self.stdout_file), str(retry_dir))
-            if await AsyncPath(self.stderr_file).is_file():
-                shutil.move(str(self.stderr_file), str(retry_dir))
-            if await AsyncPath(self.status_file).is_file():
-                shutil.move(str(self.status_file), str(retry_dir))
-            if await AsyncPath(self.rc_file).is_file():
-                shutil.move(str(self.rc_file), str(retry_dir))
+            for file in files_to_clean:
+                if await AsyncPath(file).is_file():
+                    await a_shutil_move(file, str(retry_dir))
         else:
-            if await AsyncPath(self.stdout_file).is_file():
-                unlink(self.stdout_file)
-            if await AsyncPath(self.stderr_file).is_file():
-                unlink(self.stderr_file)
-            if await AsyncPath(self.status_file).is_file():
-                unlink(self.status_file)
-            if await AsyncPath(self.rc_file).is_file():
-                unlink(self.rc_file)
+            for file in files_to_clean:
+                if await AsyncPath(file).is_file():
+                    await a_os_unlink(file)
 
     async def wrapped_script(self, scheduler: Scheduler) -> PathLike:
         """Get the wrapped script
