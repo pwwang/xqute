@@ -29,7 +29,7 @@ if __name__ == '__main__':
     for opt in options:
         if (
             opt.startswith("-o=ControlPath")
-            and '-o=ControlMaster=yes' in options
+            and '-o=ControlMaster=auto' in options
         ):
             cpath = opt.split('=')[-1]
             Path(cpath).touch()

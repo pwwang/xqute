@@ -45,7 +45,7 @@ class SSHClient:
         async with self._conn_lock:
             command = [
                 self.ssh,
-                '-o', 'ControlMaster=yes',
+                '-o', 'ControlMaster=auto',
                 '-o', f'ControlPath={self.ctrl_file}',
                 '-o', f'ControlPersist={self.ctrl_persist}',
             ]
