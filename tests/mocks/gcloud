@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import sys
+
+
+def submit_job():
+    print("Job jobprefix.1-7a1654ca-211c-40e8-b0fb-8a00 was successfully submitted.")
+    sys.exit(0)
+
+
+def describe_job(jid):
+    if jid.count("-") < 5:
+        print("Job not found")
+        sys.exit(1)
+
+    print("state: RUNNING")
+    sys.exit(0)
+
+
+def delete_job():
+    print("DELETING JOB")
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    command = sys.argv[1]
+    if command == "batch":
+        subcommand = sys.argv[2]
+        if subcommand == "jobs":
+            action = sys.argv[3]
+            if action == "submit":
+                submit_job()
+            elif action == "describe":
+                describe_job(sys.argv[4])
+            elif action == "delete":
+                delete_job()
+    sys.exit(1)

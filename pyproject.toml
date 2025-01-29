@@ -18,16 +18,17 @@ diot = "^0.2"
 rich = "^13"
 uvloop = "^0"
 cloudpathlib = "^0.20"
-google-cloud-storage = {version = "^2.19.0", optional = true}
 argx = "^0.2.11"
+google-cloud-storage = {version = "^2.19.0", optional = true}
 
 [tool.poetry.extras]
-meta-gs = ["google-cloud-storage"]
+meta-gcs = ["google-cloud-storage"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
 pytest-cov = "^5"
 pytest-asyncio = "^0"
+python-dotenv = "^1"
 
 [build-system]
 requires = ["poetry>=1.0"]

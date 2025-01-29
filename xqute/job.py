@@ -243,7 +243,7 @@ class Job(ABC):
 
         plugins = plugin.get_enabled_plugins()
         launch_cmd = [
-            scheduler.config.sched_python,
+            scheduler.python,
             "-m",
             "xqute",
             "++metadir",

@@ -31,9 +31,7 @@ class SgeJob(Job):
             if key.startswith("qsub_")
         }
         options.update(qsub_options)
-        jobname_prefix = scheduler.config.get(
-            "scheduler_jobprefix", scheduler.name
-        )
+        jobname_prefix = scheduler.config.get("jobname_prefix", scheduler.name)
         options["N"] = f"{jobname_prefix}.{self.index}"
         options["cwd"] = True
         # options["o"] = self.stdout_file
@@ -50,14 +48,14 @@ class SgeJob(Job):
                 options_list.append(f"#$ -{key} {val}")
 
         script = [
-            "#!" + " ".join(map(shlex.quote, scheduler.config.script_wrapper_lang))
+            "#!" + " ".join(map(shlex.quote, scheduler.script_wrapper_lang))
         ]
         script.extend(options_list)
         script.append("")
         script.append("set -u -e -E -o pipefail")
         script.append("")
         script.append("# BEGIN: setup script")
-        script.append(scheduler.config.setup_script)
+        script.append(scheduler.setup_script)
         script.append("# END: setup script")
         script.append("")
         script.append(self.launch(scheduler))
@@ -84,11 +82,13 @@ class SgeScheduler(Scheduler):
     name: str = "sge"
     job_class: Type[Job] = SgeJob
 
+    __slots__ = Scheduler.__slots__ + ("qsub", "qdel", "qstat")
+
     def __init__(self, *args, **kwargs):
+        self.qsub = kwargs.pop("qsub", "qsub")
+        self.qdel = kwargs.pop("qdel", "qdel")
+        self.qstat = kwargs.pop("qstat", "qstat")
         super().__init__(*args, **kwargs)
-        self.qsub = self.config.get("qsub", "qsub")
-        self.qdel = self.config.get("qdel", "qdel")
-        self.qstat = self.config.get("qstat", "qstat")
 
     async def submit_job(self, job: Job) -> str:
         """Submit a job to SGE

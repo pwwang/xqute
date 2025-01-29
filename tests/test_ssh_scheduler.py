@@ -12,7 +12,7 @@ MOCKS = Path(__file__).parent / "mocks"
 def setup_module():
     ssh = str(MOCKS / "ssh")
 
-    for cmd in (ssh, ):
+    for cmd in (ssh,):
         st = os.stat(str(cmd))
         os.chmod(str(cmd), st.st_mode | stat.S_IEXEC)
 
@@ -20,9 +20,7 @@ def setup_module():
 @pytest.mark.asyncio
 async def test_job():
     job = SshJob(0, ["echo", 1])
-    scheduler = SshScheduler(
-        forks=1, ssh_servers={"myserver": {'keyfile': 'id_rsa'}}
-    )
+    scheduler = SshScheduler(servers={"myserver": {"keyfile": "id_rsa"}})
     assert (
         job.wrapped_script(scheduler)
         == Path(DEFAULT_JOB_METADIR) / "0" / "job.wrapped.ssh"
@@ -38,11 +36,8 @@ async def test_scheduler(capsys):
     ssh = str(MOCKS / "ssh")
 
     scheduler = SshScheduler(
-        1,
         ssh=ssh,
-        ssh_servers={
-            "myserver": {'keyfile': 'id_rsa', 'user': 'me'}
-        },
+        servers={"myserver": {"keyfile": "id_rsa", "user": "me"}},
     )
     assert (await scheduler.submit_job(job)).endswith("@me@myserver:22")
     # trigger skipping re-connect
@@ -66,7 +61,7 @@ async def test_submission_failure(capsys):
     job = SshJob(0, ["echo", 1])
     ssh = str(MOCKS / "nosuch_ssh")
 
-    scheduler = SshScheduler(1, ssh=ssh, ssh_servers={"myserver": {}})
+    scheduler = SshScheduler(ssh=ssh, servers={"myserver": {}})
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False
@@ -79,7 +74,7 @@ async def test_submission_failure_with_server_list(capsys):
     job = SshJob(0, ["echo", 1])
     ssh = str(MOCKS / "nosuch_ssh")
 
-    scheduler = SshScheduler(1, ssh=ssh, ssh_servers=["myserver"])
+    scheduler = SshScheduler(ssh=ssh, servers=["myserver"])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False
@@ -93,11 +88,8 @@ async def test_connection_failure():
     ssh = str(MOCKS / "ssh")
 
     scheduler = SshScheduler(
-        1,
         ssh=ssh,
-        ssh_servers={
-            "myserverx": {'port': 44, 'keyfile': 'id_rsa', 'user': "me"}
-        },
+        servers={"myserverx": {"port": 44, "keyfile": "id_rsa", "user": "me"}},
     )
     server = scheduler.servers["me@myserverx:44"]
     # in case previous connection file exists
@@ -112,7 +104,7 @@ async def test_connection_failure():
 
 def test_no_servers():
     with pytest.raises(ValueError):
-        SshScheduler(1, ssh_servers={})
+        SshScheduler(servers={})
 
 
 @pytest.mark.asyncio
@@ -128,7 +120,7 @@ async def test_immediate_submission_failure():
     job = BadSshJob(0, ["echo", 1])
     job.stderr_file.unlink(missing_ok=True)
     job.stdout_file.unlink(missing_ok=True)
-    scheduler = SshScheduler(1, ssh=ssh, ssh_servers=["myserver"])
+    scheduler = SshScheduler(ssh=ssh, servers=["myserver"])
 
     with pytest.raises(RuntimeError, match="Failed to submit job"):
         await scheduler.submit_job(job)
@@ -148,7 +140,7 @@ async def test_immediate_submission_failure2():
     job = BadSshJob(0, ["echo", 1])
     job.stderr_file.unlink(missing_ok=True)
     job.stdout_file.unlink(missing_ok=True)
-    scheduler = SshScheduler(1, ssh=ssh, ssh_servers=["myserver"])
+    scheduler = SshScheduler(ssh=ssh, servers=["myserver"])
 
     with pytest.raises(RuntimeError, match="Failed to submit job"):
         await scheduler.submit_job(job)

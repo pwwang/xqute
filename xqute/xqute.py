@@ -1,12 +1,12 @@
 """The xqute module"""
+
 from __future__ import annotations
 
 import asyncio
 import functools
 import signal
-import sys
 from collections import deque
-from typing import TYPE_CHECKING, Any, List, Tuple, Type
+from typing import TYPE_CHECKING, Any, List, Mapping, Tuple, Type
 
 from cloudpathlib import AnyPath
 
@@ -16,7 +16,6 @@ from .defaults import (
     DEFAULT_JOB_NUM_RETRIES,
     DEFAULT_SCHEDULER_FORKS,
     DEFAULT_JOB_SUBMISSION_BATCH,
-    DEFAULT_JOB_SCRIPT_WRAPPER_LANG,
     JobErrorStrategy,
     JobStatus,
 )
@@ -82,7 +81,8 @@ class Xqute:
         job_submission_batch: int = DEFAULT_JOB_SUBMISSION_BATCH,
         job_error_strategy: str = DEFAULT_JOB_ERROR_STRATEGY,
         job_num_retries: int = DEFAULT_JOB_NUM_RETRIES,
-        **scheduler_opts,
+        forks: int = DEFAULT_SCHEDULER_FORKS,
+        scheduler_opts: Mapping[str, Any] | None = None,
     ) -> None:
         """Construct"""
         self.jobs: List[Job] = []
@@ -107,14 +107,9 @@ class Xqute:
 
         self.buffer_queue: deque = deque()
         self.queue: asyncio.Queue = asyncio.Queue()
-        scheduler_opts.setdefault("forks", DEFAULT_SCHEDULER_FORKS)
-        scheduler_opts.setdefault("setup_script", "")
-        scheduler_opts.setdefault(
-            "script_wrapper_lang",
-            DEFAULT_JOB_SCRIPT_WRAPPER_LANG,
-        )
-        scheduler_opts.setdefault("sched_python", sys.executable)
-        self.scheduler = get_scheduler(scheduler)(**scheduler_opts)
+
+        scheduler_opts = scheduler_opts or {}
+        self.scheduler = get_scheduler(scheduler)(forks=forks, **scheduler_opts)
 
         # requires to be defined in a loop
         loop = asyncio.get_running_loop()
@@ -153,9 +148,7 @@ class Xqute:
 
         while True:
             if not self.buffer_queue:
-                logger.debug(
-                    "/%s Buffer queue is empty, waiting ...", self.name
-                )
+                logger.debug("/%s Buffer queue is empty, waiting ...", self.name)
                 await asyncio.sleep(self.EMPTY_BUFFER_SLEEP_TIME)
                 continue
 
@@ -181,9 +174,7 @@ class Xqute:
         """
         while True:
             job = await self.queue.get()
-            logger.debug(
-                "/%s 'Consumer-%s' submitting %s", self.name, index, job
-            )
+            logger.debug("/%s 'Consumer-%s' submitting %s", self.name, index, job)
             await self.scheduler.submit_job_and_update_status(job)
             self.queue.task_done()
 
@@ -219,13 +210,10 @@ class Xqute:
 
         If yes, cancel the producer-consumer task naturally.
         """
-        while (
-            self._cancelling is False
-            and not await self.scheduler.polling_jobs(
-                self.jobs,
-                "all_done",
-                self._job_error_strategy == JobErrorStrategy.HALT,
-            )
+        while self._cancelling is False and not await self.scheduler.polling_jobs(
+            self.jobs,
+            "all_done",
+            self._job_error_strategy == JobErrorStrategy.HALT,
         ):
             await asyncio.sleep(1.0)
 

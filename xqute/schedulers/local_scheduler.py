@@ -23,13 +23,13 @@ class LocalJob(Job):
 
     def wrap_script(self, scheduler: Scheduler) -> str:
         script = [
-            "#!" + " ".join(map(shlex.quote, scheduler.config.script_wrapper_lang))
+            "#!" + " ".join(map(shlex.quote, scheduler.script_wrapper_lang))
         ]
         script.append("")
         script.append("set -u -e -E -o pipefail")
         script.append("")
         script.append("# BEGIN: setup script")
-        script.append(scheduler.config.setup_script)
+        script.append(scheduler.setup_script)
         script.append("# END: setup script")
         script.append("")
         script.append(self.launch(scheduler))
@@ -57,7 +57,7 @@ class LocalScheduler(Scheduler):
             The process id
         """
         proc = await asyncio.create_subprocess_exec(
-            *self.config.script_wrapper_lang,
+            *self.script_wrapper_lang,
             runnable(job.wrapped_script(self)),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,

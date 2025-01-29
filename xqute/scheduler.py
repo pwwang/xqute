@@ -25,11 +25,11 @@ class Scheduler(ABC):
         forks: Max number of job forks
         setup_script: The script to run before the command
         script_wrapper_lang: The language for job script wrapper
-        sched_python: The Python executable for the scheduler
+        python: The Python executable for the scheduler on the scheduler system
         **kwargs: Other arguments for the scheduler
     """
 
-    __slots__ = ("config",)
+    __slots__ = ("config", "forks", "setup_script", "script_wrapper_lang", "python")
 
     name: str
     job_class: Type[Job]
@@ -40,20 +40,19 @@ class Scheduler(ABC):
         setup_script: str = "",
         script_wrapper_lang: str | List[str] | Tuple[str, ...] =
         DEFAULT_JOB_SCRIPT_WRAPPER_LANG,
-        sched_python: str = sys.executable,
+        python: str = sys.executable,
         **kwargs,
     ):
         """Construct"""
         if not isinstance(script_wrapper_lang, (list, tuple)):
             script_wrapper_lang = [script_wrapper_lang]
 
-        self.config = Diot(
-            forks=forks,
-            setup_script=setup_script,
-            script_wrapper_lang=script_wrapper_lang,
-            sched_python=sched_python,
-            **kwargs,
-        )
+        self.forks = forks
+        self.setup_script = setup_script
+        self.script_wrapper_lang = script_wrapper_lang
+        self.python = python
+
+        self.config = Diot(**kwargs)
 
     async def submit_job_and_update_status(self, job: Job):
         """Submit and update the status
@@ -217,7 +216,7 @@ class Scheduler(ABC):
                 ret = False
                 # not returning here
                 # might wait for callbacks or halt on other jobs
-        return n_running < self.config.forks if on == "can_submit" else ret
+        return n_running < self.forks if on == "can_submit" else ret
 
     async def kill_running_jobs(self, jobs: List[Job]):
         """Try to kill all running jobs

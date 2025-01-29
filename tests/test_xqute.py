@@ -85,7 +85,7 @@ class JobCancelPlugin:
 @pytest.mark.asyncio
 async def test_main(tmp_path):
     with plugin.plugins_context([EchoPlugin]):
-        xqute = Xqute(LocalScheduler, scheduler_forks=2, job_metadir=tmp_path)
+        xqute = Xqute(LocalScheduler, forks=2, job_metadir=tmp_path)
         await xqute.put(["bash", "-c", "echo 1"])
         await xqute.put(["echo", 2])
         await xqute.run_until_complete()
@@ -103,7 +103,7 @@ async def test_main(tmp_path):
 @pytest.mark.asyncio
 async def test_plugin(tmp_path, capsys):
     with plugin.plugins_context([EchoPlugin, JobFailPlugin]):
-        xqute = Xqute("local", scheduler_forks=1, job_metadir=tmp_path)
+        xqute = Xqute("local", forks=1, job_metadir=tmp_path)
         await xqute.put("echo 2")
         await xqute.put(["sleep", 3])
         await xqute.run_until_complete()
@@ -123,7 +123,7 @@ def test_not_init_in_loop():
 @pytest.mark.asyncio
 async def test_shutdown(tmp_path, caplog):
     with plugin.plugins_context([EchoPlugin, JobFailPlugin]):
-        xqute = Xqute(scheduler_forks=2, job_metadir=tmp_path)
+        xqute = Xqute(forks=2, job_metadir=tmp_path)
         await xqute.put(["sleep", 1])
         await xqute.put(["echo", 2])
         asyncio.get_event_loop().call_later(0.5, xqute.cancel, signal.SIGTERM)
@@ -183,7 +183,7 @@ async def test_halt(tmp_path, caplog):
     await asyncio.sleep(1)
     with plugin.plugins_context([JobFailPlugin]):
         xqute = Xqute(
-            job_error_strategy="halt", job_metadir=tmp_path, scheduler_forks=3
+            job_error_strategy="halt", job_metadir=tmp_path, forks=3
         )
         await xqute.put(LocalJob(0, ["sleep", 10], tmp_path, False, 1))
         await xqute.put(["echo1", 1])

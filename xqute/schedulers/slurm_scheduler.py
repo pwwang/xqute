@@ -32,10 +32,7 @@ class SlurmJob(Job):
         }
         options.update(sbatch_options)
 
-        jobname_prefix = scheduler.config.get(
-            "scheduler_jobprefix",
-            scheduler.name,
-        )
+        jobname_prefix = scheduler.config.get("jobname_prefix", scheduler.name)
         options["job-name"] = f"{jobname_prefix}.{self.index}"
         # options["chdir"] = str(Path.cwd().resolve())
         options["output"] = self.stdout_file
@@ -51,14 +48,14 @@ class SlurmJob(Job):
             options_list.append(fmt.format(key=key, val=val))
 
         script = [
-            "#!" + " ".join(map(shlex.quote, scheduler.config.script_wrapper_lang))
+            "#!" + " ".join(map(shlex.quote, scheduler.script_wrapper_lang))
         ]
         script.extend(options_list)
         script.append("")
         script.append("set -u -e -E -o pipefail")
         script.append("")
         script.append("# BEGIN: setup script")
-        script.append(scheduler.config.setup_script)
+        script.append(scheduler.setup_script)
         script.append("# END: setup script")
         script.append("")
         script.append(self.launch(scheduler))
@@ -83,12 +80,13 @@ class SlurmScheduler(Scheduler):
     name: str = "slurm"
     job_class: Type[Job] = SlurmJob
 
+    __slots__ = Scheduler.__slots__ + ("sbatch", "squeue", "scancel")
+
     def __init__(self, *args, **kwargs):
+        self.sbatch = kwargs.pop("sbatch", "sbatch")
+        self.squeue = kwargs.pop("squeue", "squeue")
+        self.scancel = kwargs.pop("scancel", "scancel")
         super().__init__(*args, **kwargs)
-        self.sbatch = self.config.get("sbatch", "sbatch")
-        # self.srun = self.config.get('srun', 'srun')
-        self.scancel = self.config.get("scancel", "scancel")
-        self.squeue = self.config.get("squeue", "squeue")
 
     async def submit_job(self, job: Job) -> str:
         """Submit a job to Slurm

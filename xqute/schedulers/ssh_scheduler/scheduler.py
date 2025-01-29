@@ -30,15 +30,17 @@ class SshScheduler(Scheduler):
     name: str = "ssh"
     job_class: Type[Job] = SshJob
 
+    __slots__ = Scheduler.__slots__ + ("ssh", "servers")
+
     def __init__(self, *args, **kwargs):
+        self.ssh = kwargs.pop('ssh', 'ssh')
+        ssh_servers = kwargs.pop('servers', {})
         super().__init__(*args, **kwargs)
         self.servers: Mapping[str, SSHClient] = {}
-        ssh = self.config.get('ssh', 'ssh')
-        ssh_servers = self.config.get('ssh_servers', {})
         if isinstance(ssh_servers, (tuple, list)):
             ssh_servers = {server: {} for server in ssh_servers}
         for key, val in ssh_servers.items():
-            client = SSHClient(ssh, key, **val)
+            client = SSHClient(self.ssh, key, **val)
             self.servers[client.name] = client
 
         if not self.servers:
@@ -65,7 +67,7 @@ class SshScheduler(Scheduler):
         await server.connect()
 
         rc, stdout, stderr = await server.submit(
-            *self.config.script_wrapper_lang,
+            *self.script_wrapper_lang,
             runnable(job.wrapped_script(self)),
         )
         if rc != 0:

@@ -23,7 +23,7 @@ from xqute import Xqute
 
 async def main():
     # 3 jobs allowed to run at the same time
-    xqute = Xqute(scheduler_forks=3)
+    xqute = Xqute(forks=3)
     for _ in range(10):
         await xqute.put('sleep 1')
     await xqute.run_until_complete()
@@ -56,7 +56,6 @@ Available arguments are:
 - job_error_strategy: The strategy when there is error happened
 - job_num_retries: Max number of retries when job_error_strategy is retry
 - job_submission_batch: The number of consumers to submit jobs
-- scheduler_forks: Max number of job forks
 - **scheduler_opts: Additional keyword arguments for scheduler
 
 Note that the producer must be initialized in an event loop.
@@ -72,11 +71,11 @@ await xqute.put(['echo', 1])
 ```python
 xqute = Xqute(
     'sge',
-    scheduler_forks=100,
-    qsub='path to qsub',
-    qdel='path to qdel',
-    qstat='path to qstat',
-    sge_q='1-day',  # or qsub_q='1-day'
+    forks=100,
+    sched_qsub='path to qsub',
+    sched_qdel='path to qdel',
+    sched_qstat='path to qstat',
+    sched_sge_q='1-day',  # or qsub_q='1-day'
     ...
 )
 ```
@@ -98,13 +97,15 @@ Keyword-arguments with names starting with `sge_` will be interpreted as `qsub` 
 ```python
 xqute = Xqute(
     'slurm',
-    scheduler_forks=100,
-    sbatch='path to sbatch',
-    scancel='path to scancel',
-    squeue='path to squeue',
-    sbatch_partition='1-day',  # or slurm_partition='1-day'
-    sbatch_time='01:00:00',
-    ...
+    forks=100,
+    scheduler_opts = {
+        "sbatch": 'path to sbatch',
+        "scancel": 'path to scancel',
+        "squeue": 'path to squeue',
+        "sbatch_partition": '1-day',  # or slurm_partition='1-day'
+        "sbatch_time": '01:00:00',
+        ...
+    },
 )
 ```
 
@@ -113,20 +114,22 @@ xqute = Xqute(
 ```python
 xqute = Xqute(
     'ssh',
-    scheduler_forks=100,
-    ssh='path to ssh',
-    ssh_servers={
-        "server1": {
-            "user": ...,
-            "port": 22,
-            "keyfile": ...,
-            # How long to keep the ssh connection alive
-            "ctrl_persist": 600,
-            # Where to store the control socket
-            "ctrl_dir": "/tmp",
-        },
-        ...
-    }
+    forks=100,
+    scheduler_opts={
+        "ssh": 'path to ssh',
+        "servers": {
+            "server1": {
+                "user": ...,
+                "port": 22,
+                "keyfile": ...,
+                # How long to keep the ssh connection alive
+                "ctrl_persist": 600,
+                # Where to store the control socket
+                "ctrl_dir": "/tmp",
+            },
+            ...
+        }
+    },
     ...
 )
 ```
