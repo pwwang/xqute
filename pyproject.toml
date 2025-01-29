@@ -18,7 +18,7 @@ diot = "^0.2"
 rich = "^13"
 uvloop = "^0"
 cloudpathlib = "^0.20"
-google-cloud-storage = "^2.19.0"
+google-cloud-storage = {version = "^2.19.0", optional = true}
 argx = "^0.2.11"
 
 [tool.poetry.extras]
