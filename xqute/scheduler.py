@@ -148,7 +148,7 @@ class Scheduler(ABC):
         """
         job.status = JobStatus.KILLING
         ret = await plugin.hooks.on_job_killing(self, job)
-        if ret is False:  # progma: no cover
+        if ret is False:  # pragma: no cover
             return
 
         await self.kill_job(job)
