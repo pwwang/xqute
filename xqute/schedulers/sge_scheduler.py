@@ -1,16 +1,17 @@
 """The scheduler to run jobs on SGE"""
 import asyncio
+import shlex
 from typing import Type
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import a_read_text
+from ..utils import runnable
 
 
 class SgeJob(Job):
     """SGE job"""
 
-    def shebang(self, scheduler: Scheduler) -> str:
+    def wrap_script(self, scheduler: Scheduler) -> str:
         """Make the shebang with options
 
         Args:
@@ -35,8 +36,8 @@ class SgeJob(Job):
         )
         options["N"] = f"{jobname_prefix}.{self.index}"
         options["cwd"] = True
-        options["o"] = self.stdout_file
-        options["e"] = self.stderr_file
+        # options["o"] = self.stdout_file
+        # options["e"] = self.stderr_file
 
         options_list = []
         for key, val in options.items():
@@ -47,9 +48,20 @@ class SgeJob(Job):
                     options_list.append(f"#$ -{key} {optval}")
             else:
                 options_list.append(f"#$ -{key} {val}")
-        options_str = "\n".join(options_list)
 
-        return f"{super().shebang(scheduler)}\n{options_str}\n"
+        script = [
+            "#!" + " ".join(map(shlex.quote, scheduler.config.script_wrapper_lang))
+        ]
+        script.extend(options_list)
+        script.append("")
+        script.append("set -u -e -E -o pipefail")
+        script.append("")
+        script.append("# BEGIN: setup script")
+        script.append(scheduler.config.setup_script)
+        script.append("# END: setup script")
+        script.append("")
+        script.append(self.launch(scheduler))
+        return "\n".join(script)
 
 
 class SgeScheduler(Scheduler):
@@ -89,13 +101,21 @@ class SgeScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.qsub,
-            str(await job.wrapped_script(self)),
+            runnable(job.wrapped_script(self)),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, _ = await proc.communicate()
+        stdout, stderr = await proc.communicate()
+        if proc.returncode != 0:  # pragma: no cover
+            raise RuntimeError(f"Can't submit job to SGE: {stderr.decode()}")
+
         # Your job 613815 (...) has been submitted
-        return stdout.decode().split()[2]
+        try:
+            job_id = stdout.decode().split()[2]
+        except Exception:  # pragma: no cover
+            raise RuntimeError("Can't get job id from qsub output.", stdout, stderr)
+
+        return job_id
 
     async def kill_job(self, job: Job):
         """Kill a job on SGE
@@ -123,7 +143,7 @@ class SgeScheduler(Scheduler):
             True if it is, otherwise False
         """
         try:
-            jid = await a_read_text(job.jid_file)
+            jid = job.jid_file.read_text().strip()
         except FileNotFoundError:
             return False
 
@@ -137,5 +157,4 @@ class SgeScheduler(Scheduler):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        await proc.wait()
-        return proc.returncode == 0
+        return await proc.wait() == 0

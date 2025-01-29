@@ -3,13 +3,14 @@ from __future__ import annotations
 
 import os
 import signal
+import sys
 from abc import ABC, abstractmethod
-from typing import List, Type
+from typing import List, Tuple, Type
 
 from diot import Diot  # type: ignore
 
-from .defaults import JobStatus
-from .utils import logger, asyncify, a_write_text
+from .defaults import JobStatus, DEFAULT_JOB_SCRIPT_WRAPPER_LANG
+from .utils import logger
 from .job import Job
 from .plugin import plugin
 
@@ -22,8 +23,9 @@ class Scheduler(ABC):
 
     Args:
         forks: Max number of job forks
-        prescript: The script to run before the command
-        postscript: The script to run after the command
+        setup_script: The script to run before the command
+        script_wrapper_lang: The language for job script wrapper
+        sched_python: The Python executable for the scheduler
         **kwargs: Other arguments for the scheduler
     """
 
@@ -33,11 +35,24 @@ class Scheduler(ABC):
     job_class: Type[Job]
 
     def __init__(
-        self, forks: int, prescript: str = "", postscript: str = "", **kwargs
+        self,
+        forks: int = 1,
+        setup_script: str = "",
+        script_wrapper_lang: str | List[str] | Tuple[str, ...] =
+        DEFAULT_JOB_SCRIPT_WRAPPER_LANG,
+        sched_python: str = sys.executable,
+        **kwargs,
     ):
         """Construct"""
+        if not isinstance(script_wrapper_lang, (list, tuple)):
+            script_wrapper_lang = [script_wrapper_lang]
+
         self.config = Diot(
-            forks=forks, prescript=prescript, postscript=postscript, **kwargs
+            forks=forks,
+            setup_script=setup_script,
+            script_wrapper_lang=script_wrapper_lang,
+            sched_python=sched_python,
+            **kwargs,
         )
 
     async def submit_job_and_update_status(self, job: Job):
@@ -67,7 +82,7 @@ class Scheduler(ABC):
         try:
             if await plugin.hooks.on_job_submitting(self, job) is False:
                 return
-            await job.clean()
+            job.clean()
 
             try:
                 # raise the exception immediately
@@ -84,7 +99,7 @@ class Scheduler(ABC):
                     self.name,
                     job.index,
                     job.jid,
-                    await job.wrapped_script(self),
+                    job.wrapped_script(self),
                 )
 
                 job.status = JobStatus.SUBMITTED
@@ -95,8 +110,7 @@ class Scheduler(ABC):
         if exception is not None:
             from traceback import format_exception
 
-            await a_write_text(
-                job.stderr_file,
+            job.stderr_file.write_text(
                 "".join(
                     format_exception(
                         type(exception),
@@ -105,7 +119,7 @@ class Scheduler(ABC):
                     )
                 ),
             )
-            await a_write_text(job.rc_file, "-2")
+            job.rc_file.write_text("-2")
             job.status = JobStatus.FAILED
             await plugin.hooks.on_job_failed(self, job)
 
@@ -116,7 +130,7 @@ class Scheduler(ABC):
             job: The job
         """
         job.jid = ""
-        await job.clean(retry=True)
+        job.clean(retry=True)
         job.trial_count += 1
         logger.warning(
             "/Scheduler-%s Retrying (#%s) job: %r",
@@ -134,13 +148,13 @@ class Scheduler(ABC):
         """
         job.status = JobStatus.KILLING
         ret = await plugin.hooks.on_job_killing(self, job)
-        if ret is False:
+        if ret is False:  # progma: no cover
             return
 
         await self.kill_job(job)
         try:
             # in case the jid file is removed by the wrapped script
-            await asyncify(os.unlink)(job.jid_file)
+            job.jid_file.unlink(missing_ok=True)
         except FileNotFoundError:  # pragma: no cover
             pass
 

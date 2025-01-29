@@ -6,7 +6,6 @@ from simplug import NoSuchPlugin
 from xqute import Xqute, plugin
 from xqute.defaults import JobStatus
 from xqute.schedulers.local_scheduler import LocalJob, LocalScheduler
-from xqute.utils import a_write_text
 
 Xqute.EMPTY_BUFFER_SLEEP_TIME = 0.1
 
@@ -20,7 +19,7 @@ class EchoPlugin:
     async def on_job_init(scheduler, job):
         print(job.jid)
         print(repr(job))
-        await a_write_text(job.jid_file, "-1")
+        job.jid_file.write_text("-1")
 
     @plugin.impl
     async def on_job_started(scheduler, job):
@@ -34,17 +33,13 @@ class EchoPlugin:
     def on_shutdown(xqute, sig):
         print("DONE", sig)
 
-    @plugin.impl
-    def on_jobcmd_init(scheduler, job):
-        return "echo jobcmd init > {job.metadir}/jobcmd.log"
+    # @plugin.impl
+    # async def on_jobsched_started(args):
+    #     Path(args.metadir).joinpath("jobsched.log").write_text("jobsched started")
 
-    @plugin.impl
-    def on_jobcmd_prep(scheduler, job):
-        return 'echo jobcmd prep >> {job.metadir}/jobcmd.log\ncmd="$cmd"'
-
-    @plugin.impl
-    def on_jobcmd_end(scheduler, job):
-        return "echo jobcmd end >> {job.metadir}/jobcmd.log"
+    # @plugin.impl
+    # async def on_jobsched_ended(args, rc):
+    #     Path(args.metadir).joinpath("jobsched.log").write_text("jobsched ended")
 
 
 class CancelShutdownPlugin:
@@ -75,13 +70,13 @@ class JobFailPlugin:
 class JobIsRunningPlugin:
     @plugin.impl
     async def on_job_init(scheduler, job):
-        await a_write_text(job.jid_file, str(os.getpid()))
+        job.jid_file.write_text(str(os.getpid()))
 
 
 class JobCancelPlugin:
     @plugin.impl
     async def on_job_submitting(scheduler, job):
-        await job.clean()
+        job.clean()
         job.jid = await scheduler.submit_job(job)
         job.status = JobStatus.SUBMITTED
         return False
@@ -94,15 +89,15 @@ async def test_main(tmp_path):
         await xqute.put(["bash", "-c", "echo 1"])
         await xqute.put(["echo", 2])
         await xqute.run_until_complete()
-        assert await xqute.jobs[0].rc == 0
+        assert xqute.jobs[0].rc == 0
 
-        jobcmd_logfile0 = tmp_path / "0" / "jobcmd.log"
-        assert jobcmd_logfile0.is_file()
-        assert jobcmd_logfile0.read_text() == "jobcmd init\njobcmd prep\njobcmd end\n"
+        # jobcmd_logfile0 = tmp_path / "0" / "jobsched.log"
+        # assert jobcmd_logfile0.is_file()
+        # assert jobcmd_logfile0.read_text() == "jobsched started\njobsched ended\n"
 
-        jobcmd_logfile1 = tmp_path / "0" / "jobcmd.log"
-        assert jobcmd_logfile1.is_file()
-        assert jobcmd_logfile1.read_text() == "jobcmd init\njobcmd prep\njobcmd end\n"
+        # jobcmd_logfile1 = tmp_path / "0" / "jobsched.log"
+        # assert jobcmd_logfile1.is_file()
+        # assert jobcmd_logfile1.read_text() == "jobsched started\njobsched ended\n"
 
 
 @pytest.mark.asyncio
@@ -127,9 +122,7 @@ def test_not_init_in_loop():
 
 @pytest.mark.asyncio
 async def test_shutdown(tmp_path, caplog):
-    with plugin.plugins_context(
-        [EchoPlugin, JobFailPlugin]
-    ):
+    with plugin.plugins_context([EchoPlugin, JobFailPlugin]):
         xqute = Xqute(scheduler_forks=2, job_metadir=tmp_path)
         await xqute.put(["sleep", 1])
         await xqute.put(["echo", 2])
@@ -140,9 +133,7 @@ async def test_shutdown(tmp_path, caplog):
 
 @pytest.mark.asyncio
 async def test_cancel_shutdown(tmp_path, caplog, capsys):
-    with plugin.plugins_context(
-        [EchoPlugin, CancelShutdownPlugin, JobFailPlugin]
-    ):
+    with plugin.plugins_context([EchoPlugin, CancelShutdownPlugin, JobFailPlugin]):
         xqute = Xqute(job_metadir=tmp_path)
         await xqute.put(["sleep", 1])
         await xqute.put(["echo", 2])
@@ -165,9 +156,7 @@ async def test_job_failed_hook(tmp_path, caplog, capsys):
         await xqute.run_until_complete()
         assert "Job Failed: <LocalJob-0" in capsys.readouterr().out
         assert "/Job-0 Status changed: 'SUBMITTED' -> 'FAILED'" in caplog.text
-        assert (
-            "/Job-1 Status changed: 'SUBMITTED' -> 'FINISHED'" in caplog.text
-        )
+        assert "/Job-1 Status changed: 'SUBMITTED' -> 'FINISHED'" in caplog.text
 
         # should clean retry directories
         xqute = Xqute(

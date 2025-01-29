@@ -26,13 +26,13 @@ async def test_job():
         forks=1, slurm_mem="4G", sbatch_p="gpu"
     )
     assert (
-        await job.wrapped_script(scheduler)
-        == DEFAULT_JOB_METADIR / "0" / "job.wrapped.slurm"
+        job.wrapped_script(scheduler)
+        == Path(DEFAULT_JOB_METADIR) / "0" / "job.wrapped.slurm"
     )
 
-    shebang = job.shebang(scheduler)
-    assert "#SBATCH --mem=4G" in shebang
-    assert "#SBATCH -p gpu" in shebang
+    script = job.wrap_script(scheduler)
+    assert "#SBATCH --mem=4G" in script
+    assert "#SBATCH -p gpu" in script
 
 
 @pytest.mark.asyncio

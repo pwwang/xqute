@@ -16,6 +16,7 @@ import subprocess
 
 if __name__ == "__main__":
     server, cwd, *cmds = sys.argv[1:]
+
     proc = subprocess.Popen(
         cmds,
         cwd=cwd,

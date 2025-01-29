@@ -4,10 +4,11 @@ from __future__ import annotations
 import asyncio
 import functools
 import signal
+import sys
 from collections import deque
-from os import PathLike
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, List, Type
+from typing import TYPE_CHECKING, Any, List, Tuple, Type
+
+from cloudpathlib import AnyPath
 
 from .defaults import (
     DEFAULT_JOB_METADIR,
@@ -15,10 +16,11 @@ from .defaults import (
     DEFAULT_JOB_NUM_RETRIES,
     DEFAULT_SCHEDULER_FORKS,
     DEFAULT_JOB_SUBMISSION_BATCH,
+    DEFAULT_JOB_SCRIPT_WRAPPER_LANG,
     JobErrorStrategy,
     JobStatus,
 )
-from .utils import logger
+from .utils import logger, PathType
 from .plugin import plugin
 from .schedulers import get_scheduler
 
@@ -47,7 +49,7 @@ class Xqute:
         _job_num_retries: The number of retries when strategy is retry
 
         _cancelling: A mark to mark whether a shutting down event
-            is triggered (True for natual cancelling, the signale for
+            is triggered (True for natural cancelling, the signal for
             cancelling with a signal, SIGINT for example)
 
         buffer_queue: A buffer queue to save the pushed jobs
@@ -61,12 +63,10 @@ class Xqute:
             to disable a plugin, using `-plugin_name`
             either all plugin names should be prefixed with '+'/'-' or none
             of them should
-            To enabled plugins, objects are
         job_metadir: The job meta directory
         job_submission_batch: The number of consumers to submit jobs
         job_error_strategy: The strategy when there is error happened
         job_num_retries: Max number of retries when job_error_strategy is retry
-        scheduler_forks: Max number of job forks
         **scheduler_opts: Additional keyword arguments for scheduler
     """
 
@@ -78,13 +78,10 @@ class Xqute:
         scheduler: str | Type[Scheduler] = "local",
         plugins: List[Any] | None = None,
         *,
-        job_metadir: PathLike = DEFAULT_JOB_METADIR,
+        job_metadir: PathType = DEFAULT_JOB_METADIR,
         job_submission_batch: int = DEFAULT_JOB_SUBMISSION_BATCH,
         job_error_strategy: str = DEFAULT_JOB_ERROR_STRATEGY,
         job_num_retries: int = DEFAULT_JOB_NUM_RETRIES,
-        scheduler_forks: int = DEFAULT_SCHEDULER_FORKS,
-        scheduler_prescript: str = "",
-        scheduler_postscript: str = "",
         **scheduler_opts,
     ) -> None:
         """Construct"""
@@ -101,8 +98,8 @@ class Xqute:
         )
 
         self.job_submission_batch = job_submission_batch
-        self._job_metadir = job_metadir
-        Path(self._job_metadir).mkdir(exist_ok=True)
+        self._job_metadir = AnyPath(job_metadir)
+        self._job_metadir.mkdir(parents=True, exist_ok=True)
         self._job_error_strategy = job_error_strategy
         self._job_num_retries = job_num_retries
 
@@ -110,12 +107,14 @@ class Xqute:
 
         self.buffer_queue: deque = deque()
         self.queue: asyncio.Queue = asyncio.Queue()
-        self.scheduler = get_scheduler(scheduler)(
-            scheduler_forks,
-            scheduler_prescript,
-            scheduler_postscript,
-            **scheduler_opts,
+        scheduler_opts.setdefault("forks", DEFAULT_SCHEDULER_FORKS)
+        scheduler_opts.setdefault("setup_script", "")
+        scheduler_opts.setdefault(
+            "script_wrapper_lang",
+            DEFAULT_JOB_SCRIPT_WRAPPER_LANG,
         )
+        scheduler_opts.setdefault("sched_python", sys.executable)
+        self.scheduler = get_scheduler(scheduler)(**scheduler_opts)
 
         # requires to be defined in a loop
         loop = asyncio.get_running_loop()
@@ -188,7 +187,7 @@ class Xqute:
             await self.scheduler.submit_job_and_update_status(job)
             self.queue.task_done()
 
-    async def put(self, cmd: Job | str | List[str]) -> None:
+    async def put(self, cmd: Job | str | Tuple[str, ...] | List[str]) -> None:
         """Put a command into the buffer
 
         Args:
@@ -196,12 +195,10 @@ class Xqute:
         """
         if isinstance(cmd, self.scheduler.job_class):
             job = cmd
-            if job._error_retry is None:
-                job._error_retry = (
-                    self._job_error_strategy == JobErrorStrategy.RETRY
-                )
-            if job._num_retries is None:
-                job._num_retries = self._job_num_retries
+            job._error_retry = job._error_retry or (
+                self._job_error_strategy == JobErrorStrategy.RETRY
+            )
+            job._num_retries = job._num_retries or self._job_num_retries
         else:
             job = self.scheduler.job_class(
                 len(self.jobs),
@@ -220,7 +217,7 @@ class Xqute:
     async def _polling_jobs(self) -> None:
         """Polling the jobs to see if they are all done.
 
-        If yes, cancel the producer-consumer task natually.
+        If yes, cancel the producer-consumer task naturally.
         """
         while (
             self._cancelling is False

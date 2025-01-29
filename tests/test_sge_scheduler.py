@@ -9,14 +9,28 @@ from xqute.defaults import DEFAULT_JOB_METADIR, JobStatus
 MOCKS = Path(__file__).parent / "mocks"
 
 
-def setup_module():
-    qsub = str(MOCKS / "qsub")
-    qdel = str(MOCKS / "qdel")
-    qstat = str(MOCKS / "qstat")
+@pytest.fixture
+def qsub():
+    cmd = str(MOCKS / "qsub")
+    st = os.stat(cmd)
+    os.chmod(cmd, st.st_mode | stat.S_IEXEC)
+    return cmd
 
-    for qcmd in (qsub, qdel, qstat):
-        st = os.stat(str(qcmd))
-        os.chmod(str(qcmd), st.st_mode | stat.S_IEXEC)
+
+@pytest.fixture
+def qdel():
+    cmd = str(MOCKS / "qdel")
+    st = os.stat(cmd)
+    os.chmod(cmd, st.st_mode | stat.S_IEXEC)
+    return cmd
+
+
+@pytest.fixture
+def qstat():
+    cmd = str(MOCKS / "qstat")
+    st = os.stat(cmd)
+    os.chmod(cmd, st.st_mode | stat.S_IEXEC)
+    return cmd
 
 
 @pytest.mark.asyncio
@@ -26,23 +40,20 @@ async def test_job():
         forks=1, qsub_notify=True, sge_l=["vmem=2G", "gpu=1"], sge_m="abe"
     )
     assert (
-        await job.wrapped_script(scheduler)
-        == DEFAULT_JOB_METADIR / "0" / "job.wrapped.sge"
+        job.wrapped_script(scheduler)
+        == Path(DEFAULT_JOB_METADIR) / "0" / "job.wrapped.sge"
     )
 
-    shebang = job.shebang(scheduler)
-    assert "#$ -notify" in shebang
-    assert "#$ -l vmem=2G" in shebang
-    assert "#$ -l gpu=1" in shebang
-    assert "#$ -m abe" in shebang
+    script = job.wrap_script(scheduler)
+    assert "#$ -notify" in script
+    assert "#$ -l vmem=2G" in script
+    assert "#$ -l gpu=1" in script
+    assert "#$ -m abe" in script
 
 
 @pytest.mark.asyncio
-async def test_scheduler(capsys):
+async def test_scheduler(capsys, qsub, qdel, qstat):
     job = SgeJob(0, ["echo", 1])
-    qsub = str(MOCKS / "qsub")
-    qdel = str(MOCKS / "qdel")
-    qstat = str(MOCKS / "qstat")
 
     scheduler = SgeScheduler(1, qsub=qsub, qdel=qdel, qstat=qstat)
     assert await scheduler.submit_job(job) == "613815"
@@ -61,13 +72,10 @@ async def test_scheduler(capsys):
 
 
 @pytest.mark.asyncio
-async def test_submission_failure(capsys):
+async def test_submission_failure(capsys, qdel, qstat):
     job = SgeJob(0, ["echo", 1])
-    qsub = str(MOCKS / "no_such_qsub")
-    qdel = str(MOCKS / "qdel")
-    qstat = str(MOCKS / "qstat")
 
-    scheduler = SgeScheduler(1, qsub=qsub, qdel=qdel, qstat=qstat)
+    scheduler = SgeScheduler(1, qsub="no_such_qsub", qdel=qdel, qstat=qstat)
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False

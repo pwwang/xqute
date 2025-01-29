@@ -5,7 +5,7 @@ import asyncio
 from typing import Mapping, Type
 
 from ...scheduler import Scheduler
-from ...utils import a_read_text
+from ...utils import runnable
 from ...job import Job
 from ..local_scheduler import LocalJob
 
@@ -30,8 +30,8 @@ class SshScheduler(Scheduler):
     name: str = "ssh"
     job_class: Type[Job] = SshJob
 
-    def __init__(self, forks: int, prescript: str = "", postscript: str = "", **kwargs):
-        super().__init__(forks, prescript, postscript, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.servers: Mapping[str, SSHClient] = {}
         ssh = self.config.get('ssh', 'ssh')
         ssh_servers = self.config.get('ssh_servers', {})
@@ -64,10 +64,9 @@ class SshScheduler(Scheduler):
         server = list(self.servers.values())[job.index % len(self.servers)]
         await server.connect()
 
-        wrapped_script = str(await job.wrapped_script(self))
         rc, stdout, stderr = await server.submit(
-            job.__class__.CMD_WRAPPER_SHELL,
-            wrapped_script,
+            *self.config.script_wrapper_lang,
+            runnable(job.wrapped_script(self)),
         )
         if rc != 0:
             job.stdout_file.write_bytes(stdout)
@@ -122,7 +121,7 @@ class SshScheduler(Scheduler):
             True if it is, otherwise False
         """
         try:
-            jid = await a_read_text(job.jid_file)
+            jid = job.jid_file.read_text().strip()
         except FileNotFoundError:
             return False
 

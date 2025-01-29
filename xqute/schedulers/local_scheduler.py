@@ -1,11 +1,12 @@
 """The scheduler to run jobs locally"""
 import asyncio
 import os
+import shlex
 from typing import Type
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import a_read_text
+from ..utils import runnable
 
 
 def _pid_exists(pid: int) -> bool:
@@ -19,6 +20,20 @@ def _pid_exists(pid: int) -> bool:
 
 class LocalJob(Job):
     """Local job"""
+
+    def wrap_script(self, scheduler: Scheduler) -> str:
+        script = [
+            "#!" + " ".join(map(shlex.quote, scheduler.config.script_wrapper_lang))
+        ]
+        script.append("")
+        script.append("set -u -e -E -o pipefail")
+        script.append("")
+        script.append("# BEGIN: setup script")
+        script.append(scheduler.config.setup_script)
+        script.append("# END: setup script")
+        script.append("")
+        script.append(self.launch(scheduler))
+        return "\n".join(script)
 
 
 class LocalScheduler(Scheduler):
@@ -41,10 +56,9 @@ class LocalScheduler(Scheduler):
         Returns:
             The process id
         """
-        wrapped_script = str(await job.wrapped_script(self))
         proc = await asyncio.create_subprocess_exec(
-            job.CMD_WRAPPER_SHELL,
-            wrapped_script,
+            *self.config.script_wrapper_lang,
+            runnable(job.wrapped_script(self)),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -89,7 +103,7 @@ class LocalScheduler(Scheduler):
             True if it is, otherwise False
         """
         try:
-            jid = int(await a_read_text(job.jid_file))
+            jid = int(job.jid_file.read_text().strip())
         except (ValueError, TypeError, FileNotFoundError):
             return False
 

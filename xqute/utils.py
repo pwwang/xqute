@@ -1,96 +1,53 @@
 """Utilities for xqute"""
+
 import logging
-import re
 from os import PathLike
-from typing import Callable
+from tempfile import NamedTemporaryFile
+from pathlib import Path
+from typing import Union
 
-import asyncio
-from functools import partial, wraps
-
-import aiopath as aiop  # type: ignore
-import aiofile as aiof
+from cloudpathlib import CloudPath, AnyPath
 from rich.logging import RichHandler
 
 from .defaults import LOGGER_NAME
 
+PathType = Union[str, PathLike, CloudPath]
 
-# helper functions to read and write the whole content of the file
-async def a_read_text(path: PathLike) -> str:
-    """Read the text from a file asyncly
+
+def rmtree(path: PathType):
+    """Remove a directory tree, including all its contents
 
     Args:
-        path: The path of the file
+        path: The path to the directory
+    """
+    path = AnyPath(path)
+    if path.is_dir():
+        for child in path.iterdir():
+            rmtree(child)
+        path.rmdir()
+    else:
+        path.unlink()
+
+
+def runnable(script: PathType) -> str:
+    """Make a script runnable (e.g. be able to submit to a real scheduler)
+
+    Args:
+        script: The script
 
     Returns:
-        The content of the file
+        The path to the runnable script
     """
-    async with aiof.async_open(path, mode='rt') as file:  # type: ignore
-        return await file.read()
+    script = AnyPath(script)
+    if isinstance(script, Path):
+        return str(script)
+    # CloudPath
+    with NamedTemporaryFile(
+        delete=False, prefix=f"xqute-{script.stem}.", suffix=script.suffix
+    ) as tmp:
+        tmp.write(script.read_bytes())
 
-
-async def a_write_text(path: PathLike, content: str):
-    """Write the text to a file asyncly
-
-    Args:
-        path: The path to the file
-        content: The content to be written to the file
-    """
-    async with aiof.async_open(path, mode='wt') as file:  # type: ignore
-        await file.write(content)
-
-
-def asyncify(func: Callable) -> Callable:
-    """Turn a sync function into a Coroutine, can be used as a decorator
-
-    Args:
-        func: The sync function
-
-    Returns:
-        The Coroutine
-    """
-    @wraps(func)
-    async def run(*args, loop=None, executor=None, **kwargs):
-        loop = loop or asyncio.get_event_loop()
-        pfunc = partial(func, *args, **kwargs)
-        return await loop.run_in_executor(executor, pfunc)
-
-    return run
-
-
-async def a_mkdir(path: PathLike, *args, **kwargs):
-    """Make a directory asyncly
-
-    Args:
-        path: The path to the directory to be made
-        *args: args for `Path(path).mkdir(...)`
-        **kwargs: kwargs for `Path(path).mkdir(...)`
-    """
-    await aiop.AsyncPath(path).mkdir(*args, **kwargs)
-
-
-def replace_with_leading_space(s: str, old: str, new: str) -> str:
-    """Replace a substring with leading spaces and keep the original spaces
-
-    Example:
-       >>> replace_with_leading_space("a\n  b\nc", "b", "x\ny")
-         'a\n  x\n  y\nc'
-
-    Args:
-        s: The string
-        old: The old substring
-        new: The new substring
-
-    Returns:
-        The new string
-    """
-    return re.sub(
-        rf"^(\s*){re.escape(old)}",
-        lambda m: "\n".join(
-            f"{m.group(1)}{line}" if line else "" for line in new.splitlines()
-        ),
-        s,
-        flags=re.MULTILINE,
-    )
+    return tmp.name
 
 
 class DuplicateFilter(logging.Filter):

@@ -1,17 +1,17 @@
 """The scheduler to run jobs on Slurm"""
 import asyncio
-from pathlib import Path
+import shlex
 from typing import Type
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import a_read_text
+from ..utils import runnable
 
 
 class SlurmJob(Job):
     """Slurm job"""
 
-    def shebang(self, scheduler: Scheduler) -> str:
+    def wrap_script(self, scheduler: Scheduler) -> str:
         """Make the shebang with options
 
         Args:
@@ -37,7 +37,7 @@ class SlurmJob(Job):
             scheduler.name,
         )
         options["job-name"] = f"{jobname_prefix}.{self.index}"
-        options["chdir"] = str(Path.cwd().resolve())
+        # options["chdir"] = str(Path.cwd().resolve())
         options["output"] = self.stdout_file
         options["error"] = self.stderr_file
 
@@ -50,9 +50,19 @@ class SlurmJob(Job):
                 fmt = "#SBATCH --{key}={val}"
             options_list.append(fmt.format(key=key, val=val))
 
-        options_str = "\n".join(options_list)
-
-        return f"{super().shebang(scheduler)}\n{options_str}\n"
+        script = [
+            "#!" + " ".join(map(shlex.quote, scheduler.config.script_wrapper_lang))
+        ]
+        script.extend(options_list)
+        script.append("")
+        script.append("set -u -e -E -o pipefail")
+        script.append("")
+        script.append("# BEGIN: setup script")
+        script.append(scheduler.config.setup_script)
+        script.append("# END: setup script")
+        script.append("")
+        script.append(self.launch(scheduler))
+        return "\n".join(script)
 
 
 class SlurmScheduler(Scheduler):
@@ -91,8 +101,7 @@ class SlurmScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.sbatch,
-            # str(await job.wrapped_script(self. self.srun)),
-            str(await job.wrapped_script(self)),
+            runnable(job.wrapped_script(self)),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -132,7 +141,7 @@ class SlurmScheduler(Scheduler):
             True if it is, otherwise False
         """
         try:
-            jid = await a_read_text(job.jid_file)
+            jid = job.jid_file.read_text().strip()
         except FileNotFoundError:
             return False
 

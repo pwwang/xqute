@@ -24,12 +24,12 @@ async def test_job():
         forks=1, ssh_servers={"myserver": {'keyfile': 'id_rsa'}}
     )
     assert (
-        await job.wrapped_script(scheduler)
-        == DEFAULT_JOB_METADIR / "0" / "job.wrapped.ssh"
+        job.wrapped_script(scheduler)
+        == Path(DEFAULT_JOB_METADIR) / "0" / "job.wrapped.ssh"
     )
 
-    shebang = job.shebang(scheduler)
-    assert "#!" in shebang
+    script = job.wrap_script(scheduler)
+    assert "#!" in script
 
 
 @pytest.mark.asyncio
@@ -120,7 +120,7 @@ async def test_immediate_submission_failure():
     ssh = str(MOCKS / "ssh")
 
     class BadSshJob(SshJob):
-        async def wrapped_script(self, scheduler):
+        def wrapped_script(self, scheduler):
             wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
             wrapt_script.write_text("sleep 1; bad_non_existent_command")
             return wrapt_script
@@ -140,7 +140,7 @@ async def test_immediate_submission_failure2():
     ssh = str(MOCKS / "ssh")
 
     class BadSshJob(SshJob):
-        async def wrapped_script(self, scheduler):
+        def wrapped_script(self, scheduler):
             wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
             wrapt_script.write_text("echo 1")
             return wrapt_script

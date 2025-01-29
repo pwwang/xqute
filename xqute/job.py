@@ -1,37 +1,19 @@
 """Job to execute"""
+
 from __future__ import annotations
 
 import shlex
-import shutil
-from abc import ABC
-from os import PathLike, unlink
-from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, List, Optional
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from aiopath import AsyncPath  # type: ignore
+from cloudpathlib import AnyPath
 
-from .defaults import (
-    DEFAULT_JOB_METADIR,
-    DEFAULT_JOB_CMD_WRAPPER_TEMPLATE,
-    DEFAULT_JOB_CMD_WRAPPER_SHELL,
-    JobStatus,
-)
-from .utils import (
-    logger,
-    a_mkdir,
-    a_read_text,
-    a_write_text,
-    asyncify,
-    replace_with_leading_space,
-)
+from .defaults import DEFAULT_JOB_METADIR, JobStatus
+from .utils import logger, rmtree, PathType
 from .plugin import plugin
 
 if TYPE_CHECKING:  # pragma: no cover
     from .scheduler import Scheduler
-
-
-a_shutil_move = asyncify(shutil.move)
-a_os_unlink = asyncify(unlink)
 
 
 class Job(ABC):
@@ -76,21 +58,20 @@ class Job(ABC):
         "prev_status",
     )
 
-    CMD_WRAPPER_SHELL: ClassVar[str] = DEFAULT_JOB_CMD_WRAPPER_SHELL
-    CMD_WRAPPER_TEMPLATE: ClassVar[str] = DEFAULT_JOB_CMD_WRAPPER_TEMPLATE
-
     def __init__(
         self,
         index: int,
-        cmd: str | List[str],
-        metadir: PathLike = DEFAULT_JOB_METADIR,
+        cmd: str | Tuple[str, ...] | List[str],
+        metadir: PathType = DEFAULT_JOB_METADIR,
         error_retry: Optional[bool] = None,
         num_retries: Optional[int] = None,
     ):
         """Construct"""
-        self.cmd = cmd
+        self.cmd: List[str] = (
+            cmd if isinstance(cmd, (tuple, list)) else shlex.split(cmd)
+        )
         self.index = index
-        self.metadir = Path(metadir) / str(self.index)
+        self.metadir = AnyPath(metadir) / str(self.index)
         self.metadir.mkdir(exist_ok=True, parents=True)
 
         # The name of the job, should be the unique id from the scheduler
@@ -105,12 +86,10 @@ class Job(ABC):
 
     def __repr__(self) -> str:
         """repr of the job"""
+        prefix = f"{self.__class__.__name__}-{self.index}"
         if not self.jid:
-            return f"<{self.__class__.__name__}-{self.index}: ({self.cmd})>"
-        return (
-            f"<{self.__class__.__name__}-{self.index}({self.jid}): "
-            f"({self.cmd})>"
-        )
+            return f"<{prefix}: ({self.cmd})>"
+        return f"<{prefix}({self.jid}): ({self.cmd})>"
 
     @property
     def jid(self) -> int | str | None:
@@ -128,32 +107,32 @@ class Job(ABC):
         self.jid_file.write_text(str(uniqid))
 
     @property
-    def stdout_file(self) -> Path:
+    def stdout_file(self) -> PathType:
         """The stdout file of the job"""
         return self.metadir / "job.stdout"
 
     @property
-    def stderr_file(self) -> Path:
+    def stderr_file(self) -> PathType:
         """The stderr file of the job"""
         return self.metadir / "job.stderr"
 
     @property
-    def status_file(self) -> Path:
+    def status_file(self) -> PathType:
         """The status file of the job"""
         return self.metadir / "job.status"
 
     @property
-    def rc_file(self) -> Path:
+    def rc_file(self) -> PathType:
         """The rc file of the job"""
         return self.metadir / "job.rc"
 
     @property
-    def jid_file(self) -> Path:
+    def jid_file(self) -> PathType:
         """The jid file of the job"""
         return self.metadir / "job.jid"
 
     @property
-    def retry_dir(self) -> Path:
+    def retry_dir(self) -> PathType:
         """The retry directory of the job"""
         return self.metadir / "job.retry"
 
@@ -187,8 +166,7 @@ class Job(ABC):
             self._status = JobStatus.RETRYING
 
         if self.prev_status != self._status and (
-            self._status == JobStatus.RETRYING
-            or self._status >= JobStatus.KILLING
+            self._status == JobStatus.RETRYING or self._status >= JobStatus.KILLING
         ):
             logger.info(
                 "/Job-%s Status changed: %r -> %r",
@@ -214,26 +192,13 @@ class Job(ABC):
         self._status = stat
 
     @property
-    async def rc(self) -> int:
+    def rc(self) -> int:
         """The return code of the job"""
-        if not await AsyncPath(self.rc_file).is_file():
+        if not self.rc_file.is_file():
             return self._rc  # pragma: no cover
-        return int(await a_read_text(self.rc_file))
+        return int(self.rc_file.read_text())
 
-    @property
-    def strcmd(self) -> str:
-        """Get the string representation of the command"""
-        if isinstance(self.cmd, list):
-            cmd = " ".join(shlex.quote(str(cmditem)) for cmditem in self.cmd)
-        else:
-            cmd = self.cmd
-        return cmd or "echo 'No script provided'"
-
-    def shebang(self, scheduler: Scheduler) -> str:
-        """The shebang of the wrapped script"""
-        return f"#!{self.__class__.CMD_WRAPPER_SHELL}"
-
-    async def clean(self, retry=False):
+    def clean(self, retry=False):
         """Clean up the meta files
 
         Args:
@@ -248,19 +213,66 @@ class Job(ABC):
 
         if retry:
             retry_dir = self.retry_dir / str(self.trial_count)
-            if await AsyncPath(retry_dir).exists():
-                shutil.rmtree(retry_dir)
-            await a_mkdir(retry_dir, parents=True)
+            if retry_dir.exists():
+                rmtree(retry_dir)
+            retry_dir.mkdir(parents=True)
 
             for file in files_to_clean:
-                if await AsyncPath(file).is_file():
-                    await a_shutil_move(str(file), str(retry_dir))
+                if file.is_file():
+                    file.rename(retry_dir / file.name)
         else:
             for file in files_to_clean:
-                if await AsyncPath(file).is_file():
-                    await a_os_unlink(file)
+                if file.is_file():
+                    file.unlink()
 
-    async def wrapped_script(self, scheduler: Scheduler) -> PathLike:
+    def launch(self, scheduler: Scheduler) -> str:
+        """The command to launch the job.
+
+        This will be inserted into the wrapped script.
+
+        Args:
+            scheduler: The scheduler
+
+        Returns:
+            The command to launch the job
+        """
+        # By default, suppose the interpreter is the same as the daemon
+        # It requires this package to be installed with the python in the scheduler
+        # system
+        from . import __version__
+
+        plugins = plugin.get_enabled_plugins()
+        launch_cmd = [
+            scheduler.config.sched_python,
+            "-m",
+            "xqute",
+            "++metadir",
+            self.metadir,
+            "++scheduler",
+            scheduler.name,
+            "++version",
+            __version__,
+            "++cmd",
+        ]
+        launch_cmd.extend(self.cmd)
+        for name, plug in plugins.items():
+            launch_cmd.extend(["++plugin", f"{name}:{plug.version}"])
+
+        out = "\n# Launch the job\n"
+        return out + " ".join(shlex.quote(str(cmditem)) for cmditem in launch_cmd)
+
+    @abstractmethod
+    def wrap_script(self, scheduler: Scheduler) -> str:
+        """Wrap the script with the template
+
+        Args:
+            scheduler: The scheduler
+
+        Returns:
+            The wrapped script
+        """
+
+    def wrapped_script(self, scheduler: Scheduler) -> PathType:
         """Get the wrapped script
 
         Args:
@@ -270,27 +282,5 @@ class Job(ABC):
             The path of the wrapped script
         """
         wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
-        shebang = self.shebang(scheduler)
-        jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
-        jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
-        jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
-        wrapt_cmd = self.__class__.CMD_WRAPPER_TEMPLATE.replace("#![shebang]", shebang)
-        wrapt_cmd = replace_with_leading_space(
-            wrapt_cmd, "#![jobcmd_init]", "\n\n".join(jobcmd_init)
-        )
-        wrapt_cmd = replace_with_leading_space(
-            wrapt_cmd, "#![jobcmd_prep]", "\n\n".join(jobcmd_prep)
-        )
-        wrapt_cmd = replace_with_leading_space(
-            wrapt_cmd, "#![jobcmd_end]", "\n\n".join(jobcmd_end)
-        )
-        wrapt_cmd = replace_with_leading_space(
-            wrapt_cmd, "#![prescript]", scheduler.config.prescript
-        )
-        wrapt_cmd = replace_with_leading_space(
-            wrapt_cmd, "#![postscript]", scheduler.config.postscript
-        )
-
-        wrapt_cmd = wrapt_cmd.format(job=self, status=JobStatus)
-        await a_write_text(wrapt_script, wrapt_cmd)
+        wrapt_script.write_text(self.wrap_script(scheduler))
         return wrapt_script

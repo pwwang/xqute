@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from simplug import Simplug, SimplugResult  # type: ignore
 
 if TYPE_CHECKING:  # pragma: no cover
+    from argx import Namespace
     from .xqute import Xqute
     from .job import Job
     from .scheduler import Scheduler
@@ -149,70 +150,40 @@ async def on_job_succeeded(scheduler: Scheduler, job: Job):
     """
 
 
-@plugin.spec(result=SimplugResult.ALL_AVAILS)
-def on_jobcmd_init(scheduler: Scheduler, job: Job) -> str:
-    """When the job command wrapper script is initialized before the prescript is run
+@plugin.spec
+async def on_jobsched_started(args: Namespace) -> None:
+    """When the job is started on the scheduler system
 
-    This should return a piece of bash code to be inserted in the wrapped job
-    script (template), which is a python template string, with the following
-    variables available: `status` and `job`. `status` is the class `JobStatus` from
-    `xqute.defaults.py` and `job` is the `Job` instance.
-
-    For multiple plugins, the code will be inserted in the order of the plugin priority.
+    Note that this hook is running on the scheduler system, not where the job is
+    created. So the `args` contains the command line arguments passed to
+    `python -m xqute`. It includes
+    - `metadir`: The metadir of the job.
+    - `scheduler`: The scheduler name.
+    - `version`: The version of xqute with which the job is created.
+    - `plugin`: The enabled plugins with their versions from where the job is created.
+    - `cmd`: The command of the job.
 
     Args:
-        scheduler: The scheduler object
-        job: The job object
-
-    Returns:
-        The bash code to be inserted
+        args: The arguments passed from the CLI
     """
 
 
-@plugin.spec(result=SimplugResult.ALL_AVAILS)
-def on_jobcmd_prep(scheduler: Scheduler, job: Job) -> str:
-    """When the job command right about to be run
+@plugin.spec
+async def on_jobsched_ended(args: Namespace, rc: int) -> None:
+    """When the job is finished on the scheduler system
 
-    This should return a piece of bash code to be inserted in the wrapped job
-    script (template), which is a python template string, with the following
-    variables available: `status` and `job`. `status` is the class `JobStatus` from
-    `xqute.defaults.py` and `job` is the `Job` instance.
-
-    The bash variable `$cmd` is accessible in the context. It is also possible to
-    modify the `cmd` variable. Just remember to assign the modified value to `cmd`.
-
-    For multiple plugins, the code will be inserted in the order of the plugin priority.
-    Keep in mind that the `$cmd` may be modified by other plugins.
+    Note that this hook is running on the scheduler system, not where the job is
+    created. So the `args` contains the command line arguments passed to
+    `python -m xqute`. It includes
+    - `metadir`: The metadir of the job.
+    - `scheduler`: The scheduler name.
+    - `version`: The version of xqute with which the job is created.
+    - `plugin`: The enabled plugins with their versions from where the job is created.
+    - `cmd`: The command of the job.
 
     Args:
-        scheduler: The scheduler object
-        job: The job object
-
-    Returns:
-        The bash code to be inserted
-    """
-
-
-@plugin.spec(result=SimplugResult.ALL_AVAILS)
-def on_jobcmd_end(scheduler: Scheduler, job: Job) -> str:
-    """When the job command finishes and after the postscript is run
-
-    This should return a piece of bash code to be inserted in the wrapped job
-    script (template), which is a python template string, with the following
-    variables available: `status` and `job`. `status` is the class `JobStatus` from
-    `xqute.defaults.py` and `job` is the `Job` instance.
-
-    The bash variable `$rc` is accessible in the context, which is the return code
-    of the job command.
-
-    For multiple plugins, the code will be inserted in the order of the plugin priority.
-
-    Args:
-        scheduler: The scheduler object
-        job: The job object
-
-    Returns:
-        The bash code to be inserted
+        args: The arguments passed from the CLI
+        rc: The return code of the job
     """
 
 
