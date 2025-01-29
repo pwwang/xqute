@@ -9,7 +9,7 @@ jobs:
     if: "! contains(github.event.head_commit.message, 'wip')"
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
+        python-version: [3.9, "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +29,9 @@ jobs:
         run: flake8 xqute
       - name: Show bash version
         run: /bin/bash --version
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
       - name: Test with pytest
         run: poetry run pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
