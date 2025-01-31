@@ -61,6 +61,7 @@ class SgeJob(Job):
             cmd=shlex.join(self.cmd),
             prescript=scheduler.prescript,
             postscript=scheduler.postscript,
+            keep_jid_file=False,
         )
 
 
@@ -147,7 +148,7 @@ class SgeScheduler(Scheduler):
         """
         try:
             jid = job.jid_file.read_text().strip()
-        except FileNotFoundError:
+        except FileNotFoundError:  # pragma: no cover
             return False
 
         if not jid:

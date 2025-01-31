@@ -7,15 +7,18 @@ from uuid import uuid4
 
 from xqute.schedulers.gbatch_scheduler import GbatchScheduler
 from xqute.defaults import JobStatus
+from xqute.utils import rmtree
+
+from .conftest import BUCKET
 
 MOCKS = Path(__file__).parent / "mocks"
 # Make a fixture to get a unique workdir directory each time
-WORKDIR = AnyPath("gs://handy-buffer-287000.appspot.com/xqute_gbatch_test")
+WORKDIR = AnyPath(f"{BUCKET}/xqute_gbatch_test")
 WORKDIR = WORKDIR / str(uuid4())
 
 
 def teardown_module():
-    WORKDIR.rmtree()
+    rmtree(WORKDIR)
 
 
 @pytest.fixture
@@ -24,6 +27,32 @@ def gcloud():
     st = os.stat(cmd)
     os.chmod(cmd, st.st_mode | stat.S_IEXEC)
     return cmd
+
+
+def test_error_with_non_gs_workdir(tmp_path):
+    with pytest.raises(ValueError):
+        GbatchScheduler(tmp_path, location="us-central1", project="test-project")
+
+
+def test_error_with_invalid_jobname_prefix():
+    with pytest.raises(ValueError):
+        GbatchScheduler(
+            project="test-project",
+            location="us-central1",
+            workdir=WORKDIR,
+            jobname_prefix="1",
+        )
+
+
+def test_error_with_non_list_volumes_config():
+    with pytest.raises(ValueError):
+        GbatchScheduler(
+            project="test-project",
+            location="us-central1",
+            workdir=WORKDIR,
+            jobname_prefix="jobnameprefix",
+            taskGroups=[{"taskSpec": {"volumes": 1}}],
+        )
 
 
 @pytest.mark.asyncio
@@ -37,6 +66,9 @@ async def test_job():
     job = scheduler.create_job(0, ["echo", 1])
     assert (
         job.wrapped_script(scheduler) == scheduler.workdir / "0" / "job.wrapped.gbatch"
+    )
+    assert (
+        job.remote_retry_dir == Path("/mnt/.xqute_workdir/") / "0" / "job.retry"
     )
 
     script = job.wrap_script(scheduler)

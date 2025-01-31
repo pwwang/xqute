@@ -1,4 +1,5 @@
 import asyncio
+import json
 import re
 import shlex
 from copy import deepcopy
@@ -14,7 +15,7 @@ from ..defaults import (
     JOBCMD_WRAPPER_LANG,
     JOBCMD_WRAPPER_TEMPLATE,
 )
-from ..utils import PathType
+from ..utils import PathType, localize, logger
 from ..plugin import plugin
 
 
@@ -40,9 +41,10 @@ class GbatchJob(Job):
             cmd=shlex.join(self.cmd),
             prescript=scheduler.prescript,
             postscript=scheduler.postscript,
+            keep_jid_file=True,
         )
 
-    def config_file(self, scheduler: Scheduler, remote: bool = False) -> PathType:
+    def config_file(self, scheduler: Scheduler) -> PathType:
         base = f"job.wrapped.{scheduler.name}.json"
         conf_file = self.metadir / base
 
@@ -51,8 +53,10 @@ class GbatchJob(Job):
         config.taskGroups[0].taskSpec.runnables[0].script.text = shlex.join(
             shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script)]
         )
-        config.to_json(conf_file, indent=2)
-        return (self.remote_metadir / base) if remote else conf_file
+        with conf_file.open("w") as f:
+            json.dump(config, f, indent=2)
+
+        return conf_file
 
 
 class GbatchScheduler(Scheduler):
@@ -68,7 +72,7 @@ class GbatchScheduler(Scheduler):
         "remote_workdir",
     )
 
-    def __init__(self, project: str, location: str, *args, **kwargs):
+    def __init__(self, *args, project: str, location: str, **kwargs):
         """Construct the gbatch scheduler"""
         self.gcloud = kwargs.pop("gcloud", "gcloud")
         self.project = project
@@ -111,7 +115,7 @@ class GbatchScheduler(Scheduler):
             )
 
         meta_volume = Diot()
-        meta_volume.gcs = Diot(remotePath=str(self.workdir))
+        meta_volume.gcs = Diot(remotePath='/'.join(self.workdir.parts[1:]))
         meta_volume.mountPath = self.remote_workdir
 
         self.config.taskGroups[0].taskSpec.volumes.append(meta_volume)
@@ -143,6 +147,11 @@ class GbatchScheduler(Scheduler):
         Args:
             job: The job to delete
         """
+        logger.debug(
+            "/Scheduler-%s Try deleting job %r on GCP.",
+            self.name,
+            job,
+        )
         command = [
             self.gcloud,
             "batch",
@@ -154,6 +163,7 @@ class GbatchScheduler(Scheduler):
             "--location",
             self.location,
         ]
+
         try:
             proc = await asyncio.create_subprocess_exec(
                 *command,
@@ -162,15 +172,20 @@ class GbatchScheduler(Scheduler):
             )
         except Exception:
             pass
-        else:
+        else:  # pragma: no cover
             await proc.wait()
+
+        status = await self._get_job_status(job)
+        while status == "DELETION_IN_PROGRESS":  # pragma: no cover
+            await asyncio.sleep(1)
+            status = await self._get_job_status(job)
 
     async def submit_job(self, job: Job) -> str:
         await self._delete_job(job)
 
         sha = sha256(str(self.workdir).encode()).hexdigest()[:8]
         jobname = f"{self.jobname_prefix}-{sha}-{job.index}".lower()
-
+        conf_file = job.config_file(self)
         proc = await asyncio.create_subprocess_exec(
             self.gcloud,
             "batch",
@@ -178,7 +193,7 @@ class GbatchScheduler(Scheduler):
             "submit",
             jobname,
             "--config",
-            job.config_file(self, remote=True),
+            localize(conf_file),
             "--project",
             self.project,
             "--location",
@@ -189,7 +204,10 @@ class GbatchScheduler(Scheduler):
         _, stderr = await proc.communicate()
         if proc.returncode != 0:  # pragma: no cover
             raise RuntimeError(
-                f"Can't submit job to Google Cloud Batch: {stderr.decode()}"
+                "Can't submit job to Google Cloud Batch: \n"
+                f"{stderr.decode()}\n"
+                "Check the configuration file:\n"
+                f"{conf_file}"
             )
 
         return jobname
@@ -215,10 +233,9 @@ class GbatchScheduler(Scheduler):
         )
         await proc.wait()
 
-    async def job_is_running(self, job: Job) -> bool:
-        # https://github.com/drivendataorg/cloudpathlib/issues/388
+    async def _get_job_status(self, job) -> str:
         if not job.jid_file.is_file():
-            return False
+            return "UNKNOWN"
 
         # Do not rely on _jid, as it can be a obolete job.
         jid = job.jid_file.read_text().strip()
@@ -241,15 +258,15 @@ class GbatchScheduler(Scheduler):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-        except Exception:
-            return False
+        except Exception:  # pragma: no cover
+            return "UNKNOWN"
 
         if await proc.wait() != 0:
-            return False
+            return "UNKNOWN"
 
-        stdout = await proc.stdout.read()
-        return (
-            b"state: RUNNING" in stdout
-            or b"state: QUEUED" in stdout
-            or b"state: SCHEDULED" in stdout
-        )
+        stdout = (await proc.stdout.read()).decode()
+        return re.search(r"  state: (.+)", stdout).group(1)
+
+    async def job_is_running(self, job: Job) -> bool:
+        status = await self._get_job_status(job)
+        return status in ("RUNNING", "QUEUED", "SCHEDULED")

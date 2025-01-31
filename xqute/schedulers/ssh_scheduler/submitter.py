@@ -33,6 +33,6 @@ if __name__ == "__main__":
     if rc is None or rc == 0:
         # still running or already finished
         sys.exit(0)
-    else:
+    else:  # pragma: no cover
         sys.stderr.write(f"STDOUT: {stdout}\nSTDERR: {stderr}")
         sys.exit(rc)

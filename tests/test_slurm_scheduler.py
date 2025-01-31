@@ -6,6 +6,8 @@ from pathlib import Path
 from xqute.schedulers.slurm_scheduler import SlurmScheduler
 from xqute.defaults import JobStatus
 
+from .conftest import BUCKET
+
 MOCKS = Path(__file__).parent / "mocks"
 
 
@@ -19,8 +21,12 @@ def setup_module():
         os.chmod(str(cmd), st.st_mode | stat.S_IEXEC)
 
 
-@pytest.mark.asyncio
-async def test_job(tmp_path):
+def test_error_with_cloud_workdir():
+    with pytest.raises(ValueError):
+        SlurmScheduler(f"{BUCKET}/xqute_slurm_test")
+
+
+def test_job(tmp_path):
     scheduler = SlurmScheduler(
         forks=1,
         mem="4G",

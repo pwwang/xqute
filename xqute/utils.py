@@ -4,7 +4,6 @@ import logging
 import os
 import stat
 import shutil
-from tempfile import NamedTemporaryFile
 from pathlib import Path
 from typing import Union, Tuple, List
 
@@ -43,12 +42,7 @@ def localize(script: PathType) -> str:
     if isinstance(script, Path):
         return str(script)
     # CloudPath
-    with NamedTemporaryFile(
-        delete=False, prefix=f"xqute-{script.stem}.", suffix=script.suffix
-    ) as tmp:
-        tmp.write(script.read_bytes())
-
-    return tmp.name
+    return script.fspath
 
 
 def chmodx(path: str) -> str:

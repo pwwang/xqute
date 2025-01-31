@@ -61,6 +61,7 @@ class SlurmJob(Job):
             cmd=shlex.join(self.cmd),
             prescript=scheduler.prescript,
             postscript=scheduler.postscript,
+            keep_jid_file=False,
         )
 
 

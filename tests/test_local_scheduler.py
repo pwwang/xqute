@@ -5,7 +5,14 @@ from pathlib import Path
 from xqute.defaults import JobStatus
 from xqute.schedulers.local_scheduler import LocalJob, LocalScheduler
 
+from .conftest import BUCKET
+
 MOCKS = Path(__file__).parent / "mocks"
+
+
+def test_error_with_cloud_workdir():
+    with pytest.raises(ValueError):
+        LocalScheduler(f"{BUCKET}/xqute_local_test")
 
 
 @pytest.mark.asyncio

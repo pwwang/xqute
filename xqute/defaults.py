@@ -109,7 +109,10 @@ cleanup() {{
     else
         echo {status.FAILED} > {job.remote_status_file}
     fi
-    rm -f {job.remote_jid_file}
+
+    if [[ {keep_jid_file} == False ]]; then
+        rm -f {job.remote_jid_file}
+    fi
 
     # postscript
     {postscript}

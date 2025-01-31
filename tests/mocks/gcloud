@@ -13,7 +13,7 @@ def describe_job(jid):
         print("Job not found")
         sys.exit(1)
 
-    print("state: RUNNING")
+    print("  state: RUNNING")
     sys.exit(0)
 
 

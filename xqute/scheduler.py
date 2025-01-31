@@ -204,7 +204,7 @@ class Scheduler(ABC):
 
         Args:
             jobs: The list of jobs
-            on: query on status: `can_submit` or `all_done`
+            on: query on status: `submittable` or `all_done`
 
         Returns:
             True if yes otherwise False.
@@ -213,7 +213,7 @@ class Scheduler(ABC):
         ret = True
         for job in jobs:
             status = job.status
-            if on == "can_submit" and status in (
+            if on == "submittable" and status in (
                 JobStatus.QUEUED,
                 JobStatus.SUBMITTED,
                 JobStatus.RUNNING,

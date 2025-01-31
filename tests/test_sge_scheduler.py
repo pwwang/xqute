@@ -6,6 +6,8 @@ from pathlib import Path
 from xqute.schedulers.sge_scheduler import SgeScheduler
 from xqute.defaults import JobStatus
 
+from .conftest import BUCKET
+
 MOCKS = Path(__file__).parent / "mocks"
 
 
@@ -31,6 +33,11 @@ def qstat():
     st = os.stat(cmd)
     os.chmod(cmd, st.st_mode | stat.S_IEXEC)
     return cmd
+
+
+def test_error_with_cloud_workdir():
+    with pytest.raises(ValueError):
+        SgeScheduler(f"{BUCKET}/xqute_sge_test")
 
 
 @pytest.mark.asyncio

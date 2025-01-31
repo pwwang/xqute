@@ -296,6 +296,7 @@ class Job(ABC):
             cmd=shlex.join(self.cmd),
             prescript=scheduler.prescript,
             postscript=scheduler.postscript,
+            keep_jid_file=False,
         )
 
     def wrapped_script(self, scheduler: Scheduler, remote: bool = False) -> PathType:
