@@ -1,16 +1,22 @@
 """The scheduler to schedule jobs"""
+
 from __future__ import annotations
 
 import os
 import signal
-import sys
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Type
+from typing import List, Type
 
+from cloudpathlib import AnyPath
 from diot import Diot  # type: ignore
 
-from .defaults import JobStatus, DEFAULT_JOB_SCRIPT_WRAPPER_LANG
-from .utils import logger
+from .defaults import (
+    JobStatus,
+    JobErrorStrategy,
+    DEFAULT_ERROR_STRATEGY,
+    DEFAULT_NUM_RETRIES,
+)
+from .utils import logger, CommandType
 from .job import Job
 from .plugin import plugin
 
@@ -22,37 +28,72 @@ class Scheduler(ABC):
         job_class: The job class
 
     Args:
+        workdir: The working directory
         forks: Max number of job forks
-        setup_script: The script to run before the command
-        script_wrapper_lang: The language for job script wrapper
-        python: The Python executable for the scheduler on the scheduler system
+        error_strategy: The strategy when there is error happened
+        num_retries: Max number of retries when error_strategy is retry
+        prescript: The prescript to run before the job command
+            It is a piece of script that inserted into the wrapper script, running
+            on the scheduler system.
+        postscript: The postscript to run when job finished
+            It is a piece of script that inserted into the wrapper script, running
+            on the scheduler system.
+        jobname_prefix: The prefix for the job name
         **kwargs: Other arguments for the scheduler
     """
 
-    __slots__ = ("config", "forks", "setup_script", "script_wrapper_lang", "python")
+    __slots__ = (
+        "config",
+        "forks",
+        "workdir",
+        "error_strategy",
+        "num_retries",
+        "prescript",
+        "postscript",
+        "jobname_prefix",
+    )
 
     name: str
     job_class: Type[Job]
 
     def __init__(
         self,
+        workdir: str,
         forks: int = 1,
-        setup_script: str = "",
-        script_wrapper_lang: str | List[str] | Tuple[str, ...] =
-        DEFAULT_JOB_SCRIPT_WRAPPER_LANG,
-        python: str = sys.executable,
+        error_strategy: str = DEFAULT_ERROR_STRATEGY,
+        num_retries: int = DEFAULT_NUM_RETRIES,
+        prescript: str = "",
+        postscript: str = "",
+        jobname_prefix: str | None = None,
         **kwargs,
     ):
-        """Construct"""
-        if not isinstance(script_wrapper_lang, (list, tuple)):
-            script_wrapper_lang = [script_wrapper_lang]
-
         self.forks = forks
-        self.setup_script = setup_script
-        self.script_wrapper_lang = script_wrapper_lang
-        self.python = python
+        self.workdir = AnyPath(workdir)
+        self.error_strategy = error_strategy
+        self.num_retries = num_retries
+        self.prescript = prescript
+        self.postscript = postscript
+        self.jobname_prefix = jobname_prefix or self.name
 
         self.config = Diot(**kwargs)
+
+    def create_job(self, index: int, cmd: CommandType) -> Job:
+        """Create a job
+
+        Args:
+            index: The index of the job
+            cmd: The command of the job
+
+        Returns:
+            The job
+        """
+        return self.job_class(
+            index=index,
+            cmd=cmd,
+            workdir=self.workdir,
+            error_retry=self.error_strategy == JobErrorStrategy.RETRY,
+            num_retries=self.num_retries,
+        )
 
     async def submit_job_and_update_status(self, job: Job):
         """Submit and update the status
@@ -88,9 +129,7 @@ class Scheduler(ABC):
                 # it somehow cannot be catched immediately
                 job.jid = await self.submit_job(job)
             except Exception as exc:
-                exception = RuntimeError(
-                    f"Failed to submit job: {exc}"
-                )
+                exception = RuntimeError(f"Failed to submit job: {exc}")
                 exception.__traceback__ = exc.__traceback__
             else:
                 logger.info(
@@ -160,15 +199,12 @@ class Scheduler(ABC):
         job.status = JobStatus.FINISHED
         await plugin.hooks.on_job_killed(self, job)
 
-    async def polling_jobs(
-        self, jobs: List[Job], on: str, halt_on_error: bool
-    ) -> bool:
+    async def polling_jobs(self, jobs: List[Job], on: str) -> bool:
         """Check if all jobs are done or new jobs can submit
 
         Args:
             jobs: The list of jobs
             on: query on status: `can_submit` or `all_done`
-            halt_on_error: Whether we should halt the whole pipeline on error
 
         Returns:
             True if yes otherwise False.
@@ -199,7 +235,10 @@ class Scheduler(ABC):
             elif status == JobStatus.RUNNING:
                 await plugin.hooks.on_job_polling(self, job)
 
-            if halt_on_error and status == JobStatus.FAILED:
+            if (
+                self.error_strategy == JobErrorStrategy.HALT
+                and status == JobStatus.FAILED
+            ):
                 logger.error(
                     "/Scheduler-%s Pipeline will halt " "since job failed: %r",
                     self.name,
@@ -216,7 +255,7 @@ class Scheduler(ABC):
                 ret = False
                 # not returning here
                 # might wait for callbacks or halt on other jobs
-        return n_running < self.forks if on == "can_submit" else ret
+        return n_running < self.forks if on == "submittable" else ret
 
     async def kill_running_jobs(self, jobs: List[Job]):
         """Try to kill all running jobs

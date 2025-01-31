@@ -1,17 +1,20 @@
 """Utilities for xqute"""
 
 import logging
-from os import PathLike
+import os
+import stat
+import shutil
 from tempfile import NamedTemporaryFile
 from pathlib import Path
-from typing import Union
+from typing import Union, Tuple, List
 
 from cloudpathlib import CloudPath, AnyPath
 from rich.logging import RichHandler
 
 from .defaults import LOGGER_NAME
 
-PathType = Union[str, PathLike, CloudPath]
+PathType = Union[str, os.PathLike, CloudPath]
+CommandType = Union[str, Tuple[str], List[str]]
 
 
 def rmtree(path: PathType):
@@ -21,16 +24,14 @@ def rmtree(path: PathType):
         path: The path to the directory
     """
     path = AnyPath(path)
-    if path.is_dir():
-        for child in path.iterdir():
-            rmtree(child)
-        path.rmdir()
+    if isinstance(path, Path):
+        shutil.rmtree(path)
     else:
-        path.unlink()
+        path.rmtree()
 
 
-def runnable(script: PathType) -> str:
-    """Make a script runnable (e.g. be able to submit to a real scheduler)
+def localize(script: PathType) -> str:
+    """Make a script to the local file system, so that it is runnable
 
     Args:
         script: The script
@@ -48,6 +49,20 @@ def runnable(script: PathType) -> str:
         tmp.write(script.read_bytes())
 
     return tmp.name
+
+
+def chmodx(path: str) -> str:
+    """Make a file executable
+
+    Args:
+        path: The path to the file
+
+    Returns:
+        The path to the file
+    """
+    st = os.stat(path)
+    os.chmod(path, st.st_mode | stat.S_IEXEC)
+    return path
 
 
 class DuplicateFilter(logging.Filter):

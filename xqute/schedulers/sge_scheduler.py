@@ -1,11 +1,20 @@
 """The scheduler to run jobs on SGE"""
 import asyncio
+import hashlib
 import shlex
 from typing import Type
 
+from cloudpathlib import CloudPath
+
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import runnable
+from ..defaults import (
+    JobStatus,
+    JOBCMD_WRAPPER_LANG,
+    JOBCMD_WRAPPER_TEMPLATE,
+)
+from ..utils import localize
+from ..plugin import plugin
 
 
 class SgeJob(Job):
@@ -20,22 +29,12 @@ class SgeJob(Job):
         Returns:
             The shebang with options
         """
-        options = {
-            key[4:]: val
-            for key, val in scheduler.config.items()
-            if key.startswith("sge_")
-        }
-        qsub_options = {
-            key[5:]: val
-            for key, val in scheduler.config.items()
-            if key.startswith("qsub_")
-        }
-        options.update(qsub_options)
-        jobname_prefix = scheduler.config.get("jobname_prefix", scheduler.name)
-        options["N"] = f"{jobname_prefix}.{self.index}"
+        options = scheduler.config.copy()
+        sha = hashlib.sha256(str(scheduler.workdir).encode()).hexdigest()[:8]
+        options["N"] = f"{scheduler.jobname_prefix}-{sha}-{self.index}"
         options["cwd"] = True
-        # options["o"] = self.stdout_file
-        # options["e"] = self.stderr_file
+        options["o"] = self.stdout_file
+        options["e"] = self.stderr_file
 
         options_list = []
         for key, val in options.items():
@@ -47,19 +46,22 @@ class SgeJob(Job):
             else:
                 options_list.append(f"#$ -{key} {val}")
 
-        script = [
-            "#!" + " ".join(map(shlex.quote, scheduler.script_wrapper_lang))
-        ]
-        script.extend(options_list)
-        script.append("")
-        script.append("set -u -e -E -o pipefail")
-        script.append("")
-        script.append("# BEGIN: setup script")
-        script.append(scheduler.setup_script)
-        script.append("# END: setup script")
-        script.append("")
-        script.append(self.launch(scheduler))
-        return "\n".join(script)
+        jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
+        jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
+        jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
+        shebang = " ".join(map(shlex.quote, JOBCMD_WRAPPER_LANG)) + "\n"
+        shebang += "\n".join(options_list) + "\n"
+        return JOBCMD_WRAPPER_TEMPLATE.format(
+            shebang=shebang,
+            status=JobStatus,
+            job=self,
+            jobcmd_init="\n".join(jobcmd_init),
+            jobcmd_prep="\n".join(jobcmd_prep),
+            jobcmd_end="\n".join(jobcmd_end),
+            cmd=shlex.join(self.cmd),
+            prescript=scheduler.prescript,
+            postscript=scheduler.postscript,
+        )
 
 
 class SgeScheduler(Scheduler):
@@ -73,10 +75,9 @@ class SgeScheduler(Scheduler):
         qsub: path to qsub command
         qstat: path to qstat command
         qdel: path to qdel command
-        sge_*: SGE options for qsub. List or tuple options will be expanded.
+        ...: other Scheduler args. List or tuple options will be expanded.
             For example: `sge_l=['hvmem=2G', 'gpu=1']` will be expaned into
             `-l h_vmem=2G -l gpu=1`
-        ... other Scheduler args
     """
 
     name: str = "sge"
@@ -89,6 +90,8 @@ class SgeScheduler(Scheduler):
         self.qdel = kwargs.pop("qdel", "qdel")
         self.qstat = kwargs.pop("qstat", "qstat")
         super().__init__(*args, **kwargs)
+        if isinstance(self.workdir, CloudPath):
+            raise ValueError("'local' scheduler does not support cloud path as workdir")
 
     async def submit_job(self, job: Job) -> str:
         """Submit a job to SGE
@@ -101,7 +104,7 @@ class SgeScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.qsub,
-            runnable(job.wrapped_script(self)),
+            localize(job.wrapped_script(self)),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

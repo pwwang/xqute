@@ -9,7 +9,7 @@ def submit_job():
 
 
 def describe_job(jid):
-    if jid.count("-") < 5:
+    if jid.count("-") < 2:
         print("Job not found")
         sys.exit(1)
 

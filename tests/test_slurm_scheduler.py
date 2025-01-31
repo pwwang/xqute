@@ -3,8 +3,8 @@ import stat
 import pytest
 from pathlib import Path
 
-from xqute.schedulers.slurm_scheduler import SlurmJob, SlurmScheduler
-from xqute.defaults import DEFAULT_JOB_METADIR, JobStatus
+from xqute.schedulers.slurm_scheduler import SlurmScheduler
+from xqute.defaults import JobStatus
 
 MOCKS = Path(__file__).parent / "mocks"
 
@@ -20,14 +20,17 @@ def setup_module():
 
 
 @pytest.mark.asyncio
-async def test_job():
-    job = SlurmJob(0, ["echo", 1])
+async def test_job(tmp_path):
     scheduler = SlurmScheduler(
-        forks=1, slurm_mem="4G", sbatch_p="gpu"
+        forks=1,
+        mem="4G",
+        p="gpu",
+        workdir=tmp_path,
     )
+    job = scheduler.create_job(0, ["echo", 1])
     assert (
         job.wrapped_script(scheduler)
-        == Path(DEFAULT_JOB_METADIR) / "0" / "job.wrapped.slurm"
+        == tmp_path / "0" / "job.wrapped.slurm"
     )
 
     script = job.wrap_script(scheduler)
@@ -36,13 +39,13 @@ async def test_job():
 
 
 @pytest.mark.asyncio
-async def test_scheduler(capsys):
-    job = SlurmJob(0, ["echo", 1])
+async def test_scheduler(tmp_path):
     sbatch = str(MOCKS / "sbatch")
     scancel = str(MOCKS / "scancel")
     squeue = str(MOCKS / "squeue")
 
-    scheduler = SlurmScheduler(1, sbatch=sbatch, scancel=scancel, squeue=squeue)
+    scheduler = SlurmScheduler(tmp_path, sbatch=sbatch, scancel=scancel, squeue=squeue)
+    job = scheduler.create_job(0, ["echo", 1])
     assert await scheduler.submit_job(job) == "613815"
     job.jid = "613815"
     await scheduler.kill_job(job)
@@ -59,13 +62,13 @@ async def test_scheduler(capsys):
 
 
 @pytest.mark.asyncio
-async def test_submission_failure(capsys):
-    job = SlurmJob(0, ["echo", 1])
+async def test_submission_failure(tmp_path):
     sbatch = str(MOCKS / "no_such_sbatch")
     scancel = str(MOCKS / "scancel")
     squeue = str(MOCKS / "squeue")
 
-    scheduler = SlurmScheduler(1, sbatch=sbatch, scancel=scancel, squeue=squeue)
+    scheduler = SlurmScheduler(tmp_path, sbatch=sbatch, scancel=scancel, squeue=squeue)
+    job = scheduler.create_job(0, ["echo", 1])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False

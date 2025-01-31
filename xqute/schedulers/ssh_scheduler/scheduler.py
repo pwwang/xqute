@@ -5,14 +5,13 @@ import asyncio
 from typing import Mapping, Type
 
 from ...scheduler import Scheduler
-from ...utils import runnable
+from ...utils import chmodx, localize
 from ...job import Job
-from ..local_scheduler import LocalJob
 
 from .client import SSHClient
 
 
-class SshJob(LocalJob):
+class SshJob(Job):
     """SSH job"""
 
 
@@ -24,8 +23,7 @@ class SshScheduler(Scheduler):
         job_class: The job class
 
     Args:
-        ssh_*: SSH options
-        ... other Scheduler args
+        ...: other Scheduler args
     """
     name: str = "ssh"
     job_class: Type[Job] = SshJob
@@ -67,8 +65,7 @@ class SshScheduler(Scheduler):
         await server.connect()
 
         rc, stdout, stderr = await server.submit(
-            *self.script_wrapper_lang,
-            runnable(job.wrapped_script(self)),
+            chmodx(localize((job.wrapped_script(self))))
         )
         if rc != 0:
             job.stdout_file.write_bytes(stdout)

@@ -1,12 +1,21 @@
 import os
 import stat
 import pytest
+from cloudpathlib import AnyPath
 from pathlib import Path
+from uuid import uuid4
 
-from xqute.schedulers.gbatch_scheduler import GBatchJob, GBatchScheduler
-from xqute.defaults import DEFAULT_JOB_METADIR, JobStatus
+from xqute.schedulers.gbatch_scheduler import GbatchScheduler
+from xqute.defaults import JobStatus
 
 MOCKS = Path(__file__).parent / "mocks"
+# Make a fixture to get a unique workdir directory each time
+WORKDIR = AnyPath("gs://handy-buffer-287000.appspot.com/xqute_gbatch_test")
+WORKDIR = WORKDIR / str(uuid4())
+
+
+def teardown_module():
+    WORKDIR.rmtree()
 
 
 @pytest.fixture
@@ -19,49 +28,57 @@ def gcloud():
 
 @pytest.mark.asyncio
 async def test_job():
-    job = GBatchJob(0, ["echo", 1])
-    scheduler = GBatchScheduler(
-        project_id="test-project", location="us-central1", jobname_prefix="jobprefix"
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
     )
+    job = scheduler.create_job(0, ["echo", 1])
     assert (
-        job.wrapped_script(scheduler)
-        == Path(DEFAULT_JOB_METADIR) / "0" / "job.wrapped.gbatch"
+        job.wrapped_script(scheduler) == scheduler.workdir / "0" / "job.wrapped.gbatch"
     )
 
     script = job.wrap_script(scheduler)
-    assert "jobprefix.0" in script
+    assert "/mnt/.xqute_workdir/0/job.status" in script
 
 
 @pytest.mark.asyncio
-async def test_scheduler(capsys, gcloud):
-    job = GBatchJob(0, ["echo", 1])
+async def test_scheduler(gcloud):
 
-    scheduler = GBatchScheduler(
-        project_id="test-project", location="us-central1", gcloud=gcloud
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        gcloud=gcloud,
+        workdir=WORKDIR,
     )
-    assert await scheduler.submit_job(job) == "jobprefix.1-7a1654ca-211c-40e8-b0fb-8a00"
-    job.jid = "jobprefix.1-7a1654ca-211c-40e8-b0fb-8a00"
+    job = scheduler.create_job(0, ["echo", 1])
+    assert (await scheduler.submit_job(job)).startswith("gbatch-")
+    job.jid = "gbatch-36760976-0"
     await scheduler.kill_job(job)
     if job.jid_file.is_file():
-        os.unlink(job.jid_file)
+        job.jid_file.unlink()
     job._jid = None
+    assert not job.jid_file.is_file()
     assert await scheduler.job_is_running(job) is False
 
-    job.jid_file.write_text("jobprefix.1-7a1654ca-211c-40e8-b0fb-8a00")
+    job.jid_file.write_text("gbatch-36760976-0")
     assert await scheduler.job_is_running(job) is True
 
     job.jid_file.write_text("wrongjobid")
     assert await scheduler.job_is_running(job) is False
+    job.jid_file.unlink()
 
 
 @pytest.mark.asyncio
-async def test_submission_failure(capsys):
-    job = GBatchJob(0, ["echo", 1])
+async def test_submission_failure():
     gcloud = str(MOCKS / "no_such_gcloud")
 
-    scheduler = GBatchScheduler(
-        project_id="test-project", location="us-central1", gcloud=gcloud
+    scheduler = GbatchScheduler(
+        project="test-project", location="us-central1", gcloud=gcloud,
+        workdir=WORKDIR,
     )
+    job = scheduler.create_job(0, ["echo", 1])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False

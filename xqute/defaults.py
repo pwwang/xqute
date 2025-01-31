@@ -1,14 +1,14 @@
 """Default settings and utilities for xqute
 
 Attributes:
-    DEFAULT_JOB_METADIR: The default meta directory for jobs
-    DEFAULT_JOB_ERROR_STRATEGY: The default strategy when there is
+    DEFAULT_WORKDIR: The default work directory for jobs to save the metadata
+    DEFAULT_ERROR_STRATEGY: The default strategy when there is
         error happened
-    DEFAULT_JOB_NUM_RETRIES: Default number of retries when
-        DEFAULT_JOB_ERROR_STRATEGY is retry
+    DEFAULT_NUM_RETRIES: Default number of retries when
+        DEFAULT_ERROR_STRATEGY is retry
     DEFAULT_JOB_CMD_WRAPPER_SHELL: The default shell for job wrapper
     DEFAULT_SCHEDULER_FORKS: Default number of job forks for scheduler
-    DEFAULT_JOB_SUBMISSION_BATCH: Default consumer workers
+    DEFAULT_SUBMISSION_BATCH: Default consumer workers
 """
 from __future__ import annotations
 
@@ -85,8 +85,53 @@ class JobStatus:
 LOGGER_NAME = 'XQUTE'
 
 DEFAULT_SCHEDULER_FORKS: int = 1
-DEFAULT_JOB_METADIR = './.xqute'
-DEFAULT_JOB_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
-DEFAULT_JOB_NUM_RETRIES: int = 3
-DEFAULT_JOB_SUBMISSION_BATCH: int = 8
-DEFAULT_JOB_SCRIPT_WRAPPER_LANG: str = '/bin/bash'
+DEFAULT_WORKDIR = './.xqute'
+DEFAULT_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
+DEFAULT_NUM_RETRIES: int = 3
+DEFAULT_SUBMISSION_BATCH: int = 8
+JOBCMD_WRAPPER_LANG: str = '/bin/bash'
+JOBCMD_WRAPPER_TEMPLATE: str = r"""#!{shebang}
+set -u -e -E -o pipefail
+
+echo {status.RUNNING} > {job.remote_status_file}
+
+# plugins.on_jobcmd_init
+{jobcmd_init}
+
+# prescript
+{prescript}
+
+cleanup() {{
+    rc=$?
+    echo $rc > {job.remote_rc_file}
+    if [[ $rc -eq 0 ]]; then
+        echo {status.FINISHED} > {job.remote_status_file}
+    else
+        echo {status.FAILED} > {job.remote_status_file}
+    fi
+    rm -f {job.remote_jid_file}
+
+    # postscript
+    {postscript}
+
+    # plugins.on_jobcmd_end
+    {jobcmd_end}
+
+    sync
+    exit $rc
+}}
+
+# register trap
+trap "cleanup" EXIT
+
+
+cmd="{cmd} \
+    1>{job.remote_stdout_file} \
+    2>{job.remote_stderr_file}"
+
+# plugins.on_jobcmd_prep
+{jobcmd_prep}
+
+# Run the command, the real job
+eval "$cmd"
+"""

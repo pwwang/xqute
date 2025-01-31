@@ -1,11 +1,20 @@
 """The scheduler to run jobs on Slurm"""
 import asyncio
+import hashlib
 import shlex
 from typing import Type
 
+from cloudpathlib import CloudPath
+
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import runnable
+from ..defaults import (
+    JobStatus,
+    JOBCMD_WRAPPER_LANG,
+    JOBCMD_WRAPPER_TEMPLATE,
+)
+from ..utils import localize
+from ..plugin import plugin
 
 
 class SlurmJob(Job):
@@ -20,20 +29,10 @@ class SlurmJob(Job):
         Returns:
             The shebang with options
         """
-        options = {
-            key[6:]: val
-            for key, val in scheduler.config.items()
-            if key.startswith("slurm_")
-        }
-        sbatch_options = {
-            key[7:]: val
-            for key, val in scheduler.config.items()
-            if key.startswith("sbatch_")
-        }
-        options.update(sbatch_options)
+        options = scheduler.config.copy()
 
-        jobname_prefix = scheduler.config.get("jobname_prefix", scheduler.name)
-        options["job-name"] = f"{jobname_prefix}.{self.index}"
+        sha = hashlib.sha256(str(scheduler.workdir).encode()).hexdigest()[:8]
+        options["job-name"] = f"{scheduler.jobname_prefix}-{sha}-{self.index}"
         # options["chdir"] = str(Path.cwd().resolve())
         options["output"] = self.stdout_file
         options["error"] = self.stderr_file
@@ -47,19 +46,22 @@ class SlurmJob(Job):
                 fmt = "#SBATCH --{key}={val}"
             options_list.append(fmt.format(key=key, val=val))
 
-        script = [
-            "#!" + " ".join(map(shlex.quote, scheduler.script_wrapper_lang))
-        ]
-        script.extend(options_list)
-        script.append("")
-        script.append("set -u -e -E -o pipefail")
-        script.append("")
-        script.append("# BEGIN: setup script")
-        script.append(scheduler.setup_script)
-        script.append("# END: setup script")
-        script.append("")
-        script.append(self.launch(scheduler))
-        return "\n".join(script)
+        jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
+        jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
+        jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
+        shebang = " ".join(map(shlex.quote, JOBCMD_WRAPPER_LANG)) + "\n"
+        shebang += "\n".join(options_list) + "\n"
+        return JOBCMD_WRAPPER_TEMPLATE.format(
+            shebang=shebang,
+            status=JobStatus,
+            job=self,
+            jobcmd_init="\n".join(jobcmd_init),
+            jobcmd_prep="\n".join(jobcmd_prep),
+            jobcmd_end="\n".join(jobcmd_end),
+            cmd=shlex.join(self.cmd),
+            prescript=scheduler.prescript,
+            postscript=scheduler.postscript,
+        )
 
 
 class SlurmScheduler(Scheduler):
@@ -73,7 +75,6 @@ class SlurmScheduler(Scheduler):
         sbatch: path to sbatch command
         squeue: path to squeue command
         scancel: path to scancel command
-        slurm_*: Slurm options for sbatch.
         ... other Scheduler args
     """
 
@@ -87,6 +88,8 @@ class SlurmScheduler(Scheduler):
         self.squeue = kwargs.pop("squeue", "squeue")
         self.scancel = kwargs.pop("scancel", "scancel")
         super().__init__(*args, **kwargs)
+        if isinstance(self.workdir, CloudPath):
+            raise ValueError("'local' scheduler does not support cloud path as workdir")
 
     async def submit_job(self, job: Job) -> str:
         """Submit a job to Slurm
@@ -99,7 +102,7 @@ class SlurmScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.sbatch,
-            runnable(job.wrapped_script(self)),
+            localize(job.wrapped_script(self)),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

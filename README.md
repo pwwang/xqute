@@ -72,16 +72,18 @@ await xqute.put(['echo', 1])
 xqute = Xqute(
     'sge',
     forks=100,
-    sched_qsub='path to qsub',
-    sched_qdel='path to qdel',
-    sched_qstat='path to qstat',
-    sched_sge_q='1-day',  # or qsub_q='1-day'
+    scheduler_opts=dict(
+        qsub='path to qsub',
+        qdel='path to qdel',
+        qstat='path to qstat',
+        q='1-day',  # or qsub_q='1-day'
+    )
     ...
 )
 ```
 
 Keyword-arguments with names starting with `sge_` will be interpreted as `qsub` options. `list` or `tuple` option values will be expanded. For example:
-`sge_l=['h_vmem=2G', 'gpu=1']` will be expanded in wrapped script like this:
+`l=['h_vmem=2G', 'gpu=1']` will be expanded in wrapped script like this:
 
 ```shell
 # ...
@@ -102,8 +104,8 @@ xqute = Xqute(
         "sbatch": 'path to sbatch',
         "scancel": 'path to scancel',
         "squeue": 'path to squeue',
-        "sbatch_partition": '1-day',  # or slurm_partition='1-day'
-        "sbatch_time": '01:00:00',
+        "partition": '1-day',  # or partition='1-day'
+        "time": '01:00:00',
         ...
     },
 )
@@ -177,15 +179,16 @@ def on_init(scheduler):
 
 ### Implementing a scheduler
 
-Currently there are only 2 builtin schedulers: `local` and `sge`.
+Currently there are a few builtin schedulers: `local`, `slurm`, `gbatch` and `sge`.
 
 One can implement a scheduler by subclassing the `Scheduler` abstract class. There are three abstract methods that have to be implemented in the subclass:
 
 ```python
 from xqute import Scheduer
 
+
 class MyScheduler(Scheduler):
-    name = 'my'
+    name = 'mysched'
     job_class: MyJob
 
     async def submit_job(self, job):
@@ -200,13 +203,11 @@ class MyScheduler(Scheduler):
         """Check if a job is running"""
 ```
 
-As you may see, we may also need to implement a job class before `MyScheduler`. The only abstract method to be implemented is `wrap_cmd`:
+As you may see, we may also need to implement a job class before `MyScheduler`.
 
 ```python
 from xqute import Job
 
 class MyJob(Job):
-
-    def shebang(self, scheduler: Scheduler) -> str:
-        """The shebang and the options for the job script"""
+    ...
 ```

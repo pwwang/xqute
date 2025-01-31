@@ -3,14 +3,18 @@
 from __future__ import annotations
 
 import shlex
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from abc import ABC
+from typing import TYPE_CHECKING, Tuple
 
 from cloudpathlib import AnyPath
 
-from .defaults import DEFAULT_JOB_METADIR, JobStatus
-from .utils import logger, rmtree, PathType
+from .defaults import (
+    JobStatus,
+    JOBCMD_WRAPPER_LANG,
+    JOBCMD_WRAPPER_TEMPLATE,
+)
 from .plugin import plugin
+from .utils import logger, rmtree, PathType, CommandType
 
 if TYPE_CHECKING:  # pragma: no cover
     from .scheduler import Scheduler
@@ -35,7 +39,6 @@ class Job(ABC):
         _rc: The return code of the job
         _error_retry: Whether we should retry if error happened
         _num_retries: Total number of retries
-        _wrapped_cmd: The wrapped cmd, used for job submission
 
     Args:
         index: The index of the job
@@ -56,23 +59,39 @@ class Job(ABC):
         "_error_retry",
         "_num_retries",
         "prev_status",
+        "remote_metadir",
     )
 
     def __init__(
         self,
         index: int,
-        cmd: str | Tuple[str, ...] | List[str],
-        metadir: PathType = DEFAULT_JOB_METADIR,
-        error_retry: Optional[bool] = None,
-        num_retries: Optional[int] = None,
+        cmd: CommandType,
+        workdir: PathType,
+        error_retry: bool | None = None,
+        num_retries: int | None = None,
+        remote_workdir: PathType | None = None,
     ):
-        """Construct"""
-        self.cmd: List[str] = (
-            cmd if isinstance(cmd, (tuple, list)) else shlex.split(cmd)
+        """Construct a new Job
+
+        Args:
+            index: The index of the job
+            cmd: The command of the job
+            metadir: The meta directory of the Job
+            error_retry: Whether we should retry if error happened
+            num_retries: Total number of retries
+        """
+        self.cmd: Tuple[str] = tuple(
+            map(
+                str,
+                (cmd if isinstance(cmd, (tuple, list)) else shlex.split(cmd)),
+            )
         )
         self.index = index
-        self.metadir = AnyPath(metadir) / str(self.index)
+        self.metadir = AnyPath(workdir) / str(self.index)
         self.metadir.mkdir(exist_ok=True, parents=True)
+        # In case the job is running on a remote system (e.g. cloud)
+        remote_workdir = remote_workdir or workdir
+        self.remote_metadir = AnyPath(remote_workdir) / str(self.index)
 
         # The name of the job, should be the unique id from the scheduler
         self.trial_count = 0
@@ -112,9 +131,19 @@ class Job(ABC):
         return self.metadir / "job.stdout"
 
     @property
+    def remote_stdout_file(self) -> PathType:
+        """The remote stdout file of the job"""
+        return self.remote_metadir / "job.stdout"
+
+    @property
     def stderr_file(self) -> PathType:
         """The stderr file of the job"""
         return self.metadir / "job.stderr"
+
+    @property
+    def remote_stderr_file(self) -> PathType:
+        """The stderr file of the job"""
+        return self.remote_metadir / "job.stderr"
 
     @property
     def status_file(self) -> PathType:
@@ -122,9 +151,19 @@ class Job(ABC):
         return self.metadir / "job.status"
 
     @property
+    def remote_status_file(self) -> PathType:
+        """The remote status file of the job"""
+        return self.remote_metadir / "job.status"
+
+    @property
     def rc_file(self) -> PathType:
         """The rc file of the job"""
         return self.metadir / "job.rc"
+
+    @property
+    def remote_rc_file(self) -> PathType:
+        """The remote rc file of the job"""
+        return self.remote_metadir / "job.rc"
 
     @property
     def jid_file(self) -> PathType:
@@ -132,9 +171,19 @@ class Job(ABC):
         return self.metadir / "job.jid"
 
     @property
+    def remote_jid_file(self) -> PathType:
+        """The remote jid file of the job"""
+        return self.remote_metadir / "job.jid"
+
+    @property
     def retry_dir(self) -> PathType:
         """The retry directory of the job"""
         return self.metadir / "job.retry"
+
+    @property
+    def remote_retry_dir(self) -> PathType:
+        """The remote retry directory of the job"""
+        return self.remote_metadir / "job.retry"
 
     @property
     def status(self) -> int:
@@ -225,43 +274,6 @@ class Job(ABC):
                 if file.is_file():
                     file.unlink()
 
-    def launch(self, scheduler: Scheduler) -> str:
-        """The command to launch the job.
-
-        This will be inserted into the wrapped script.
-
-        Args:
-            scheduler: The scheduler
-
-        Returns:
-            The command to launch the job
-        """
-        # By default, suppose the interpreter is the same as the daemon
-        # It requires this package to be installed with the python in the scheduler
-        # system
-        from . import __version__
-
-        plugins = plugin.get_enabled_plugins()
-        launch_cmd = [
-            scheduler.python,
-            "-m",
-            "xqute",
-            "++metadir",
-            self.metadir,
-            "++scheduler",
-            scheduler.name,
-            "++version",
-            __version__,
-            "++cmd",
-        ]
-        launch_cmd.extend(self.cmd)
-        for name, plug in plugins.items():
-            launch_cmd.extend(["++plugin", f"{name}:{plug.version}"])
-
-        out = "\n# Launch the job\n"
-        return out + " ".join(shlex.quote(str(cmditem)) for cmditem in launch_cmd)
-
-    @abstractmethod
     def wrap_script(self, scheduler: Scheduler) -> str:
         """Wrap the script with the template
 
@@ -271,8 +283,22 @@ class Job(ABC):
         Returns:
             The wrapped script
         """
+        jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
+        jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
+        jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
+        return JOBCMD_WRAPPER_TEMPLATE.format(
+            shebang=JOBCMD_WRAPPER_LANG,
+            status=JobStatus,
+            job=self,
+            jobcmd_init="\n".join(jobcmd_init),
+            jobcmd_prep="\n".join(jobcmd_prep),
+            jobcmd_end="\n".join(jobcmd_end),
+            cmd=shlex.join(self.cmd),
+            prescript=scheduler.prescript,
+            postscript=scheduler.postscript,
+        )
 
-    def wrapped_script(self, scheduler: Scheduler) -> PathType:
+    def wrapped_script(self, scheduler: Scheduler, remote: bool = False) -> PathType:
         """Get the wrapped script
 
         Args:
@@ -281,6 +307,8 @@ class Job(ABC):
         Returns:
             The path of the wrapped script
         """
-        wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
+        base = f"job.wrapped.{scheduler.name}"
+        wrapt_script = self.metadir / base
         wrapt_script.write_text(self.wrap_script(scheduler))
-        return wrapt_script
+
+        return (self.remote_metadir / base) if remote else wrapt_script

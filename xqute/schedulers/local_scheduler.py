@@ -1,12 +1,12 @@
 """The scheduler to run jobs locally"""
 import asyncio
 import os
-import shlex
 from typing import Type
+from cloudpathlib import CloudPath
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import runnable
+from ..utils import localize, chmodx
 
 
 def _pid_exists(pid: int) -> bool:
@@ -21,20 +21,6 @@ def _pid_exists(pid: int) -> bool:
 class LocalJob(Job):
     """Local job"""
 
-    def wrap_script(self, scheduler: Scheduler) -> str:
-        script = [
-            "#!" + " ".join(map(shlex.quote, scheduler.script_wrapper_lang))
-        ]
-        script.append("")
-        script.append("set -u -e -E -o pipefail")
-        script.append("")
-        script.append("# BEGIN: setup script")
-        script.append(scheduler.setup_script)
-        script.append("# END: setup script")
-        script.append("")
-        script.append(self.launch(scheduler))
-        return "\n".join(script)
-
 
 class LocalScheduler(Scheduler):
     """The local scheduler
@@ -47,6 +33,11 @@ class LocalScheduler(Scheduler):
     name = "local"
     job_class: Type[Job] = LocalJob
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if isinstance(self.workdir, CloudPath):
+            raise ValueError("'local' scheduler does not support cloud path as workdir")
+
     async def submit_job(self, job: Job) -> int:
         """Submit a job locally
 
@@ -56,9 +47,9 @@ class LocalScheduler(Scheduler):
         Returns:
             The process id
         """
+        wrapt_script = chmodx(localize(job.wrapped_script(self)))
         proc = await asyncio.create_subprocess_exec(
-            *self.script_wrapper_lang,
-            runnable(job.wrapped_script(self)),
+            wrapt_script,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -69,7 +60,7 @@ class LocalScheduler(Scheduler):
             if proc.returncode is not None:
                 # The process has already finished and no stdout/stderr files are
                 # generated
-                # Something went wrong
+                # Something went wrong with the wrapper script?
                 stdout = await proc.stdout.read()
                 stderr = await proc.stderr.read()
                 job.stdout_file.write_bytes(stdout)
