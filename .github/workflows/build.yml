@@ -23,7 +23,7 @@ jobs:
           python -m pip install poetry
           poetry config virtualenvs.create false
           python -m pip install flake8
-          poetry install -v -E meta-gcs
+          poetry install -v -E gcs
           poetry show
       - name: Run flake8
         run: flake8 xqute
