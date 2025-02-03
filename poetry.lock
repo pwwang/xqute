@@ -1639,8 +1639,9 @@ type = ["pytest-mypy"]
 
 [extras]
 gcs = ["google-cloud-storage"]
+gs = ["google-cloud-storage"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "84ea576fb6effa9d678445fc6eff3c4d628a7f8b9f2df870b3cc9feaf50e80eb"
+content-hash = "5d98da4a4103a722561590e1221a538b585e9211b395984e1d3ecea3f584058f"
