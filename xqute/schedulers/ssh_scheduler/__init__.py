@@ -1,1 +1,1 @@
-from .scheduler import SshScheduler, SshJob
+from .scheduler import SshScheduler

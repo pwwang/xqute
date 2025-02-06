@@ -1,4 +1,5 @@
 """Hook specifications for scheduler plugins"""
+
 from __future__ import annotations
 
 import signal

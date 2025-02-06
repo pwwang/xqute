@@ -1,18 +1,16 @@
 """The scheduler to run jobs on SSH"""
+
 from __future__ import annotations
 
 import asyncio
-from typing import Mapping, Type
+import shlex
+from typing import Mapping
 
 from ...scheduler import Scheduler
-from ...utils import chmodx, localize
+from ...utils import localize
 from ...job import Job
 
 from .client import SSHClient
-
-
-class SshJob(Job):
-    """SSH job"""
 
 
 class SshScheduler(Scheduler):
@@ -25,14 +23,14 @@ class SshScheduler(Scheduler):
     Args:
         ...: other Scheduler args
     """
+
     name: str = "ssh"
-    job_class: Type[Job] = SshJob
 
     __slots__ = Scheduler.__slots__ + ("ssh", "servers")
 
     def __init__(self, *args, **kwargs):
-        self.ssh = kwargs.pop('ssh', 'ssh')
-        ssh_servers = kwargs.pop('servers', {})
+        self.ssh = kwargs.pop("ssh", "ssh")
+        ssh_servers = kwargs.pop("servers", {})
         super().__init__(*args, **kwargs)
         self.servers: Mapping[str, SSHClient] = {}
         if isinstance(ssh_servers, (tuple, list)):
@@ -65,16 +63,15 @@ class SshScheduler(Scheduler):
         await server.connect()
 
         rc, stdout, stderr = await server.submit(
-            chmodx(localize((job.wrapped_script(self))))
+            *shlex.split(self.jobcmd_shebang(job)),
+            localize((self.wrapped_job_script(job))),
         )
         if rc != 0:
             job.stdout_file.write_bytes(stdout)
             job.stderr_file.write_bytes(stderr)
-            raise RuntimeError(
-                f"Failed to submit job #{job.index}: {stderr.decode()}"
-            )
+            raise RuntimeError(f"Failed to submit job #{job.index}: {stderr.decode()}")
         try:
-            pid, server = stdout.decode().split('@', 1)
+            pid, server = stdout.decode().split("@", 1)
         except (ValueError, TypeError):  # pragma: no cover
             raise RuntimeError(
                 f"Failed to submit job #{job.index}: "
@@ -103,7 +100,7 @@ class SshScheduler(Scheduler):
             job: The job
         """
         try:
-            pid, server = str(job.jid).split('@', 1)
+            pid, server = str(job.jid).split("@", 1)
             await self.servers[server].kill(pid)
         except Exception:  # pragma: no cover
             pass
@@ -128,7 +125,7 @@ class SshScheduler(Scheduler):
             return False
 
         try:
-            pid, server = jid.split('@', 1)
+            pid, server = jid.split("@", 1)
         except (ValueError, TypeError):  # pragma: no cover
             # Can be the jid file by a different scheduler from previous runs
             return False

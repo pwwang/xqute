@@ -6,7 +6,7 @@ from pathlib import Path
 from xqute.schedulers.slurm_scheduler import SlurmScheduler
 from xqute.defaults import JobStatus
 
-from .conftest import BUCKET
+# from .conftest import BUCKET
 
 MOCKS = Path(__file__).parent / "mocks"
 
@@ -21,11 +21,6 @@ def setup_module():
         os.chmod(str(cmd), st.st_mode | stat.S_IEXEC)
 
 
-def test_error_with_cloud_workdir():
-    with pytest.raises(ValueError):
-        SlurmScheduler(f"{BUCKET}/xqute_slurm_test")
-
-
 def test_job(tmp_path):
     scheduler = SlurmScheduler(
         forks=1,
@@ -35,11 +30,11 @@ def test_job(tmp_path):
     )
     job = scheduler.create_job(0, ["echo", 1])
     assert (
-        job.wrapped_script(scheduler)
+        scheduler.wrapped_job_script(job)
         == tmp_path / "0" / "job.wrapped.slurm"
     )
 
-    script = job.wrap_script(scheduler)
+    script = scheduler.wrap_job_script(job)
     assert "#SBATCH --mem=4G" in script
     assert "#SBATCH -p gpu" in script
 

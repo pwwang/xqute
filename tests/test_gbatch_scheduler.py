@@ -65,13 +65,14 @@ async def test_job():
     )
     job = scheduler.create_job(0, ["echo", 1])
     assert (
-        job.wrapped_script(scheduler) == scheduler.workdir / "0" / "job.wrapped.gbatch"
+        scheduler.wrapped_job_script(job)
+        == scheduler.workdir / "0" / "job.wrapped.gbatch"
     )
     assert (
-        job.remote_retry_dir == Path("/mnt/.xqute_workdir/") / "0" / "job.retry"
+        job.remote_metadir == Path("/mnt/.xqute_workdir/0")
     )
 
-    script = job.wrap_script(scheduler)
+    script = scheduler.wrap_job_script(job)
     assert "/mnt/.xqute_workdir/0/job.status" in script
 
 

@@ -1,68 +1,11 @@
 """The scheduler to run jobs on Slurm"""
+
 import asyncio
 import hashlib
-import shlex
-from typing import Type
-
-from cloudpathlib import CloudPath
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..defaults import (
-    JobStatus,
-    JOBCMD_WRAPPER_LANG,
-    JOBCMD_WRAPPER_TEMPLATE,
-)
 from ..utils import localize
-from ..plugin import plugin
-
-
-class SlurmJob(Job):
-    """Slurm job"""
-
-    def wrap_script(self, scheduler: Scheduler) -> str:
-        """Make the shebang with options
-
-        Args:
-            scheduler: The scheduler
-
-        Returns:
-            The shebang with options
-        """
-        options = scheduler.config.copy()
-
-        sha = hashlib.sha256(str(scheduler.workdir).encode()).hexdigest()[:8]
-        options["job-name"] = f"{scheduler.jobname_prefix}-{sha}-{self.index}"
-        # options["chdir"] = str(Path.cwd().resolve())
-        options["output"] = self.stdout_file
-        options["error"] = self.stderr_file
-
-        options_list = []
-        for key, val in options.items():
-            key = key.replace("_", "-")
-            if len(key) == 1:
-                fmt = "#SBATCH -{key} {val}"
-            else:
-                fmt = "#SBATCH --{key}={val}"
-            options_list.append(fmt.format(key=key, val=val))
-
-        jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
-        jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
-        jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
-        shebang = " ".join(map(shlex.quote, JOBCMD_WRAPPER_LANG)) + "\n"
-        shebang += "\n".join(options_list) + "\n"
-        return JOBCMD_WRAPPER_TEMPLATE.format(
-            shebang=shebang,
-            status=JobStatus,
-            job=self,
-            jobcmd_init="\n".join(jobcmd_init),
-            jobcmd_prep="\n".join(jobcmd_prep),
-            jobcmd_end="\n".join(jobcmd_end),
-            cmd=shlex.join(self.cmd),
-            prescript=scheduler.prescript,
-            postscript=scheduler.postscript,
-            keep_jid_file=False,
-        )
 
 
 class SlurmScheduler(Scheduler):
@@ -80,7 +23,6 @@ class SlurmScheduler(Scheduler):
     """
 
     name: str = "slurm"
-    job_class: Type[Job] = SlurmJob
 
     __slots__ = Scheduler.__slots__ + ("sbatch", "squeue", "scancel")
 
@@ -89,8 +31,26 @@ class SlurmScheduler(Scheduler):
         self.squeue = kwargs.pop("squeue", "squeue")
         self.scancel = kwargs.pop("scancel", "scancel")
         super().__init__(*args, **kwargs)
-        if isinstance(self.workdir, CloudPath):
-            raise ValueError("'local' scheduler does not support cloud path as workdir")
+
+    def jobcmd_shebang(self, job) -> str:
+        options = self.config.copy()
+
+        sha = hashlib.sha256(str(self.workdir).encode()).hexdigest()[:8]
+        options["job-name"] = f"{self.jobname_prefix}-{sha}-{job.index}"
+        # options["chdir"] = str(Path.cwd().resolve())
+        # options["output"] = self.stdout_file
+        # options["error"] = self.stderr_file
+
+        options_list = []
+        for key, val in options.items():
+            key = key.replace("_", "-")
+            if len(key) == 1:
+                fmt = "#SBATCH -{key} {val}"
+            else:
+                fmt = "#SBATCH --{key}={val}"
+            options_list.append(fmt.format(key=key, val=val))
+
+        return super().jobcmd_shebang(job) + "\n" + "\n".join(options_list) + "\n"
 
     async def submit_job(self, job: Job) -> str:
         """Submit a job to Slurm
@@ -103,7 +63,7 @@ class SlurmScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.sbatch,
-            localize(job.wrapped_script(self)),
+            localize(self.wrapped_job_script(job)),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -163,9 +123,7 @@ class SlurmScheduler(Scheduler):
             return False
 
         # ['8792', 'queue', 'merge', 'user', 'R', '7:34:34', '1', 'server']
-        st = (
-            await proc.stdout.read()  # type: ignore
-        ).decode().strip().split()[4]
+        st = (await proc.stdout.read()).decode().strip().split()[4]  # type: ignore
         # If job is still take resources, it is running
         return st in (
             "R",

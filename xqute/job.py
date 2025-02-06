@@ -3,25 +3,16 @@
 from __future__ import annotations
 
 import shlex
-from abc import ABC
-from typing import TYPE_CHECKING, Tuple
+from typing import Tuple
 
 from cloudpathlib import AnyPath
 
-from .defaults import (
-    JobStatus,
-    JOBCMD_WRAPPER_LANG,
-    JOBCMD_WRAPPER_TEMPLATE,
-)
-from .plugin import plugin
+from .defaults import JobStatus
 from .utils import logger, rmtree, PathType, CommandType
 
-if TYPE_CHECKING:  # pragma: no cover
-    from .scheduler import Scheduler
 
-
-class Job(ABC):
-    """The abstract class for job
+class Job:
+    """The class for job
 
     Attributes:
         CMD_WRAPPER_TEMPLATE: The template for job wrapping
@@ -131,19 +122,9 @@ class Job(ABC):
         return self.metadir / "job.stdout"
 
     @property
-    def remote_stdout_file(self) -> PathType:
-        """The remote stdout file of the job"""
-        return self.remote_metadir / "job.stdout"
-
-    @property
     def stderr_file(self) -> PathType:
         """The stderr file of the job"""
         return self.metadir / "job.stderr"
-
-    @property
-    def remote_stderr_file(self) -> PathType:
-        """The stderr file of the job"""
-        return self.remote_metadir / "job.stderr"
 
     @property
     def status_file(self) -> PathType:
@@ -151,19 +132,9 @@ class Job(ABC):
         return self.metadir / "job.status"
 
     @property
-    def remote_status_file(self) -> PathType:
-        """The remote status file of the job"""
-        return self.remote_metadir / "job.status"
-
-    @property
     def rc_file(self) -> PathType:
         """The rc file of the job"""
         return self.metadir / "job.rc"
-
-    @property
-    def remote_rc_file(self) -> PathType:
-        """The remote rc file of the job"""
-        return self.remote_metadir / "job.rc"
 
     @property
     def jid_file(self) -> PathType:
@@ -171,19 +142,9 @@ class Job(ABC):
         return self.metadir / "job.jid"
 
     @property
-    def remote_jid_file(self) -> PathType:
-        """The remote jid file of the job"""
-        return self.remote_metadir / "job.jid"
-
-    @property
     def retry_dir(self) -> PathType:
         """The retry directory of the job"""
         return self.metadir / "job.retry"
-
-    @property
-    def remote_retry_dir(self) -> PathType:
-        """The remote retry directory of the job"""
-        return self.remote_metadir / "job.retry"
 
     @property
     def status(self) -> int:
@@ -273,43 +234,3 @@ class Job(ABC):
             for file in files_to_clean:
                 if file.is_file():
                     file.unlink()
-
-    def wrap_script(self, scheduler: Scheduler) -> str:
-        """Wrap the script with the template
-
-        Args:
-            scheduler: The scheduler
-
-        Returns:
-            The wrapped script
-        """
-        jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
-        jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
-        jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
-        return JOBCMD_WRAPPER_TEMPLATE.format(
-            shebang=JOBCMD_WRAPPER_LANG,
-            status=JobStatus,
-            job=self,
-            jobcmd_init="\n".join(jobcmd_init),
-            jobcmd_prep="\n".join(jobcmd_prep),
-            jobcmd_end="\n".join(jobcmd_end),
-            cmd=shlex.join(self.cmd),
-            prescript=scheduler.prescript,
-            postscript=scheduler.postscript,
-            keep_jid_file=False,
-        )
-
-    def wrapped_script(self, scheduler: Scheduler, remote: bool = False) -> PathType:
-        """Get the wrapped script
-
-        Args:
-            scheduler: The scheduler
-
-        Returns:
-            The path of the wrapped script
-        """
-        base = f"job.wrapped.{scheduler.name}"
-        wrapt_script = self.metadir / base
-        wrapt_script.write_text(self.wrap_script(scheduler))
-
-        return (self.remote_metadir / base) if remote else wrapt_script

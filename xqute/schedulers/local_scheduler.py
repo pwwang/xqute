@@ -1,12 +1,12 @@
 """The scheduler to run jobs locally"""
+
 import asyncio
 import os
-from typing import Type
-from cloudpathlib import CloudPath
+import shlex
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import localize, chmodx
+from ..utils import localize
 
 
 def _pid_exists(pid: int) -> bool:
@@ -18,10 +18,6 @@ def _pid_exists(pid: int) -> bool:
     return True
 
 
-class LocalJob(Job):
-    """Local job"""
-
-
 class LocalScheduler(Scheduler):
     """The local scheduler
 
@@ -31,12 +27,6 @@ class LocalScheduler(Scheduler):
     """
 
     name = "local"
-    job_class: Type[Job] = LocalJob
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if isinstance(self.workdir, CloudPath):
-            raise ValueError("'local' scheduler does not support cloud path as workdir")
 
     async def submit_job(self, job: Job) -> int:
         """Submit a job locally
@@ -47,8 +37,9 @@ class LocalScheduler(Scheduler):
         Returns:
             The process id
         """
-        wrapt_script = chmodx(localize(job.wrapped_script(self)))
+        wrapt_script = localize(self.wrapped_job_script(job))
         proc = await asyncio.create_subprocess_exec(
+            *shlex.split(self.jobcmd_shebang(job)),
             wrapt_script,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,

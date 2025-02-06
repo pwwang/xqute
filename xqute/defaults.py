@@ -10,9 +10,11 @@ Attributes:
     DEFAULT_SCHEDULER_FORKS: Default number of job forks for scheduler
     DEFAULT_SUBMISSION_BATCH: Default consumer workers
 """
+
 from __future__ import annotations
 
 import asyncio
+import textwrap
 from typing import Tuple
 import uvloop
 
@@ -27,9 +29,10 @@ class JobErrorStrategy:
         RETRY: retry the job
         HALT: halt the whole program
     """
-    IGNORE: str = 'ignore'
-    RETRY: str = 'retry'
-    HALT: str = 'halt'
+
+    IGNORE: str = "ignore"
+    RETRY: str = "retry"
+    HALT: str = "halt"
 
 
 class JobStatus:
@@ -52,6 +55,7 @@ class JobStatus:
         FINISHED: When a job is finished
         FAILED: When a job is failed
     """
+
     INIT: int = 0
     RETRYING: int = 1
     QUEUED: int = 2
@@ -82,43 +86,43 @@ class JobStatus:
         return ret_tuple[0]  # pragma: no cover
 
 
-LOGGER_NAME = 'XQUTE'
+LOGGER_NAME = "XQUTE"
 
 DEFAULT_SCHEDULER_FORKS: int = 1
-DEFAULT_WORKDIR = './.xqute'
+DEFAULT_WORKDIR = "./.xqute"
 DEFAULT_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
 DEFAULT_NUM_RETRIES: int = 3
 DEFAULT_SUBMISSION_BATCH: int = 8
-JOBCMD_WRAPPER_LANG: str = '/bin/bash'
+JOBCMD_WRAPPER_LANG: str = "/bin/bash"
 JOBCMD_WRAPPER_TEMPLATE: str = r"""#!{shebang}
 set -u -e -E -o pipefail
 
-echo {status.RUNNING} > {job.remote_status_file}
+{scheduler.jobcmd_wrapper_init}
+
+update_metafile "{status.RUNNING}" "{job.remote_metadir}/job.status"
 
 # plugins.on_jobcmd_init
-{jobcmd_init}
+{scheduler.jobcmd_init}
 
 # prescript
-{prescript}
+{scheduler.prescript}
 
 cleanup() {{
     rc=$?
-    echo $rc > {job.remote_rc_file}
+    update_metafile "$rc" "{job.remote_metadir}/job.rc"
     if [[ $rc -eq 0 ]]; then
-        echo {status.FINISHED} > {job.remote_status_file}
+        update_metafile "{status.FINISHED}" "{job.remote_metadir}/job.status"
     else
-        echo {status.FAILED} > {job.remote_status_file}
+        update_metafile "{status.FAILED}" "{job.remote_metadir}/job.status"
     fi
 
-    if [[ {keep_jid_file} == False ]]; then
-        rm -f {job.remote_jid_file}
-    fi
+    remove_metafile "{job.remote_metadir}/job.jid"
 
     # postscript
-    {postscript}
+    {scheduler.postscript}
 
     # plugins.on_jobcmd_end
-    {jobcmd_end}
+    {scheduler.jobcmd_end}
 
     sync
     exit $rc
@@ -127,14 +131,87 @@ cleanup() {{
 # register trap
 trap "cleanup" EXIT
 
-
-cmd="{cmd} \
-    1>{job.remote_stdout_file} \
-    2>{job.remote_stderr_file}"
+cmd=$(compose_cmd "{cmd}" "{job.remote_metadir}/job.stdout" "{job.remote_metadir}/job.stderr")
 
 # plugins.on_jobcmd_prep
-{jobcmd_prep}
+{scheduler.jobcmd_prep}
 
 # Run the command, the real job
 eval "$cmd"
-"""
+"""  # noqa: E501
+
+
+def get_jobcmd_wrapper_init(local: bool, remove_jid_after_done: bool) -> str:
+    """Get the job command wrapper initialization script
+
+    Args:
+        local: Whether the job is running locally
+        remove_jid_after_done: Whether to remove the remote job id file
+            after the job is done
+
+    Returns:
+        The job command wrapper initialization script
+    """
+    if local:
+        rm_file = (
+            'rm -f "$file"'
+            if remove_jid_after_done
+            else 'if [ "file" != *"job.jid" ]; then rm -f "$file"; fi'
+        )
+        return textwrap.dedent(
+            f"""
+            export META_ON_CLOUD=0
+            update_metafile() {{
+                local content=$1
+                local file=$2
+                echo "$content" > "$file"
+            }}
+            remove_metafile() {{
+                local file=$1
+                {rm_file}
+            }}
+            compose_cmd() {{
+                local cmd=$1
+                local stdout_file=$2
+                local stderr_file=$3
+                echo "$cmd 1>$stdout_file 2>$stderr_file"
+            }}
+            """
+        )
+    else:
+        rm_file = (
+            'cloudsh rm -f "$file"'
+            if remove_jid_after_done
+            else 'if [ "file" != *"job.jid" ]; then cloudsh rm -f "$file"; fi'
+        )
+        return textwrap.dedent(
+            f"""
+            export META_ON_CLOUD=1
+            # Check if cloudsh is installed
+            if ! command -v cloudsh &> /dev/null; then
+                echo "cloudsh is not installed to support cloud workdir, please install it first" 1>&2
+                exit 1
+            fi
+            update_metafile() {{
+                local content=$1
+                local file=$2
+                echo "$content" | cloudsh sink "$file"
+            }}
+            remove_metafile() {{
+                local file=$1
+                {rm_file}
+            }}
+            compose_cmd() {{
+                local cmd=$1
+                local stdout_file=$2
+                local stderr_file=$3
+                # create temp files to save stderr
+                stderrtmp=$(mktemp)
+                echo "$cmd 2>$stderrtmp | cloudsh sink $stdout_file; \\
+                    rc=\\$?; \\
+                    cloudsh cp $stderrtmp $stderr_file; \\
+                    rm -f $stderrtmp; \\
+                    exit \\$rc"
+            }}
+            """  # noqa: E501
+        )

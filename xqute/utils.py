@@ -2,7 +2,6 @@
 
 import logging
 import os
-import stat
 import shutil
 from pathlib import Path
 from typing import Union, Tuple, List
@@ -43,20 +42,6 @@ def localize(script: PathType) -> str:
         return str(script)
     # CloudPath
     return script.fspath
-
-
-def chmodx(path: str) -> str:
-    """Make a file executable
-
-    Args:
-        path: The path to the file
-
-    Returns:
-        The path to the file
-    """
-    st = os.stat(path)
-    os.chmod(path, st.st_mode | stat.S_IEXEC)
-    return path
 
 
 class DuplicateFilter(logging.Filter):

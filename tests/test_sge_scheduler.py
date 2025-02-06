@@ -6,8 +6,6 @@ from pathlib import Path
 from xqute.schedulers.sge_scheduler import SgeScheduler
 from xqute.defaults import JobStatus
 
-from .conftest import BUCKET
-
 MOCKS = Path(__file__).parent / "mocks"
 
 
@@ -35,11 +33,6 @@ def qstat():
     return cmd
 
 
-def test_error_with_cloud_workdir():
-    with pytest.raises(ValueError):
-        SgeScheduler(f"{BUCKET}/xqute_sge_test")
-
-
 @pytest.mark.asyncio
 async def test_job(tmp_path):
     scheduler = SgeScheduler(
@@ -50,9 +43,9 @@ async def test_job(tmp_path):
         workdir=tmp_path,
     )
     job = scheduler.create_job(0, ["echo", 1])
-    assert job.wrapped_script(scheduler) == tmp_path / "0" / "job.wrapped.sge"
+    assert scheduler.wrapped_job_script(job) == tmp_path / "0" / "job.wrapped.sge"
 
-    script = job.wrap_script(scheduler)
+    script = scheduler.wrap_job_script(job)
     assert "#$ -notify" in script
     assert "#$ -l vmem=2G" in script
     assert "#$ -l gpu=1" in script

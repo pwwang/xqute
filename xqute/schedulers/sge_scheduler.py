@@ -1,68 +1,11 @@
 """The scheduler to run jobs on SGE"""
+
 import asyncio
 import hashlib
-import shlex
-from typing import Type
-
-from cloudpathlib import CloudPath
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..defaults import (
-    JobStatus,
-    JOBCMD_WRAPPER_LANG,
-    JOBCMD_WRAPPER_TEMPLATE,
-)
 from ..utils import localize
-from ..plugin import plugin
-
-
-class SgeJob(Job):
-    """SGE job"""
-
-    def wrap_script(self, scheduler: Scheduler) -> str:
-        """Make the shebang with options
-
-        Args:
-            scheduler: The scheduler
-
-        Returns:
-            The shebang with options
-        """
-        options = scheduler.config.copy()
-        sha = hashlib.sha256(str(scheduler.workdir).encode()).hexdigest()[:8]
-        options["N"] = f"{scheduler.jobname_prefix}-{sha}-{self.index}"
-        options["cwd"] = True
-        options["o"] = self.stdout_file
-        options["e"] = self.stderr_file
-
-        options_list = []
-        for key, val in options.items():
-            if val is True:
-                options_list.append(f"#$ -{key}")
-            elif isinstance(val, (tuple, list)):
-                for optval in val:
-                    options_list.append(f"#$ -{key} {optval}")
-            else:
-                options_list.append(f"#$ -{key} {val}")
-
-        jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
-        jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
-        jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
-        shebang = " ".join(map(shlex.quote, JOBCMD_WRAPPER_LANG)) + "\n"
-        shebang += "\n".join(options_list) + "\n"
-        return JOBCMD_WRAPPER_TEMPLATE.format(
-            shebang=shebang,
-            status=JobStatus,
-            job=self,
-            jobcmd_init="\n".join(jobcmd_init),
-            jobcmd_prep="\n".join(jobcmd_prep),
-            jobcmd_end="\n".join(jobcmd_end),
-            cmd=shlex.join(self.cmd),
-            prescript=scheduler.prescript,
-            postscript=scheduler.postscript,
-            keep_jid_file=False,
-        )
 
 
 class SgeScheduler(Scheduler):
@@ -82,7 +25,6 @@ class SgeScheduler(Scheduler):
     """
 
     name: str = "sge"
-    job_class: Type[Job] = SgeJob
 
     __slots__ = Scheduler.__slots__ + ("qsub", "qdel", "qstat")
 
@@ -91,8 +33,26 @@ class SgeScheduler(Scheduler):
         self.qdel = kwargs.pop("qdel", "qdel")
         self.qstat = kwargs.pop("qstat", "qstat")
         super().__init__(*args, **kwargs)
-        if isinstance(self.workdir, CloudPath):
-            raise ValueError("'local' scheduler does not support cloud path as workdir")
+
+    def jobcmd_shebang(self, job) -> str:
+        options = self.config.copy()
+        sha = hashlib.sha256(str(self.workdir).encode()).hexdigest()[:8]
+        options["N"] = f"{self.jobname_prefix}-{sha}-{job.index}"
+        options["cwd"] = True
+        # options["o"] = self.stdout_file
+        # options["e"] = self.stderr_file
+
+        options_list = []
+        for key, val in options.items():
+            if val is True:
+                options_list.append(f"#$ -{key}")
+            elif isinstance(val, (tuple, list)):
+                for optval in val:
+                    options_list.append(f"#$ -{key} {optval}")
+            else:
+                options_list.append(f"#$ -{key} {val}")
+
+        return super().jobcmd_shebang(job) + "\n" + "\n".join(options_list)
 
     async def submit_job(self, job: Job) -> str:
         """Submit a job to SGE
@@ -105,7 +65,7 @@ class SgeScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.qsub,
-            localize(job.wrapped_script(self)),
+            localize(self.wrapped_job_script(job)),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

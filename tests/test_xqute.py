@@ -6,6 +6,7 @@ from simplug import NoSuchPlugin
 from xqute import Xqute, plugin
 from xqute.defaults import JobStatus
 from xqute.schedulers.local_scheduler import LocalScheduler
+from .conftest import BUCKET
 
 Xqute.EMPTY_BUFFER_SLEEP_TIME = 0.1
 
@@ -101,6 +102,14 @@ async def test_main(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_xqute_cloud_workdir():
+    xqute = Xqute(LocalScheduler, workdir=f"{BUCKET}/xqute_local_test")
+    await xqute.put(["echo", 1])
+    await xqute.run_until_complete()
+    assert xqute.jobs[0].rc == 0
+
+
+@pytest.mark.asyncio
 async def test_plugin(tmp_path, capsys):
     with plugin.plugins_context([EchoPlugin, JobFailPlugin]):
         xqute = Xqute("local", forks=1, workdir=tmp_path)
@@ -154,7 +163,7 @@ async def test_job_failed_hook(tmp_path, caplog, capsys):
         await xqute.put(["echo1", 1])
         await xqute.put(["echo", 1])
         await xqute.run_until_complete()
-        assert "Job Failed: <LocalJob-0" in capsys.readouterr().out
+        assert "Job Failed: <Job-0" in capsys.readouterr().out
         assert "/Job-0 Status changed: 'SUBMITTED' -> 'FAILED'" in caplog.text
         assert "/Job-1 Status changed: 'SUBMITTED' -> 'FINISHED'" in caplog.text
 

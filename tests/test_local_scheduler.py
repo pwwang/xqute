@@ -3,16 +3,17 @@ import pytest
 from pathlib import Path
 
 from xqute.defaults import JobStatus
-from xqute.schedulers.local_scheduler import LocalJob, LocalScheduler
+from xqute.schedulers.local_scheduler import LocalScheduler
 
 from .conftest import BUCKET
 
 MOCKS = Path(__file__).parent / "mocks"
 
 
-def test_error_with_cloud_workdir():
-    with pytest.raises(ValueError):
-        LocalScheduler(f"{BUCKET}/xqute_local_test")
+def test_with_cloud_workdir():
+    scheduler = LocalScheduler(workdir=f"{BUCKET}/xqute_local_test")
+    job = scheduler.create_job(0, ["echo", 1])
+    assert str(job.remote_metadir) == f"{BUCKET}/xqute_local_test/0"
 
 
 @pytest.mark.asyncio
@@ -26,14 +27,11 @@ async def test_scheduler(tmp_path):
 @pytest.mark.asyncio
 async def test_immediate_submission_failure(tmp_path):
 
-    class BadLocalJob(LocalJob):
-        def wrapped_script(self, scheduler):
-            wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
+    class BadLocalScheduler(LocalScheduler):
+        def wrapped_job_script(self, job):
+            wrapt_script = job.metadir / f"job.wrapped.{self.name}"
             wrapt_script.write_text("sleep 1; bad_non_existent_command")
             return wrapt_script
-
-    class BadLocalScheduler(LocalScheduler):
-        job_class = BadLocalJob
 
     scheduler = BadLocalScheduler(tmp_path)
     job = scheduler.create_job(0, ["echo", 1])
@@ -55,7 +53,8 @@ async def test_killing_running_jobs(tmp_path):
     await scheduler.submit_job_and_update_status(job1)
     await scheduler.submit_job_and_update_status(job2)
 
-    await asyncio.sleep(1)
+    while job1.status == JobStatus.INIT or job2.status == JobStatus.INIT:
+        await asyncio.sleep(.1)
     await scheduler.kill_running_jobs([job1, job2])
 
     assert job1.status == JobStatus.FINISHED

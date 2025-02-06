@@ -3,7 +3,7 @@ import stat
 import pytest
 from pathlib import Path
 
-from xqute.schedulers.ssh_scheduler import SshJob, SshScheduler
+from xqute.schedulers.ssh_scheduler import SshScheduler
 from xqute.defaults import JobStatus
 
 MOCKS = Path(__file__).parent / "mocks"
@@ -22,11 +22,11 @@ async def test_job(tmp_path):
     scheduler = SshScheduler(tmp_path, servers={"myserver": {"keyfile": "id_rsa"}})
     job = scheduler.create_job(0, ["echo", 1])
     assert (
-        job.wrapped_script(scheduler)
+        scheduler.wrapped_job_script(job)
         == tmp_path / "0" / "job.wrapped.ssh"
     )
 
-    script = job.wrap_script(scheduler)
+    script = scheduler.wrap_job_script(job)
     assert "#!" in script
 
 
@@ -113,14 +113,11 @@ def test_no_servers(tmp_path):
 async def test_immediate_submission_failure(tmp_path):
     ssh = str(MOCKS / "ssh")
 
-    class BadSshJob(SshJob):
-        def wrapped_script(self, scheduler):
-            wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
+    class BadSshScheduler(SshScheduler):
+        def wrapped_job_script(self, job):
+            wrapt_script = job.metadir / f"job.wrapped.{self.name}"
             wrapt_script.write_text("sleep 1; bad_non_existent_command")
             return wrapt_script
-
-    class BadSshScheduler(SshScheduler):
-        job_class = BadSshJob
 
     scheduler = BadSshScheduler(tmp_path, ssh=ssh, servers=["myserver"])
     job = scheduler.create_job(0, ["echo", 1])
@@ -136,14 +133,11 @@ async def test_immediate_submission_failure2(tmp_path):
     """No stdout/stderr files generated but submission finished"""
     ssh = str(MOCKS / "ssh")
 
-    class BadSshJob(SshJob):
-        def wrapped_script(self, scheduler):
-            wrapt_script = self.metadir / f"job.wrapped.{scheduler.name}"
+    class BadSshScheduler(SshScheduler):
+        def wrapped_job_script(self, job):
+            wrapt_script = job.metadir / f"job.wrapped.{self.name}"
             wrapt_script.write_text("echo 1")
             return wrapt_script
-
-    class BadSshScheduler(SshScheduler):
-        job_class = BadSshJob
 
     scheduler = BadSshScheduler(tmp_path, ssh=ssh, servers=["myserver"])
     job = scheduler.create_job(0, ["echo", 1])

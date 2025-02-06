@@ -17,7 +17,7 @@ class SSHClient:
         user: str | None = None,
         keyfile: str | None = None,
         ctrl_persist: int = 600,  # seconds
-        ctrl_dir: str | Path = gettempdir()
+        ctrl_dir: str | Path = gettempdir(),
     ):
         self.ssh = ssh
         self.server = server
@@ -30,7 +30,7 @@ class SSHClient:
             self.name = f"{user}@{server}:{port}"
         else:
             self.name = f"{server}:{port}"
-        self.ctrl_file = Path(ctrl_dir) / f'ssh-{self.name}.sock'
+        self.ctrl_file = Path(ctrl_dir) / f"ssh-{self.name}.sock"
         self._conn_lock = asyncio.Lock()
 
     @property
@@ -45,26 +45,27 @@ class SSHClient:
         async with self._conn_lock:
             command = [
                 self.ssh,
-                '-o', 'ControlMaster=auto',
-                '-o', f'ControlPath={self.ctrl_file}',
-                '-o', f'ControlPersist={self.ctrl_persist}',
+                "-o",
+                "ControlMaster=auto",
+                "-o",
+                f"ControlPath={self.ctrl_file}",
+                "-o",
+                f"ControlPersist={self.ctrl_persist}",
             ]
             if self.port:
-                command.extend(['-p', str(self.port)])
+                command.extend(["-p", str(self.port)])
             if self.keyfile:
-                command.extend(['-i', str(self.keyfile)])
+                command.extend(["-i", str(self.keyfile)])
             if self.user:
-                command.extend([f'{self.user}@{self.server}', 'true'])
+                command.extend([f"{self.user}@{self.server}", "true"])
             else:  # pragma: no cover
-                command.extend([self.server, 'true'])
+                command.extend([self.server, "true"])
 
             proc = await asyncio.create_subprocess_exec(*command)
             await proc.wait()
 
             if proc.returncode != 0 or not self.is_connected:
-                raise RuntimeError(
-                    f'Failed to connect to SSH server: {self.server}'
-                )
+                raise RuntimeError(f"Failed to connect to SSH server: {self.server}")
 
     def disconnect(self):
         if self.is_connected:
@@ -74,14 +75,15 @@ class SSHClient:
         cmds = map(str, cmds)
         command = [
             self.ssh,
-            '-o', f'ControlPath={self.ctrl_file}',
+            "-o",
+            f"ControlPath={self.ctrl_file}",
         ]
         if self.port:  # pragma: no cover
-            command.extend(['-p', str(self.port)])
+            command.extend(["-p", str(self.port)])
         if self.keyfile:
-            command.extend(['-i', str(self.keyfile)])
+            command.extend(["-i", str(self.keyfile)])
         if self.user:
-            command.extend([f'{self.user}@{self.server}', *cmds])
+            command.extend([f"{self.user}@{self.server}", *cmds])
         else:  # pragma: no cover
             command.extend([self.server, *cmds])
 
@@ -97,7 +99,7 @@ class SSHClient:
 
     async def submit(self, *cmds: Any) -> tuple[int, bytes, bytes]:
         """Submit a job to SSH, get the pid of the job on the remote server"""
-        submitter = Path(__file__).parent.resolve() / 'submitter.py'
+        submitter = Path(__file__).parent.resolve() / "submitter.py"
         proc = await self.create_proc(
             sys.executable,
             submitter,
@@ -110,7 +112,7 @@ class SSHClient:
 
     async def kill(self, pid: str):
         """Kill a job on SSH"""
-        await self.run('kill', '-9', f"{pid}")
+        await self.run("kill", "-9", f"{pid}")
 
     async def is_running(self, pid: str) -> bool:
-        return await self.run('kill', '-0', pid) == 0
+        return await self.run("kill", "-0", pid) == 0

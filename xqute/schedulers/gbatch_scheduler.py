@@ -9,61 +9,18 @@ from diot import Diot
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..defaults import (
-    JobStatus,
-    JobErrorStrategy,
-    JOBCMD_WRAPPER_LANG,
-    JOBCMD_WRAPPER_TEMPLATE,
-)
+from ..defaults import JobErrorStrategy, JOBCMD_WRAPPER_LANG, get_jobcmd_wrapper_init
 from ..utils import PathType, localize, logger
-from ..plugin import plugin
 
 
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")
 DEFAULT_REMOTE_WORKDIR = "/mnt/.xqute_workdir"
 
 
-class GbatchJob(Job):
-    """Job for Google Cloud Batch"""
-
-    def wrap_script(self, scheduler: Scheduler) -> str:
-        jobcmd_init = plugin.hooks.on_jobcmd_init(scheduler, self)
-        jobcmd_prep = plugin.hooks.on_jobcmd_prep(scheduler, self)
-        jobcmd_end = plugin.hooks.on_jobcmd_end(scheduler, self)
-
-        return JOBCMD_WRAPPER_TEMPLATE.format(
-            shebang=JOBCMD_WRAPPER_LANG,
-            status=JobStatus,
-            job=self,
-            jobcmd_init="\n".join(jobcmd_init),
-            jobcmd_prep="\n".join(jobcmd_prep),
-            jobcmd_end="\n".join(jobcmd_end),
-            cmd=shlex.join(self.cmd),
-            prescript=scheduler.prescript,
-            postscript=scheduler.postscript,
-            keep_jid_file=True,
-        )
-
-    def config_file(self, scheduler: Scheduler) -> PathType:
-        base = f"job.wrapped.{scheduler.name}.json"
-        conf_file = self.metadir / base
-
-        wrapt_script = self.wrapped_script(scheduler, remote=True)
-        config = deepcopy(scheduler.config)
-        config.taskGroups[0].taskSpec.runnables[0].script.text = shlex.join(
-            shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script)]
-        )
-        with conf_file.open("w") as f:
-            json.dump(config, f, indent=2)
-
-        return conf_file
-
-
 class GbatchScheduler(Scheduler):
     """Scheduler for Google Cloud Batch"""
 
     name = "gbatch"
-    job_class = GbatchJob
 
     __slots__ = Scheduler.__slots__ + (
         "gcloud",
@@ -115,10 +72,28 @@ class GbatchScheduler(Scheduler):
             )
 
         meta_volume = Diot()
-        meta_volume.gcs = Diot(remotePath='/'.join(self.workdir.parts[1:]))
+        meta_volume.gcs = Diot(remotePath="/".join(self.workdir.parts[1:]))
         meta_volume.mountPath = self.remote_workdir
 
         self.config.taskGroups[0].taskSpec.volumes.append(meta_volume)
+
+    @property
+    def jobcmd_wrapper_init(self) -> str:
+        return get_jobcmd_wrapper_init(True, self.remove_jid_after_done)
+
+    def job_config_file(self, job: Job) -> PathType:
+        base = f"job.wrapped.{self.name}.json"
+        conf_file = job.metadir / base
+
+        wrapt_script = self.wrapped_job_script(job, remote=True)
+        config = deepcopy(self.config)
+        config.taskGroups[0].taskSpec.runnables[0].script.text = shlex.join(
+            shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script)]
+        )
+        with conf_file.open("w") as f:
+            json.dump(config, f, indent=2)
+
+        return conf_file
 
     def create_job(self, index, cmd) -> Job:
         """Create a job
@@ -130,7 +105,7 @@ class GbatchScheduler(Scheduler):
         Returns:
             The new Job instance
         """
-        return self.job_class(
+        return Job(
             index=index,
             cmd=cmd,
             workdir=self.workdir,
@@ -185,7 +160,7 @@ class GbatchScheduler(Scheduler):
 
         sha = sha256(str(self.workdir).encode()).hexdigest()[:8]
         jobname = f"{self.jobname_prefix}-{sha}-{job.index}".lower()
-        conf_file = job.config_file(self)
+        conf_file = self.job_config_file(job)
         proc = await asyncio.create_subprocess_exec(
             self.gcloud,
             "batch",

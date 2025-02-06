@@ -3,20 +3,24 @@
 from __future__ import annotations
 
 import os
+import shlex
 import signal
 from abc import ABC, abstractmethod
-from typing import List, Type
+from typing import List
 
-from cloudpathlib import AnyPath
+from cloudpathlib import AnyPath, CloudPath
 from diot import Diot  # type: ignore
 
 from .defaults import (
     JobStatus,
     JobErrorStrategy,
+    JOBCMD_WRAPPER_LANG,
+    JOBCMD_WRAPPER_TEMPLATE,
     DEFAULT_ERROR_STRATEGY,
     DEFAULT_NUM_RETRIES,
+    get_jobcmd_wrapper_init,
 )
-from .utils import logger, CommandType
+from .utils import logger, CommandType, PathType
 from .job import Job
 from .plugin import plugin
 
@@ -25,7 +29,8 @@ class Scheduler(ABC):
     """The abstract class for scheduler
 
     Attributes:
-        job_class: The job class
+        name: The name of the scheduler
+        jobcmd_wrapper_init: The init script for the job command wrapper
 
     Args:
         workdir: The working directory
@@ -54,7 +59,7 @@ class Scheduler(ABC):
     )
 
     name: str
-    job_class: Type[Job]
+    remove_jid_after_done: bool = True
 
     def __init__(
         self,
@@ -87,7 +92,7 @@ class Scheduler(ABC):
         Returns:
             The job
         """
-        return self.job_class(
+        return Job(
             index=index,
             cmd=cmd,
             workdir=self.workdir,
@@ -137,7 +142,7 @@ class Scheduler(ABC):
                     self.name,
                     job.index,
                     job.jid,
-                    job.wrapped_script(self),
+                    self.wrapped_job_script(job),
                 )
 
                 job.status = JobStatus.SUBMITTED
@@ -283,6 +288,70 @@ class Scheduler(ABC):
                 job.status = JobStatus.SUBMITTED
                 return True
         return False
+
+    @property
+    def jobcmd_wrapper_init(self) -> str:
+        """The init script for the job command wrapper"""
+        return get_jobcmd_wrapper_init(
+            not isinstance(self.workdir, CloudPath),
+            self.remove_jid_after_done,
+        )
+
+    def jobcmd_shebang(self, job: Job) -> str:
+        """The shebang of the wrapper script"""
+        wrapper_lang = (
+            JOBCMD_WRAPPER_LANG
+            if isinstance(JOBCMD_WRAPPER_LANG, (tuple, list))
+            else [JOBCMD_WRAPPER_LANG]
+        )
+        return shlex.join(wrapper_lang)
+
+    @property
+    def jobcmd_init(self) -> str:
+        """The job command init"""
+        return "\n".join(plugin.hooks.on_jobcmd_init(self))
+
+    @property
+    def jobcmd_prep(self) -> str:
+        """The job command preparation"""
+        return "\n".join(plugin.hooks.on_jobcmd_prep(self))
+
+    @property
+    def jobcmd_end(self) -> str:
+        """The job command end"""
+        return "\n".join(plugin.hooks.on_jobcmd_end(self))
+
+    def wrap_job_script(self, job: Job) -> str:
+        """Wrap the job script
+
+        Args:
+            job: The job
+
+        Returns:
+            The wrapped script
+        """
+        return JOBCMD_WRAPPER_TEMPLATE.format(
+            scheduler=self,
+            shebang=self.jobcmd_shebang(job),
+            status=JobStatus,
+            job=job,
+            cmd=shlex.join(job.cmd),
+        )
+
+    def wrapped_job_script(self, job: Job, remote: bool = False) -> PathType:
+        """Get the wrapped job script
+
+        Args:
+            job: The job
+
+        Returns:
+            The path of the wrapped job script
+        """
+        base = f"job.wrapped.{self.name}"
+        wrapt_script = job.metadir / base
+        wrapt_script.write_text(self.wrap_job_script(job))
+
+        return (job.remote_metadir / base) if remote else wrapt_script
 
     @abstractmethod
     async def submit_job(self, job: Job) -> int | str:

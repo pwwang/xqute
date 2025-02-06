@@ -1,4 +1,5 @@
 """A job management system for python"""
+
 from .defaults import JobStatus, JobErrorStrategy
 from .xqute import Xqute
 from .plugin import plugin
