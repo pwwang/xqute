@@ -20,10 +20,12 @@ uvloop = "^0"
 cloudpathlib = "^0.20"
 argx = "^0.2.11"
 google-cloud-storage = {version = "^2.19.0", optional = true}
+cloudsh = {version = "^0.0.3", optional = true}
 
 [tool.poetry.extras]
 gcs = ["google-cloud-storage"]
 gs = ["google-cloud-storage"]
+cloudsh = ["cloudsh"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
