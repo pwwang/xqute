@@ -52,11 +52,13 @@ Available arguments are:
 
 - scheduler: The scheduler class or name
 - plugins: The plugins to enable/disable for this session
-- job_metadir: The job meta directory (Default: `./.xqute/`)
-- job_error_strategy: The strategy when there is error happened
-- job_num_retries: Max number of retries when job_error_strategy is retry
-- job_submission_batch: The number of consumers to submit jobs
-- **scheduler_opts: Additional keyword arguments for scheduler
+- workdir: The job meta directory (Default: `./.xqute/`)
+- forks: The number of jobs allowed to run at the same time
+- error_strategy: The strategy when there is error happened
+- num_retries: Max number of retries when job_error_strategy is retry
+- submission_batch: The number of consumers to submit jobs
+- scheduler_opts: Additional keyword arguments for scheduler
+- jobname_prefix: The prefix of the job name
 
 Note that the producer must be initialized in an event loop.
 
@@ -153,11 +155,15 @@ To write a plugin for `xqute`, you will need to implement the following hooks:
 - `async def on_job_killed(scheduler, job)`: When the job is killed
 - `async def on_job_failed(scheduler, job)`: When the job is failed
 - `async def on_job_succeeded(scheduler, job)`: When the job is succeeded
-- `def on_jobcmd_init(scheduler, job) -> str`: When the job command wrapper script is initialized before the prescript is run. This will replace the placeholder `#![jobcmd_init]` in the wrapper script.
-- `def on_jobcmd_prep(scheduler, job) -> str`: When the job command is right about to run in the wrapper script. This will replace the placeholder `#![jobcmd_prep]` in the wrapper script.
-- `def on_jobcmd_end(scheduler, job) -> str`: When the job command wrapper script is about to end and after the postscript is run. This will replace the placeholder `#![jobcmd_end]` in the wrapper script.
+- `def on_jobcmd_init(scheduler, job) -> str`: When the job command wrapper script is initialized before the prescript is run. This will replace the placeholder `{jobcmd_init}` in the wrapper script.
+- `def on_jobcmd_prep(scheduler, job) -> str`: When the job command is right about to run in the wrapper script. This will replace the placeholder `{jobcmd_prep}` in the wrapper script.
+- `def on_jobcmd_end(scheduler, job) -> str`: When the job command wrapper script is about to end and after the postscript is run. This will replace the placeholder `{jobcmd_end}` in the wrapper script.
 
-Note that all hooks are corotines except `on_init` and `on_shutdown`, that means you should also implement them as corotines (sync implementations are allowed but will be warned).
+Note that all hooks are corotines except `on_init`, `on_shutdown` and `on_jobcmd_*`, that means you should also implement them as corotines (sync implementations are allowed but will be warned).
+
+You may also check where the hooks are called in the following diagram:
+
+![xqute-design](./xqute-design.png)
 
 To implement a hook, you have to fetch the plugin manager:
 
@@ -189,7 +195,6 @@ from xqute import Scheduer
 
 class MyScheduler(Scheduler):
     name = 'mysched'
-    job_class: MyJob
 
     async def submit_job(self, job):
         """How to submit a job, return a unique id in the scheduler system
@@ -201,13 +206,4 @@ class MyScheduler(Scheduler):
 
     async def job_is_running(self, job):
         """Check if a job is running"""
-```
-
-As you may see, we may also need to implement a job class before `MyScheduler`.
-
-```python
-from xqute import Job
-
-class MyJob(Job):
-    ...
 ```
