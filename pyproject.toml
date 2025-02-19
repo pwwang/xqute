@@ -13,14 +13,13 @@ generate-setup-file = true
 
 [tool.poetry.dependencies]
 python = "^3.9"
-simplug = "^0.4"
-diot = "^0.2"
+simplug = "^0.5"
 rich = "^13"
 uvloop = "^0"
 cloudpathlib = "^0.20"
-argx = "^0.2.11"
-google-cloud-storage = {version = "^2.19.0", optional = true}
-cloudsh = {version = "^0.0.3", optional = true}
+argx = "^0.3"
+google-cloud-storage = {version = "^3.0", optional = true}
+cloudsh = {version = "^0.0.5", optional = true}
 
 [tool.poetry.extras]
 gcs = ["google-cloud-storage"]
@@ -29,7 +28,7 @@ cloudsh = ["cloudsh"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
-pytest-cov = "^5"
+pytest-cov = "^6"
 pytest-asyncio = "^0"
 python-dotenv = "^1"
 ipykernel = "^6.29.5"
