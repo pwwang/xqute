@@ -105,8 +105,11 @@ async def test_main(tmp_path):
 async def test_xqute_cloud_workdir():
     xqute = Xqute(LocalScheduler, workdir=f"{BUCKET}/xqute_local_test")
     await xqute.put(["echo", 1])
+    job = xqute.scheduler.create_job(1, ["echo", 1])
+    await xqute.put(job)
     await xqute.run_until_complete()
     assert xqute.jobs[0].rc == 0
+    assert xqute.jobs[1].rc == 0
 
 
 @pytest.mark.asyncio
