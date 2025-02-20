@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import shlex
-from typing import Mapping
 
 from ...scheduler import Scheduler
 from ...utils import localize
@@ -32,7 +31,7 @@ class SshScheduler(Scheduler):
         self.ssh = kwargs.pop("ssh", "ssh")
         ssh_servers = kwargs.pop("servers", {})
         super().__init__(*args, **kwargs)
-        self.servers: Mapping[str, SSHClient] = {}
+        self.servers = {}
         if isinstance(ssh_servers, (tuple, list)):
             ssh_servers = {server: {} for server in ssh_servers}
         for key, val in ssh_servers.items():
@@ -71,7 +70,7 @@ class SshScheduler(Scheduler):
             job.stderr_file.write_bytes(stderr)
             raise RuntimeError(f"Failed to submit job #{job.index}: {stderr.decode()}")
         try:
-            pid, server = stdout.decode().split("@", 1)
+            pid, srvname = stdout.decode().split("@", 1)
         except (ValueError, TypeError):  # pragma: no cover
             raise RuntimeError(
                 f"Failed to submit job #{job.index}: "
@@ -83,7 +82,7 @@ class SshScheduler(Scheduler):
             # too early
             # this happens for python < 3.12
             while not job.stderr_file.exists() or not job.stdout_file.exists():
-                if not await self.servers[server].is_running(pid):  # pragma: no cover
+                if not await self.servers[srvname].is_running(pid):  # pragma: no cover
                     job.stdout_file.write_bytes(stdout)
                     job.stderr_file.write_bytes(stderr)
 

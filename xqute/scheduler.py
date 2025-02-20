@@ -64,7 +64,7 @@ class Scheduler(ABC):
 
     def __init__(
         self,
-        workdir: str,
+        workdir: str | PathType,
         forks: int = 1,
         error_strategy: str = DEFAULT_ERROR_STRATEGY,
         num_retries: int = DEFAULT_NUM_RETRIES,
@@ -74,7 +74,7 @@ class Scheduler(ABC):
         **kwargs,
     ):
         self.forks = forks
-        self.workdir = AnyPath(workdir)
+        self.workdir: PathType = AnyPath(workdir)  # type: ignore[assignment]
         self.error_strategy = error_strategy
         self.num_retries = num_retries
         self.prescript = prescript

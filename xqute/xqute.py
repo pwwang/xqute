@@ -71,7 +71,7 @@ class Xqute:
         scheduler: str | Type[Scheduler] = "local",
         *,
         plugins: List[Any] | None = None,
-        workdir: PathType = DEFAULT_WORKDIR,
+        workdir: str | PathType = DEFAULT_WORKDIR,
         submission_batch: int = DEFAULT_SUBMISSION_BATCH,
         error_strategy: str = DEFAULT_ERROR_STRATEGY,
         num_retries: int = DEFAULT_NUM_RETRIES,
@@ -176,6 +176,7 @@ class Xqute:
             cmd: The command
         """
         from .job import Job
+
         if isinstance(cmd, Job):
             job = cmd
         else:

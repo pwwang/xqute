@@ -1,7 +1,6 @@
 """Utilities for xqute"""
 
 import logging
-import os
 import shutil
 from pathlib import Path
 from typing import Union, Tuple, List
@@ -11,7 +10,7 @@ from rich.logging import RichHandler
 
 from .defaults import LOGGER_NAME
 
-PathType = Union[str, os.PathLike, CloudPath]
+PathType = Union[Path, CloudPath]
 CommandType = Union[str, Tuple[str], List[str]]
 
 

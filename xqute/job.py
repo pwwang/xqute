@@ -71,18 +71,22 @@ class Job:
             error_retry: Whether we should retry if error happened
             num_retries: Total number of retries
         """
-        self.cmd: Tuple[str] = tuple(
+        self.cmd: Tuple[str, ...] = tuple(
             map(
                 str,
                 (cmd if isinstance(cmd, (tuple, list)) else shlex.split(cmd)),
             )
         )
         self.index = index
-        self.metadir = AnyPath(workdir) / str(self.index)
+        self.metadir: PathType = AnyPath(workdir) / str(
+            self.index
+        )  # type: ignore[operator]
         self.metadir.mkdir(exist_ok=True, parents=True)
         # In case the job is running on a remote system (e.g. cloud)
         remote_workdir = remote_workdir or workdir
-        self.remote_metadir = AnyPath(remote_workdir) / str(self.index)
+        self.remote_metadir: PathType = AnyPath(remote_workdir) / str(
+            self.index
+        )  # type: ignore[operator]
 
         # The name of the job, should be the unique id from the scheduler
         self.trial_count = 0
