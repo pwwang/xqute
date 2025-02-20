@@ -6,7 +6,7 @@ import os
 import shlex
 import signal
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Type
 
 from cloudpathlib import AnyPath, CloudPath
 from diot import Diot  # type: ignore
@@ -60,6 +60,7 @@ class Scheduler(ABC):
 
     name: str
     remove_jid_after_done: bool = True
+    job_class: Type[Job] = Job
 
     def __init__(
         self,
@@ -92,7 +93,7 @@ class Scheduler(ABC):
         Returns:
             The job
         """
-        return Job(
+        return self.job_class(
             index=index,
             cmd=cmd,
             workdir=self.workdir,
