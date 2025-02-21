@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 import shlex
 
+from cloudpathlib import CloudPath
+
 from ...scheduler import Scheduler
 from ...utils import localize
 from ...job import Job
@@ -66,8 +68,8 @@ class SshScheduler(Scheduler):
             localize((self.wrapped_job_script(job))),
         )
         if rc != 0:
-            job.stdout_file.write_bytes(stdout)
-            job.stderr_file.write_bytes(stderr)
+            # job.stdout_file.write_bytes(stdout)
+            # job.stderr_file.write_bytes(stderr)
             raise RuntimeError(f"Failed to submit job #{job.index}: {stderr.decode()}")
         try:
             pid, srvname = stdout.decode().split("@", 1)
@@ -83,13 +85,18 @@ class SshScheduler(Scheduler):
             # this happens for python < 3.12
             while not job.stderr_file.exists() or not job.stdout_file.exists():
                 if not await self.servers[srvname].is_running(pid):  # pragma: no cover
-                    job.stdout_file.write_bytes(stdout)
-                    job.stderr_file.write_bytes(stderr)
+                    # job.stdout_file.write_bytes(stdout)
+                    # job.stderr_file.write_bytes(stderr)
 
                     raise RuntimeError(
                         f"Failed to submit job #{job.index}: {stderr.decode()}"
                     )
-                await asyncio.sleep(0.1)  # pragma: no cover
+
+                if isinstance(job.metadir, CloudPath):  # pragma: no cover
+                    await asyncio.sleep(2)
+                else:  # pragma: no cover
+                    await asyncio.sleep(0.1)
+
         return stdout.decode()
 
     async def kill_job(self, job: Job):

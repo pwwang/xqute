@@ -4,6 +4,8 @@ import asyncio
 import os
 import shlex
 
+from cloudpathlib import CloudPath
+
 from ..job import Job
 from ..scheduler import Scheduler
 from ..utils import localize
@@ -52,13 +54,16 @@ class LocalScheduler(Scheduler):
                 # The process has already finished and no stdout/stderr files are
                 # generated
                 # Something went wrong with the wrapper script?
-                stdout = await proc.stdout.read()
                 stderr = await proc.stderr.read()
-                job.stdout_file.write_bytes(stdout)
-                job.stderr_file.write_bytes(stderr)
+                raise RuntimeError(
+                    f"Failed to submit job #{job.index}: {stderr.decode()}"
+                )
 
-                raise RuntimeError(stderr.decode())
-            await asyncio.sleep(0.1)
+            if isinstance(job.metadir, CloudPath):
+                await asyncio.sleep(2)
+            else:
+                await asyncio.sleep(0.1)
+
         # don't await for the results, as this will run the real command
         return proc.pid
 
