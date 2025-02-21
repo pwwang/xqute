@@ -307,20 +307,23 @@ class Scheduler(ABC):
         )
         return shlex.join(wrapper_lang)
 
-    @property
-    def jobcmd_init(self) -> str:
+    def jobcmd_init(self, job) -> str:
         """The job command init"""
-        return "\n".join(plugin.hooks.on_jobcmd_init(self))
+        codes = plugin.hooks.on_jobcmd_init(self, job)
+        codes = [code for code in codes if code]
+        return "\n".join(codes)
 
-    @property
-    def jobcmd_prep(self) -> str:
+    def jobcmd_prep(self, job) -> str:
         """The job command preparation"""
-        return "\n".join(plugin.hooks.on_jobcmd_prep(self))
+        codes = plugin.hooks.on_jobcmd_prep(self, job)
+        codes = [code for code in codes if code]
+        return "\n".join(codes)
 
-    @property
-    def jobcmd_end(self) -> str:
+    def jobcmd_end(self, job) -> str:
         """The job command end"""
-        return "\n".join(plugin.hooks.on_jobcmd_end(self))
+        codes = plugin.hooks.on_jobcmd_end(self, job)
+        codes = [code for code in codes if code]
+        return "\n".join(codes)
 
     def wrap_job_script(self, job: Job) -> str:
         """Wrap the job script
@@ -337,6 +340,9 @@ class Scheduler(ABC):
             status=JobStatus,
             job=job,
             cmd=shlex.join(job.cmd),
+            jobcmd_init=self.jobcmd_init(job),
+            jobcmd_prep=self.jobcmd_prep(job),
+            jobcmd_end=self.jobcmd_end(job),
         )
 
     def wrapped_job_script(self, job: Job, remote: bool = False) -> PathType:

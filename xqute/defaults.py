@@ -102,7 +102,7 @@ set -u -e -E -o pipefail
 update_metafile "{status.RUNNING}" "{job.remote_metadir}/job.status"
 
 # plugins.on_jobcmd_init
-{scheduler.jobcmd_init}
+{jobcmd_init}
 
 # prescript
 {scheduler.prescript}
@@ -122,7 +122,7 @@ cleanup() {{
     {scheduler.postscript}
 
     # plugins.on_jobcmd_end
-    {scheduler.jobcmd_end}
+    {jobcmd_end}
 
     sync
     exit $rc
@@ -134,7 +134,7 @@ trap "cleanup" EXIT
 cmd=$(compose_cmd "{cmd}" "{job.remote_metadir}/job.stdout" "{job.remote_metadir}/job.stderr")
 
 # plugins.on_jobcmd_prep
-{scheduler.jobcmd_prep}
+{jobcmd_prep}
 
 # Run the command, the real job
 eval "$cmd"
