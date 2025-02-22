@@ -14,7 +14,7 @@ from ..utils import PathType, localize, logger
 
 
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")
-DEFAULT_REMOTE_WORKDIR = "/mnt/.xqute_workdir"
+DEFAULT_MOUNTED_WORKDIR = "/mnt/.xqute_workdir"
 
 
 class GbatchScheduler(Scheduler):
@@ -26,7 +26,7 @@ class GbatchScheduler(Scheduler):
         "gcloud",
         "project",
         "location",
-        "remote_workdir",
+        "mounted_workdir",
     )
 
     def __init__(self, *args, project: str, location: str, **kwargs):
@@ -34,7 +34,7 @@ class GbatchScheduler(Scheduler):
         self.gcloud = kwargs.pop("gcloud", "gcloud")
         self.project = project
         self.location = location
-        self.remote_workdir = kwargs.pop("remote_workdir", DEFAULT_REMOTE_WORKDIR)
+        self.mounted_workdir = kwargs.pop("mounted_workdir", DEFAULT_MOUNTED_WORKDIR)
         super().__init__(*args, **kwargs)
 
         if not isinstance(self.workdir, GSPath):
@@ -73,7 +73,7 @@ class GbatchScheduler(Scheduler):
 
         meta_volume = Diot()
         meta_volume.gcs = Diot(remotePath="/".join(self.workdir.parts[1:]))
-        meta_volume.mountPath = self.remote_workdir
+        meta_volume.mountPath = self.mounted_workdir
 
         self.config.taskGroups[0].taskSpec.volumes.append(meta_volume)
 
@@ -85,7 +85,7 @@ class GbatchScheduler(Scheduler):
         base = f"job.wrapped.{self.name}.json"
         conf_file = job.metadir / base
 
-        wrapt_script = self.wrapped_job_script(job, remote=True)
+        wrapt_script = self.wrapped_job_script(job, mounted=True)
         config = deepcopy(self.config)
         config.taskGroups[0].taskSpec.runnables[0].script.text = shlex.join(
             shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script)]
@@ -111,7 +111,7 @@ class GbatchScheduler(Scheduler):
             workdir=self.workdir,
             error_retry=self.error_strategy == JobErrorStrategy.RETRY,
             num_retries=self.num_retries,
-            remote_workdir=self.remote_workdir,
+            mounted_workdir=self.mounted_workdir,
         )
 
     async def _delete_job(self, job: Job) -> None:

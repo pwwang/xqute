@@ -345,7 +345,7 @@ class Scheduler(ABC):
             jobcmd_end=self.jobcmd_end(job),
         )
 
-    def wrapped_job_script(self, job: Job, remote: bool = False) -> PathType:
+    def wrapped_job_script(self, job: Job, mounted: bool = False) -> PathType:
         """Get the wrapped job script
 
         Args:
@@ -358,7 +358,7 @@ class Scheduler(ABC):
         wrapt_script = job.metadir / base
         wrapt_script.write_text(self.wrap_job_script(job))
 
-        return (job.remote_metadir / base) if remote else wrapt_script
+        return (job.mounted_metadir / base) if mounted else wrapt_script
 
     @abstractmethod
     async def submit_job(self, job: Job) -> int | str:

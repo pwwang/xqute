@@ -100,8 +100,8 @@ set -u -E -o pipefail
 {scheduler.jobcmd_wrapper_init}
 
 # tell the xqute that the job is submitted
-update_metafile "{status.RUNNING}" "{job.remote_metadir}/job.status"
-update_metafile "" "{job.remote_metadir}/job.stdout"
+update_metafile "{status.RUNNING}" "{job.mounted_metadir}/job.status"
+update_metafile "" "{job.mounted_metadir}/job.stdout"
 
 # plugins.on_jobcmd_init
 {jobcmd_init}
@@ -111,14 +111,14 @@ update_metafile "" "{job.remote_metadir}/job.stdout"
 
 cleanup() {{
     rc=$?
-    update_metafile "$rc" "{job.remote_metadir}/job.rc"
+    update_metafile "$rc" "{job.mounted_metadir}/job.rc"
     if [[ $rc -eq 0 ]]; then
-        update_metafile "{status.FINISHED}" "{job.remote_metadir}/job.status"
+        update_metafile "{status.FINISHED}" "{job.mounted_metadir}/job.status"
     else
-        update_metafile "{status.FAILED}" "{job.remote_metadir}/job.status"
+        update_metafile "{status.FAILED}" "{job.mounted_metadir}/job.status"
     fi
 
-    remove_metafile "{job.remote_metadir}/job.jid"
+    remove_metafile "{job.mounted_metadir}/job.jid"
 
     # postscript
     {scheduler.postscript}
@@ -133,7 +133,7 @@ cleanup() {{
 # register trap
 trap "cleanup" EXIT
 
-cmd=$(compose_cmd "{cmd}" "{job.remote_metadir}/job.stdout" "{job.remote_metadir}/job.stderr")
+cmd=$(compose_cmd "{cmd}" "{job.mounted_metadir}/job.stdout" "{job.mounted_metadir}/job.stderr")
 
 # plugins.on_jobcmd_prep
 {jobcmd_prep}

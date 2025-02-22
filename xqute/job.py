@@ -50,7 +50,7 @@ class Job:
         "_error_retry",
         "_num_retries",
         "prev_status",
-        "remote_metadir",
+        "mounted_metadir",
     )
 
     def __init__(
@@ -60,7 +60,7 @@ class Job:
         workdir: PathType,
         error_retry: bool | None = None,
         num_retries: int | None = None,
-        remote_workdir: PathType | None = None,
+        mounted_workdir: PathType | None = None,
     ):
         """Construct a new Job
 
@@ -83,8 +83,8 @@ class Job:
         )  # type: ignore[operator]
         self.metadir.mkdir(exist_ok=True, parents=True)
         # In case the job is running on a remote system (e.g. cloud)
-        remote_workdir = remote_workdir or workdir
-        self.remote_metadir: PathType = AnyPath(remote_workdir) / str(
+        mounted_workdir = mounted_workdir or workdir
+        self.mounted_metadir: PathType = AnyPath(mounted_workdir) / str(
             self.index
         )  # type: ignore[operator]
 

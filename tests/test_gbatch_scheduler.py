@@ -69,7 +69,7 @@ async def test_job():
         == scheduler.workdir / "0" / "job.wrapped.gbatch"
     )
     assert (
-        job.remote_metadir == Path("/mnt/.xqute_workdir/0")
+        job.mounted_metadir == Path("/mnt/.xqute_workdir/0")
     )
 
     script = scheduler.wrap_job_script(job)
