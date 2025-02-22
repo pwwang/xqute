@@ -156,17 +156,18 @@ class GbatchScheduler(Scheduler):
             status = await self._get_job_status(job)
 
     async def submit_job(self, job: Job) -> str:
-        await self._delete_job(job)
 
         sha = sha256(str(self.workdir).encode()).hexdigest()[:8]
-        jobname = f"{self.jobname_prefix}-{sha}-{job.index}".lower()
+        job.jid = f"{self.jobname_prefix}-{sha}-{job.index}".lower()
+        await self._delete_job(job)
+
         conf_file = self.job_config_file(job)
         proc = await asyncio.create_subprocess_exec(
             self.gcloud,
             "batch",
             "jobs",
             "submit",
-            jobname,
+            job.jid,
             "--config",
             localize(conf_file),
             "--project",
@@ -185,7 +186,7 @@ class GbatchScheduler(Scheduler):
                 f"{conf_file}"
             )
 
-        return jobname
+        return job.jid
 
     async def kill_job(self, job: Job):
         command = [
@@ -240,7 +241,7 @@ class GbatchScheduler(Scheduler):
             return "UNKNOWN"
 
         stdout = (await proc.stdout.read()).decode()
-        return re.search(r"  state: (.+)", stdout).group(1)
+        return re.search(r"state: (.+)", stdout).group(1)
 
     async def job_is_running(self, job: Job) -> bool:
         status = await self._get_job_status(job)
