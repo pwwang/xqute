@@ -95,11 +95,13 @@ DEFAULT_NUM_RETRIES: int = 3
 DEFAULT_SUBMISSION_BATCH: int = 8
 JOBCMD_WRAPPER_LANG: str = "/bin/bash"
 JOBCMD_WRAPPER_TEMPLATE: str = r"""#!{shebang}
-set -u -e -E -o pipefail
+set -u -E -o pipefail
 
 {scheduler.jobcmd_wrapper_init}
 
+# tell the xqute that the job is submitted
 update_metafile "{status.RUNNING}" "{job.remote_metadir}/job.status"
+update_metafile "" "{job.remote_metadir}/job.stdout"
 
 # plugins.on_jobcmd_init
 {jobcmd_init}
@@ -209,8 +211,7 @@ def get_jobcmd_wrapper_init(local: bool, remove_jid_after_done: bool) -> str:
                 stderrtmp=$(mktemp)
                 echo "$cmd 2>$stderrtmp | cloudsh sink $stdout_file; \\
                     rc=\\$?; \\
-                    cloudsh cp $stderrtmp $stderr_file; \\
-                    rm -f $stderrtmp; \\
+                    cloudsh mv $stderrtmp $stderr_file; \\
                     exit \\$rc"
             }}
             """  # noqa: E501

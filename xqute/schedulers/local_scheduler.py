@@ -49,7 +49,7 @@ class LocalScheduler(Scheduler):
         # wait for a while to make sure the process is running
         # this is to avoid the real command is not run when proc is recycled too early
         # this happens for python < 3.12
-        while not job.stderr_file.exists() or not job.stdout_file.exists():
+        while not job.stderr_file.exists() and not job.stdout_file.exists():
             if proc.returncode is not None:
                 # The process has already finished and no stdout/stderr files are
                 # generated

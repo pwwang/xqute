@@ -83,7 +83,7 @@ class SshScheduler(Scheduler):
             # this is to avoid the real command is not run when proc is recycled
             # too early
             # this happens for python < 3.12
-            while not job.stderr_file.exists() or not job.stdout_file.exists():
+            while not job.stderr_file.exists() and not job.stdout_file.exists():
                 if not await self.servers[srvname].is_running(pid):  # pragma: no cover
                     # job.stdout_file.write_bytes(stdout)
                     # job.stderr_file.write_bytes(stderr)
