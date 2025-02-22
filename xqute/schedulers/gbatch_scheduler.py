@@ -105,7 +105,7 @@ class GbatchScheduler(Scheduler):
         Returns:
             The new Job instance
         """
-        return Job(
+        return self.job_class(
             index=index,
             cmd=cmd,
             workdir=self.workdir,
