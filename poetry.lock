@@ -278,21 +278,21 @@ s3 = ["boto3 (>=1.34.0)"]
 
 [[package]]
 name = "cloudsh"
-version = "0.0.5"
+version = "0.1.0"
 description = "A Python CLI wrapping common Linux commands for local/cloud files."
 optional = true
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "cloudsh-0.0.5-py3-none-any.whl", hash = "sha256:1c04b5914f665c69b74fc2192a5debe14bf15a51a45da0a1c71cc7f7313c6cb9"},
-    {file = "cloudsh-0.0.5.tar.gz", hash = "sha256:3936a4755a16010cc92ad75829b298158e05c6a29352b611ce7cfffb3dbca6de"},
+    {file = "cloudsh-0.1.0-py3-none-any.whl", hash = "sha256:2baa24f36e9565979b103ca7e351cd0f8a49c1be9f43c844d071ff9df05f13f0"},
+    {file = "cloudsh-0.1.0.tar.gz", hash = "sha256:aeadf68f59cca8ca8fc665f212eb760181e60c3182e84d25193bf495ee1c5e47"},
 ]
 
 [package.dependencies]
 argcomplete = ">=3.5.3,<4.0.0"
 argx = ">=0.3,<0.4"
-cloudpathlib = ">=0.20,<0.21"
 python-dateutil = ">=2.9.0.post0,<3.0.0"
 python-simpleconf = {version = ">=0.6,<0.7", extras = ["toml"]}
+yunpath = ">=0.0.1,<0.0.2"
 
 [package.extras]
 all = ["azure-storage-blob (>=12,<13)", "azure-storage-file-datalake (>=12,<13)", "boto3 (>=1.34,<2.0)", "google-cloud-storage (>=3.0,<4.0)"]
@@ -444,13 +444,13 @@ files = [
 
 [[package]]
 name = "decorator"
-version = "5.1.1"
+version = "5.2.1"
 description = "Decorators for Humans"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.8"
 files = [
-    {file = "decorator-5.1.1-py3-none-any.whl", hash = "sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186"},
-    {file = "decorator-5.1.1.tar.gz", hash = "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330"},
+    {file = "decorator-5.2.1-py3-none-any.whl", hash = "sha256:d316bb415a2d9e2d2b3abcc4084c6502fc09240e292cd76a76afc106a1c8e04a"},
+    {file = "decorator-5.2.1.tar.gz", hash = "sha256:65f266143752f734b0a7cc83c46f4618af75b8c5911b00ccb61d0ac9b6da0360"},
 ]
 
 [[package]]
@@ -1732,6 +1732,20 @@ files = [
 ]
 
 [[package]]
+name = "yunpath"
+version = "0.0.1"
+description = "Monkey patch cloudpathlib to fix issues or add features"
+optional = false
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "yunpath-0.0.1-py3-none-any.whl", hash = "sha256:a23126554c4ea90b208912056b99d3db5508321d8f4a112299fbf2620cba408f"},
+    {file = "yunpath-0.0.1.tar.gz", hash = "sha256:142219744c04836a01df7111152969f3456aa9a9cc325eaad99fbf19c28c2a7f"},
+]
+
+[package.dependencies]
+cloudpathlib = ">=0.20.0,<0.21.0"
+
+[[package]]
 name = "zipp"
 version = "3.21.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -1758,4 +1772,4 @@ gs = ["google-cloud-storage"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "68c5cbfa7900854d004072e22df784f3e3d78ec3a5af880ad844daa58e940e60"
+content-hash = "2d878f566e97685c0bb20239a6fbfe6ca3f2d6bd52a7359f83d92322148ade66"
