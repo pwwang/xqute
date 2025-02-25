@@ -8,7 +8,7 @@ from typing import Tuple
 from yunpath import AnyPath
 
 from .defaults import JobStatus
-from .utils import logger, rmtree, PathType, CommandType
+from .utils import logger, PathType, CommandType
 
 
 class Job:
@@ -228,7 +228,7 @@ class Job:
         if retry:
             retry_dir = self.retry_dir / str(self.trial_count)
             if retry_dir.exists():
-                rmtree(retry_dir)
+                retry_dir.rmtree()
             retry_dir.mkdir(parents=True)
 
             for file in files_to_clean:

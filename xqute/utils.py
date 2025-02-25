@@ -1,7 +1,6 @@
 """Utilities for xqute"""
 
 import logging
-import shutil
 from pathlib import Path
 from typing import Union, Tuple, List
 
@@ -12,19 +11,6 @@ from .defaults import LOGGER_NAME
 
 PathType = Union[Path, CloudPath]
 CommandType = Union[str, Tuple[str], List[str]]
-
-
-def rmtree(path: PathType):
-    """Remove a directory tree, including all its contents
-
-    Args:
-        path: The path to the directory
-    """
-    path = AnyPath(path)
-    if isinstance(path, Path):
-        shutil.rmtree(path)
-    else:
-        path.rmtree()
 
 
 def localize(script: PathType) -> str:

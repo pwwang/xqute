@@ -7,7 +7,6 @@ from uuid import uuid4
 
 from xqute.schedulers.gbatch_scheduler import GbatchScheduler
 from xqute.defaults import JobStatus
-from xqute.utils import rmtree
 
 from .conftest import BUCKET
 
@@ -18,7 +17,7 @@ WORKDIR = WORKDIR / str(uuid4())
 
 
 def teardown_module():
-    rmtree(WORKDIR)
+    WORKDIR.rmtree()
 
 
 @pytest.fixture
