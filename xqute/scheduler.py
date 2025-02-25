@@ -8,7 +8,7 @@ import signal
 from abc import ABC, abstractmethod
 from typing import List, Type
 
-from cloudpathlib import AnyPath, CloudPath
+from yunpath import AnyPath, CloudPath
 from diot import Diot  # type: ignore
 
 from .defaults import (

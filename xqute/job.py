@@ -5,7 +5,7 @@ from __future__ import annotations
 import shlex
 from typing import Tuple
 
-from cloudpathlib import AnyPath
+from yunpath import AnyPath
 
 from .defaults import JobStatus
 from .utils import logger, rmtree, PathType, CommandType

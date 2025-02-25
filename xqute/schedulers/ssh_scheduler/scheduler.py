@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import shlex
 
-from cloudpathlib import CloudPath
+from yunpath import CloudPath
 
 from ...scheduler import Scheduler
 from ...utils import localize

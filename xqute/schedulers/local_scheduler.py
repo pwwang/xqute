@@ -4,7 +4,7 @@ import asyncio
 import os
 import shlex
 
-from cloudpathlib import CloudPath
+from yunpath import CloudPath
 
 from ..job import Job
 from ..scheduler import Scheduler

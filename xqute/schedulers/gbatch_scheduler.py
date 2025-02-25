@@ -4,7 +4,7 @@ import re
 import shlex
 from copy import deepcopy
 from hashlib import sha256
-from cloudpathlib import GSPath
+from yunpath import GSPath
 from diot import Diot
 
 from ..job import Job

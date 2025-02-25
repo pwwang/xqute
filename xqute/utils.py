@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 from typing import Union, Tuple, List
 
-from cloudpathlib import CloudPath, AnyPath
+from yunpath import CloudPath, AnyPath
 from rich.logging import RichHandler
 
 from .defaults import LOGGER_NAME
