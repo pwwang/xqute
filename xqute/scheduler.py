@@ -8,7 +8,7 @@ import signal
 from abc import ABC, abstractmethod
 from typing import List, Type
 
-from yunpath import AnyPath, CloudPath
+from yunpath import CloudPath
 from diot import Diot  # type: ignore
 
 from .defaults import (
@@ -20,7 +20,7 @@ from .defaults import (
     DEFAULT_NUM_RETRIES,
     get_jobcmd_wrapper_init,
 )
-from .utils import logger, CommandType, PathType
+from .utils import logger, CommandType, PathType, DualPath
 from .job import Job
 from .plugin import plugin
 
@@ -74,7 +74,9 @@ class Scheduler(ABC):
         **kwargs,
     ):
         self.forks = forks
-        self.workdir: PathType = AnyPath(workdir)  # type: ignore[assignment]
+        mounted_workdir = kwargs.pop("mounted_workdir", None)
+        self.workdir = DualPath(workdir, mounted=mounted_workdir)
+
         self.error_strategy = error_strategy
         self.num_retries = num_retries
         self.prescript = prescript
@@ -294,7 +296,7 @@ class Scheduler(ABC):
     def jobcmd_wrapper_init(self) -> str:
         """The init script for the job command wrapper"""
         return get_jobcmd_wrapper_init(
-            not isinstance(self.workdir, CloudPath),
+            not isinstance(self.workdir.mounted, CloudPath),
             self.remove_jid_after_done,
         )
 
@@ -345,7 +347,7 @@ class Scheduler(ABC):
             jobcmd_end=self.jobcmd_end(job),
         )
 
-    def wrapped_job_script(self, job: Job, mounted: bool = False) -> PathType:
+    def wrapped_job_script(self, job: Job) -> DualPath:
         """Get the wrapped job script
 
         Args:
@@ -358,7 +360,7 @@ class Scheduler(ABC):
         wrapt_script = job.metadir / base
         wrapt_script.write_text(self.wrap_job_script(job))
 
-        return (job.mounted_metadir / base) if mounted else wrapt_script
+        return wrapt_script
 
     @abstractmethod
     async def submit_job(self, job: Job) -> int | str:

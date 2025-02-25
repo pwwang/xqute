@@ -46,7 +46,7 @@ async def test_scheduler(tmp_path):
     job.jid = "1234@me@myserver:22"
     await scheduler.kill_job(job)
     if job.jid_file.is_file():
-        os.unlink(job.jid_file)
+        job.jid_file.unlink()
     assert await scheduler.job_is_running(job) is False
 
     job.jid_file.write_text("")

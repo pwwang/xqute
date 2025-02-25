@@ -9,12 +9,12 @@ from diot import Diot
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..defaults import JobErrorStrategy, JOBCMD_WRAPPER_LANG, get_jobcmd_wrapper_init
-from ..utils import PathType, localize, logger
+from ..defaults import JOBCMD_WRAPPER_LANG, get_jobcmd_wrapper_init
+from ..utils import logger, DualPath
 
 
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")
-DEFAULT_MOUNTED_WORKDIR = "/mnt/.xqute_workdir"
+DEFAULT_MOUNTED_WORKDIR = "/mnt/xqute_workdir"
 
 
 class GbatchScheduler(Scheduler):
@@ -26,7 +26,6 @@ class GbatchScheduler(Scheduler):
         "gcloud",
         "project",
         "location",
-        "mounted_workdir",
     )
 
     def __init__(self, *args, project: str, location: str, **kwargs):
@@ -34,10 +33,10 @@ class GbatchScheduler(Scheduler):
         self.gcloud = kwargs.pop("gcloud", "gcloud")
         self.project = project
         self.location = location
-        self.mounted_workdir = kwargs.pop("mounted_workdir", DEFAULT_MOUNTED_WORKDIR)
+        kwargs.setdefault("mounted_workdir", DEFAULT_MOUNTED_WORKDIR)
         super().__init__(*args, **kwargs)
 
-        if not isinstance(self.workdir, GSPath):
+        if not isinstance(self.workdir.path, GSPath):
             raise ValueError(
                 "'gbatch' scheduler requires google cloud storage 'workdir'."
             )
@@ -72,8 +71,8 @@ class GbatchScheduler(Scheduler):
             )
 
         meta_volume = Diot()
-        meta_volume.gcs = Diot(remotePath="/".join(self.workdir.parts[1:]))
-        meta_volume.mountPath = self.mounted_workdir
+        meta_volume.gcs = Diot(remotePath=self.workdir._no_prefix)
+        meta_volume.mountPath = str(self.workdir.mounted)
 
         self.config.taskGroups[0].taskSpec.volumes.append(meta_volume)
 
@@ -81,11 +80,11 @@ class GbatchScheduler(Scheduler):
     def jobcmd_wrapper_init(self) -> str:
         return get_jobcmd_wrapper_init(True, self.remove_jid_after_done)
 
-    def job_config_file(self, job: Job) -> PathType:
+    def job_config_file(self, job: Job) -> DualPath:
         base = f"job.wrapped.{self.name}.json"
         conf_file = job.metadir / base
 
-        wrapt_script = self.wrapped_job_script(job, mounted=True)
+        wrapt_script = self.wrapped_job_script(job)
         config = deepcopy(self.config)
         config.taskGroups[0].taskSpec.runnables[0].script.text = shlex.join(
             shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script)]
@@ -94,25 +93,6 @@ class GbatchScheduler(Scheduler):
             json.dump(config, f, indent=2)
 
         return conf_file
-
-    def create_job(self, index, cmd) -> Job:
-        """Create a job
-
-        Args:
-            index: The index of the job
-            cmd: The command for the job
-
-        Returns:
-            The new Job instance
-        """
-        return self.job_class(
-            index=index,
-            cmd=cmd,
-            workdir=self.workdir,
-            error_retry=self.error_strategy == JobErrorStrategy.RETRY,
-            num_retries=self.num_retries,
-            mounted_workdir=self.mounted_workdir,
-        )
 
     async def _delete_job(self, job: Job) -> None:
         """Try to delete the job from google cloud's registry
@@ -169,7 +149,7 @@ class GbatchScheduler(Scheduler):
             "submit",
             job.jid,
             "--config",
-            localize(conf_file),
+            conf_file.fspath,
             "--project",
             self.project,
             "--location",
@@ -209,7 +189,7 @@ class GbatchScheduler(Scheduler):
         )
         await proc.wait()
 
-    async def _get_job_status(self, job) -> str:
+    async def _get_job_status(self, job: Job) -> str:
         if not job.jid_file.is_file():
             return "UNKNOWN"
 

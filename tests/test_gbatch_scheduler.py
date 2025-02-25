@@ -68,11 +68,11 @@ async def test_job():
         == scheduler.workdir / "0" / "job.wrapped.gbatch"
     )
     assert (
-        job.mounted_metadir == Path("/mnt/.xqute_workdir/0")
+        job.metadir.mounted == Path("/mnt/xqute_workdir/0")
     )
 
     script = scheduler.wrap_job_script(job)
-    assert "/mnt/.xqute_workdir/0/job.status" in script
+    assert "/mnt/xqute_workdir/0/job.status" in script
 
 
 @pytest.mark.asyncio

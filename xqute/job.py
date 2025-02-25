@@ -5,18 +5,14 @@ from __future__ import annotations
 import shlex
 from typing import Tuple
 
-from yunpath import AnyPath
-
 from .defaults import JobStatus
-from .utils import logger, PathType, CommandType
+from .utils import logger, CommandType, DualPath
 
 
 class Job:
     """The class for job
 
     Attributes:
-        CMD_WRAPPER_TEMPLATE: The template for job wrapping
-        CMD_WRAPPER_SHELL: The shell to run the wrapped script
 
         cmd: The command
         index: The index of the job
@@ -50,17 +46,15 @@ class Job:
         "_error_retry",
         "_num_retries",
         "prev_status",
-        "mounted_metadir",
     )
 
     def __init__(
         self,
         index: int,
         cmd: CommandType,
-        workdir: PathType,
+        workdir: DualPath,
         error_retry: bool | None = None,
         num_retries: int | None = None,
-        mounted_workdir: PathType | None = None,
     ):
         """Construct a new Job
 
@@ -78,15 +72,8 @@ class Job:
             )
         )
         self.index = index
-        self.metadir: PathType = AnyPath(workdir) / str(
-            self.index
-        )  # type: ignore[operator]
+        self.metadir = workdir / str(self.index)
         self.metadir.mkdir(exist_ok=True, parents=True)
-        # In case the job is running on a remote system (e.g. cloud)
-        mounted_workdir = mounted_workdir or workdir
-        self.mounted_metadir: PathType = AnyPath(mounted_workdir) / str(
-            self.index
-        )  # type: ignore[operator]
 
         # The name of the job, should be the unique id from the scheduler
         self.trial_count = 0
@@ -121,32 +108,32 @@ class Job:
         self.jid_file.write_text(str(uniqid))
 
     @property
-    def stdout_file(self) -> PathType:
+    def stdout_file(self) -> DualPath:
         """The stdout file of the job"""
         return self.metadir / "job.stdout"
 
     @property
-    def stderr_file(self) -> PathType:
+    def stderr_file(self) -> DualPath:
         """The stderr file of the job"""
         return self.metadir / "job.stderr"
 
     @property
-    def status_file(self) -> PathType:
+    def status_file(self) -> DualPath:
         """The status file of the job"""
         return self.metadir / "job.status"
 
     @property
-    def rc_file(self) -> PathType:
+    def rc_file(self) -> DualPath:
         """The rc file of the job"""
         return self.metadir / "job.rc"
 
     @property
-    def jid_file(self) -> PathType:
+    def jid_file(self) -> DualPath:
         """The jid file of the job"""
         return self.metadir / "job.jid"
 
     @property
-    def retry_dir(self) -> PathType:
+    def retry_dir(self) -> DualPath:
         """The retry directory of the job"""
         return self.metadir / "job.retry"
 
@@ -233,7 +220,7 @@ class Job:
 
             for file in files_to_clean:
                 if file.is_file():
-                    file.rename(retry_dir / file.name)
+                    file.path.rename(retry_dir.path / file.name)
         else:
             for file in files_to_clean:
                 if file.is_file():

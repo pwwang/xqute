@@ -8,7 +8,6 @@ import shlex
 from yunpath import CloudPath
 
 from ...scheduler import Scheduler
-from ...utils import localize
 from ...job import Job
 
 from .client import SSHClient
@@ -65,7 +64,7 @@ class SshScheduler(Scheduler):
 
         rc, stdout, stderr = await server.submit(
             *shlex.split(self.jobcmd_shebang(job)),
-            localize((self.wrapped_job_script(job))),
+            self.wrapped_job_script(job).fspath,
         )
         if rc != 0:
             # job.stdout_file.write_bytes(stdout)
@@ -83,7 +82,10 @@ class SshScheduler(Scheduler):
             # this is to avoid the real command is not run when proc is recycled
             # too early
             # this happens for python < 3.12
-            while not job.stderr_file.exists() and not job.stdout_file.exists():
+            while (
+                not job.stdout_file.exists()
+                and not job.stderr_file.exists()
+            ):
                 if not await self.servers[srvname].is_running(pid):  # pragma: no cover
                     # job.stdout_file.write_bytes(stdout)
                     # job.stderr_file.write_bytes(stderr)
@@ -92,7 +94,7 @@ class SshScheduler(Scheduler):
                         f"Failed to submit job #{job.index}: {stderr.decode()}"
                     )
 
-                if isinstance(job.metadir, CloudPath):  # pragma: no cover
+                if isinstance(job.stdout_file.path, CloudPath):  # pragma: no cover
                     await asyncio.sleep(2)
                 else:  # pragma: no cover
                     await asyncio.sleep(0.1)

@@ -5,7 +5,6 @@ import hashlib
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import localize
 
 
 class SgeScheduler(Scheduler):
@@ -65,7 +64,7 @@ class SgeScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.qsub,
-            localize(self.wrapped_job_script(job)),
+            self.wrapped_job_script(job).fspath,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

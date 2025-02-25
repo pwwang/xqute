@@ -8,7 +8,6 @@ from yunpath import CloudPath
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..utils import localize
 
 
 def _pid_exists(pid: int) -> bool:
@@ -39,7 +38,7 @@ class LocalScheduler(Scheduler):
         Returns:
             The process id
         """
-        wrapt_script = localize(self.wrapped_job_script(job))
+        wrapt_script = self.wrapped_job_script(job).fspath
         proc = await asyncio.create_subprocess_exec(
             *shlex.split(self.jobcmd_shebang(job)),
             wrapt_script,
@@ -49,7 +48,10 @@ class LocalScheduler(Scheduler):
         # wait for a while to make sure the process is running
         # this is to avoid the real command is not run when proc is recycled too early
         # this happens for python < 3.12
-        while not job.stderr_file.exists() and not job.stdout_file.exists():
+        while (
+            not job.stdout_file.exists()
+            and not job.stderr_file.exists()
+        ):
             if proc.returncode is not None:
                 # The process has already finished and no stdout/stderr files are
                 # generated
@@ -59,7 +61,7 @@ class LocalScheduler(Scheduler):
                     f"Failed to submit job #{job.index}: {stderr.decode()}"
                 )
 
-            if isinstance(job.metadir, CloudPath):
+            if isinstance(job.stdout_file.path, CloudPath):
                 await asyncio.sleep(2)
             else:
                 await asyncio.sleep(0.1)

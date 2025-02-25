@@ -100,8 +100,8 @@ set -u -E -o pipefail
 {scheduler.jobcmd_wrapper_init}
 
 # tell the xqute that the job is submitted
-update_metafile "{status.RUNNING}" "{job.mounted_metadir}/job.status"
-update_metafile "" "{job.mounted_metadir}/job.stdout"
+update_metafile "{status.RUNNING}" "{job.status_file.mounted}"
+update_metafile "" "{job.stdout_file.mounted}"
 
 # plugins.on_jobcmd_init
 {jobcmd_init}
@@ -111,14 +111,14 @@ update_metafile "" "{job.mounted_metadir}/job.stdout"
 
 cleanup() {{
     rc=$?
-    update_metafile "$rc" "{job.mounted_metadir}/job.rc"
+    update_metafile "$rc" "{job.rc_file.mounted}"
     if [[ $rc -eq 0 ]]; then
-        update_metafile "{status.FINISHED}" "{job.mounted_metadir}/job.status"
+        update_metafile "{status.FINISHED}" "{job.status_file.mounted}"
     else
-        update_metafile "{status.FAILED}" "{job.mounted_metadir}/job.status"
+        update_metafile "{status.FAILED}" "{job.status_file.mounted}"
     fi
 
-    remove_metafile "{job.mounted_metadir}/job.jid"
+    remove_metafile "{job.jid_file.mounted}"
 
     # postscript
     {scheduler.postscript}
@@ -133,7 +133,7 @@ cleanup() {{
 # register trap
 trap "cleanup" EXIT
 
-cmd=$(compose_cmd "{cmd}" "{job.mounted_metadir}/job.stdout" "{job.mounted_metadir}/job.stderr")
+cmd=$(compose_cmd "{cmd}" "{job.stdout_file.mounted}" "{job.stderr_file.mounted}")
 
 # plugins.on_jobcmd_prep
 {jobcmd_prep}
@@ -163,15 +163,18 @@ def get_jobcmd_wrapper_init(local: bool, remove_jid_after_done: bool) -> str:
         return textwrap.dedent(
             f"""
             export META_ON_CLOUD=0
+
             update_metafile() {{
                 local content=$1
                 local file=$2
                 echo "$content" > "$file"
             }}
+
             remove_metafile() {{
                 local file=$1
                 {rm_file}
             }}
+
             compose_cmd() {{
                 local cmd=$1
                 local stdout_file=$2
@@ -189,20 +192,24 @@ def get_jobcmd_wrapper_init(local: bool, remove_jid_after_done: bool) -> str:
         return textwrap.dedent(
             f"""
             export META_ON_CLOUD=1
+
             # Check if cloudsh is installed
             if ! command -v cloudsh &> /dev/null; then
                 echo "cloudsh is not installed to support cloud workdir, please install it first" 1>&2
                 exit 1
             fi
+
             update_metafile() {{
                 local content=$1
                 local file=$2
                 echo "$content" | cloudsh sink "$file"
             }}
+
             remove_metafile() {{
                 local file=$1
                 {rm_file}
             }}
+
             compose_cmd() {{
                 local cmd=$1
                 local stdout_file=$2
