@@ -14,7 +14,7 @@ def _pid_exists(pid: int) -> bool:
     """Check if a process with a given pid exists"""
     try:
         os.kill(pid, 0)
-    except Exception:
+    except Exception:  # pragma: no cover
         return False
     return True
 
