@@ -12,7 +12,7 @@ from rich.logging import RichHandler
 
 from .defaults import LOGGER_NAME
 
-PathType = Union[Path, CloudPath, "DualPath"]
+PathType = Union[Path, CloudPath, "DualPath", "PathWithSpec"]
 CommandType = Union[str, Tuple[str], List[str]]
 
 
@@ -35,7 +35,7 @@ logger.addFilter(DuplicateFilter())
 logger.setLevel(logging.INFO)
 
 
-class PathWithSpec(WindowsPath if os.name == "nt" else PosixPath):
+class PathWithSpec(WindowsPath if os.name == "nt" else PosixPath):  # type: ignore[misc]
     # allow to use the `spec` attribute
     spec: Path | CloudPath | None
 
@@ -52,19 +52,19 @@ class DualPath:
 
     def __init__(
         self,
-        path: str | Path | CloudPath,
-        mounted: Path | CloudPath | None = None,
+        path: str | PathType,
+        mounted: PathType | None = None,
     ):
         self.path = AnyPath(path)
 
         if mounted is None:
-            mounted = path
+            mounted = path  # type: ignore
 
         mounted = AnyPath(mounted)
         if isinstance(mounted, Path):
             self.mounted = PathWithSpec(mounted)
         else:
-            self.mounted = mounted
+            self.mounted = mounted  # type: ignore
 
         setattr(self.mounted, "spec", self.path)
 
