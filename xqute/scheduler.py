@@ -208,7 +208,9 @@ class Scheduler(ABC):
         try:
             # in case the jid file is removed by the wrapped script
             job.jid_file.unlink(missing_ok=True)
-        except FileNotFoundError:  # pragma: no cover
+        except Exception:  # pragma: no cover
+            # missing_ok is not working for some cloud paths
+            # FileNotFoundError, google.api_core.exceptions.NotFound
             pass
 
         job.status = JobStatus.FINISHED
@@ -247,13 +249,22 @@ class Scheduler(ABC):
                         # the file is removed, because it is still held by
                         # the GSPath object and in some cases when it is
                         # recycled, the file is recreated on the cloud.
-                        job.jid_file.unlink(missing_ok=True)
+                        try:
+                            job.jid_file.unlink(missing_ok=True)
+                        except Exception:  # pragma: no cover
+                            # missing_ok is not working for some cloud paths
+                            # FileNotFoundError, google.api_core.exceptions.NotFound
+                            pass
                 elif status == JobStatus.FINISHED:
                     if job.prev_status != JobStatus.RUNNING:
                         await plugin.hooks.on_job_started(self, job)
                     await plugin.hooks.on_job_succeeded(self, job)
                     if self.remove_jid_after_done:
-                        job.jid_file.unlink(missing_ok=True)
+                        try:
+                            job.jid_file.unlink(missing_ok=True)
+                        except Exception:  # pragma: no cover
+                            # FileNotFoundError, google.api_core.exceptions.NotFound
+                            pass
                 elif status == JobStatus.RUNNING:
                     await plugin.hooks.on_job_started(self, job)
             elif status == JobStatus.RUNNING:
