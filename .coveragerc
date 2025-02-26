@@ -1,0 +1,10 @@
+[run]
+omit =
+    # need plugins to be installed to test
+    tests/*
+    setup.py
+
+[report]
+exclude_lines =
+    if TYPE_CHECKING:
+    pragma: no cover
