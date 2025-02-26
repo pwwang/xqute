@@ -62,6 +62,11 @@ class GbatchScheduler(Scheduler):
         self.config.taskGroups[0].taskSpec.runnables[0].script = Diot(
             text=None  # placeholder for job command
         )
+        # Only logs the stdout/stderr of submission (when wrapped script doesn't run)
+        # The logs of the wrapped script are logged to stdout/stderr files
+        # in the workdir.
+        self.config.setdefault("logsPolicy", Diot())
+        self.config.logsPolicy.setdefault("destination", "CLOUD_LOGGING")
 
         self.config.taskGroups[0].taskSpec.setdefault("volumes", [])
         if not isinstance(self.config.taskGroups[0].taskSpec.volumes, list):
