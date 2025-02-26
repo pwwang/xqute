@@ -35,7 +35,7 @@ logger.addFilter(DuplicateFilter())
 logger.setLevel(logging.INFO)
 
 
-class _Path(WindowsPath if os.name == "nt" else PosixPath):
+class PathWithSpec(WindowsPath if os.name == "nt" else PosixPath):
     # allow to use the `spec` attribute
     spec: Path | CloudPath | None
 
@@ -62,7 +62,7 @@ class DualPath:
 
         mounted = AnyPath(mounted)
         if isinstance(mounted, Path):
-            self.mounted = _Path(mounted)
+            self.mounted = PathWithSpec(mounted)
         else:
             self.mounted = mounted
 
