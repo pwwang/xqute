@@ -58,7 +58,14 @@ class Scheduler(ABC):
         "jobname_prefix",
     )
 
+    # The name of the scheduler
     name: str
+    # Should we remove the jid file after job done
+    # This is useful for local scheduler and alike. The biggest reason for this is
+    # that the pid can be reused by other processes, which might cause the
+    # scheduler to think the job is still running.
+    # But for schedulers like google batch jobs, the jid file is used to delete
+    # the job if we want to retry the job.
     remove_jid_after_done: bool = True
     job_class: Type[Job] = Job
 
@@ -234,10 +241,19 @@ class Scheduler(ABC):
                     if job.prev_status != JobStatus.RUNNING:
                         await plugin.hooks.on_job_started(self, job)
                     await plugin.hooks.on_job_failed(self, job)
+                    if self.remove_jid_after_done:
+                        # We are also doing this in the wrapped script
+                        # But for the could jid file, it is not 100% sure
+                        # the file is removed, because it is still held by
+                        # the GSPath object and in some cases when it is
+                        # recycled, the file is recreated on the cloud.
+                        job.jid_file.unlink(missing_ok=True)
                 elif status == JobStatus.FINISHED:
                     if job.prev_status != JobStatus.RUNNING:
                         await plugin.hooks.on_job_started(self, job)
                     await plugin.hooks.on_job_succeeded(self, job)
+                    if self.remove_jid_after_done:
+                        job.jid_file.unlink(missing_ok=True)
                 elif status == JobStatus.RUNNING:
                     await plugin.hooks.on_job_started(self, job)
             elif status == JobStatus.RUNNING:
