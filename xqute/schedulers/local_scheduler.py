@@ -38,10 +38,9 @@ class LocalScheduler(Scheduler):
         Returns:
             The process id
         """
-        wrapt_script = self.wrapped_job_script(job).fspath
         proc = await asyncio.create_subprocess_exec(
             *shlex.split(self.jobcmd_shebang(job)),
-            wrapt_script,
+            self.wrapped_job_script(job).fspath,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

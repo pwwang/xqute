@@ -87,7 +87,7 @@ class GbatchScheduler(Scheduler):
         wrapt_script = self.wrapped_job_script(job)
         config = deepcopy(self.config)
         config.taskGroups[0].taskSpec.runnables[0].script.text = shlex.join(
-            shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script)]
+            shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script.mounted)]
         )
         with conf_file.open("w") as f:
             json.dump(config, f, indent=2)
@@ -107,6 +107,11 @@ class GbatchScheduler(Scheduler):
             self.name,
             job,
         )
+        status = await self._get_job_status(job)
+        while status.endswith("_IN_PROGRESS"):  # pragma: no cover
+            await asyncio.sleep(1)
+            status = await self._get_job_status(job)
+
         command = [
             self.gcloud,
             "batch",
@@ -135,6 +140,13 @@ class GbatchScheduler(Scheduler):
             await asyncio.sleep(1)
             status = await self._get_job_status(job)
 
+        if status != "UNKNOWN":  # pragma: no cover
+            logger.warning(
+                "/Scheduler-%s Failed to delete job %r on GCP, submision may fail.",
+                self.name,
+                job,
+            )
+
     async def submit_job(self, job: Job) -> str:
 
         sha = sha256(str(self.workdir).encode()).hexdigest()[:8]
@@ -157,6 +169,7 @@ class GbatchScheduler(Scheduler):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
+
         _, stderr = await proc.communicate()
         if proc.returncode != 0:  # pragma: no cover
             raise RuntimeError(
