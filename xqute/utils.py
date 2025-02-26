@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+import os
+from pathlib import Path, WindowsPath, PosixPath
 from typing import Any, Union, Tuple, List
 
 from yunpath import AnyPath, CloudPath
@@ -34,7 +35,7 @@ logger.addFilter(DuplicateFilter())
 logger.setLevel(logging.INFO)
 
 
-class _Path(Path):
+class _Path(WindowsPath if os.name == "nt" else PosixPath):
     # allow to use the `spec` attribute
     spec: Path | CloudPath | None
 
