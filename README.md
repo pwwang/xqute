@@ -8,6 +8,8 @@ A job management system for python
 - Plugin system
 - Scheduler adaptor
 - Job retrying/pipeline halting when failed
+- Support cloud working directory
+- Support Google Batch Jobs scheduler
 
 ## Installation
 
