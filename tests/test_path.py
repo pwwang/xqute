@@ -2,7 +2,7 @@ import pytest  # noqa
 
 from pathlib import Path
 from yunpath import AnyPath, GSPath
-from xqute.utils import DualPath
+from xqute.path import DualPath
 
 
 def test_dualpath_as_normal_path():

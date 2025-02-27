@@ -6,7 +6,8 @@ import shlex
 from typing import Tuple
 
 from .defaults import JobStatus
-from .utils import logger, CommandType, DualPath
+from .utils import logger, CommandType
+from .path import DualPath
 
 
 class Job:

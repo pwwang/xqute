@@ -20,7 +20,8 @@ from .defaults import (
     DEFAULT_NUM_RETRIES,
     get_jobcmd_wrapper_init,
 )
-from .utils import logger, CommandType, PathType, DualPath
+from .utils import logger, CommandType
+from .path import PathType, DualPath
 from .job import Job
 from .plugin import plugin
 

@@ -10,7 +10,8 @@ from diot import Diot
 from ..job import Job
 from ..scheduler import Scheduler
 from ..defaults import JOBCMD_WRAPPER_LANG, get_jobcmd_wrapper_init
-from ..utils import logger, DualPath
+from ..utils import logger
+from ..path import DualPath
 
 
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")

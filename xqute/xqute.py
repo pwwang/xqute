@@ -16,11 +16,12 @@ from .defaults import (
     DEFAULT_SUBMISSION_BATCH,
     JobStatus,
 )
-from .utils import logger, PathType, CommandType
+from .utils import logger, CommandType
 from .plugin import plugin
 from .schedulers import get_scheduler
 
 if TYPE_CHECKING:  # pragma: no cover
+    from .path import PathType
     from .scheduler import Scheduler
     from .job import Job
 
