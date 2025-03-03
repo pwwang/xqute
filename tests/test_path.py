@@ -1,7 +1,7 @@
 import pytest  # noqa
 
 from pathlib import Path
-from yunpath import AnyPath, GSPath
+from yunpath import AnyPath, GSPath, GSClient
 from xqute.path import DualPath
 
 
@@ -66,3 +66,12 @@ def test_dualpath_with_cloudpath():
     assert dp.mounted == GSPath("gs://bucket/remote")
     assert dp.stem == "remote"  # regular method
     assert dp.mounted.spec is dp.path
+
+
+def test_dualpath_with_cloudpath_local_cache_dir_retained(tmp_path):
+    client = GSClient(local_cache_dir=tmp_path)
+    cloudp = client.CloudPath("gs://bucket/remote")
+    mountedp = tmp_path / "bucket" / "remote"
+    mp = DualPath(cloudp, mounted=mountedp).mounted
+    assert mp.spec == cloudp
+    assert mp.spec._local == cloudp._local

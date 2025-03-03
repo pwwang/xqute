@@ -40,7 +40,7 @@ build-backend = "poetry.masonry.api"
 [tool.pytest.ini_options]
 addopts = "-vv --cov=xqute --cov-report xml:.coverage.xml --cov-report term-missing"
 filterwarnings = [
-    # "error"
+   "ignore:.+may lead to deadlocks in the child:DeprecationWarning",
 ]
 asyncio_default_fixture_loop_scope = "function"
 console_output_style = "progress"
