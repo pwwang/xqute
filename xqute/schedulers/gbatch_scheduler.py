@@ -80,7 +80,7 @@ class GbatchScheduler(Scheduler):
         meta_volume.gcs = Diot(remotePath=self.workdir._no_prefix)
         meta_volume.mountPath = str(self.workdir.mounted)
 
-        self.config.taskGroups[0].taskSpec.volumes.append(meta_volume)
+        self.config.taskGroups[0].taskSpec.volumes.insert(0, meta_volume)
 
     @property
     def jobcmd_wrapper_init(self) -> str:
