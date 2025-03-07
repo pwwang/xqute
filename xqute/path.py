@@ -11,6 +11,7 @@ the information of the mounted path (SpecPath).
 
 from __future__ import annotations
 
+import sys
 from abc import ABC
 from pathlib import Path
 from typing import Any
@@ -85,7 +86,11 @@ class MountedLocalPath(MountedPath, LocalPath):
         *args: Any,
         **kwargs: Any,
     ):
-        obj = object.__new__(cls)
+        if sys.version_info >= (3, 12):
+            obj = object.__new__(cls)
+        else:  # pragma: no cover
+            obj = cls._from_parts((path, *args))
+
         spec = spec or obj
         if isinstance(spec, (Path, CloudPath)):
             obj._spec = spec
@@ -101,14 +106,21 @@ class MountedLocalPath(MountedPath, LocalPath):
         *args: Any,
         **kwargs: Any,
     ):
-        LocalPath.__init__(self, path, *args, **kwargs)
+        if sys.version_info >= (3, 12):
+            # For python 3.9, object initalized by ._from_parts()
+            LocalPath.__init__(self, path, *args, **kwargs)
 
     def with_segments(self, *pathsegments) -> MountedPath:
-        new_path = LocalPath(*pathsegments)
-        pathsegments = [str(p) for p in pathsegments]
-        new_spec = AnyPath(self._spec).with_segments(*pathsegments)
+        if sys.version_info >= (3, 12):
+            new_path = LocalPath(*pathsegments)
+            pathsegments = [str(p) for p in pathsegments]
+            new_spec = AnyPath(self._spec).with_segments(*pathsegments)
 
-        return MountedPath(new_path, spec=new_spec)
+            return MountedPath(new_path, spec=new_spec)
+
+        raise NotImplementedError(  # pragma: no cover
+            "'with_segments' needs Python 3.10 or higher"
+        )
 
     def with_name(self, name):
         new_path = LocalPath.with_name(self, name)
@@ -276,7 +288,11 @@ class SpecLocalPath(SpecPath, LocalPath):
         *args: Any,
         **kwargs: Any,
     ):
-        obj = object.__new__(cls)
+        if sys.version_info >= (3, 12):
+            obj = object.__new__(cls)
+        else:  # pragma: no cover
+            obj = cls._from_parts((path, *args))
+
         mounted = mounted or obj
         if isinstance(mounted, (Path, CloudPath)):
             obj._mounted = mounted
@@ -292,7 +308,9 @@ class SpecLocalPath(SpecPath, LocalPath):
         *args: Any,
         **kwargs: Any,
     ):
-        LocalPath.__init__(self, path, *args, **kwargs)
+        if sys.version_info >= (3, 12):
+            # For python 3.9, object initalized by ._from_parts()
+            LocalPath.__init__(self, path, *args, **kwargs)
 
     def with_segments(self, *pathsegments) -> SpecPath:
         new_path = LocalPath(*pathsegments)
