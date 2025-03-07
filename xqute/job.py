@@ -7,7 +7,7 @@ from typing import Tuple
 
 from .defaults import JobStatus
 from .utils import logger, CommandType
-from .path import DualPath
+from .path import SpecPath
 
 
 class Job:
@@ -53,7 +53,7 @@ class Job:
         self,
         index: int,
         cmd: CommandType,
-        workdir: DualPath,
+        workdir: SpecPath,
         error_retry: bool | None = None,
         num_retries: int | None = None,
     ):
@@ -109,32 +109,32 @@ class Job:
         self.jid_file.write_text(str(uniqid))
 
     @property
-    def stdout_file(self) -> DualPath:
+    def stdout_file(self) -> SpecPath:
         """The stdout file of the job"""
         return self.metadir / "job.stdout"
 
     @property
-    def stderr_file(self) -> DualPath:
+    def stderr_file(self) -> SpecPath:
         """The stderr file of the job"""
         return self.metadir / "job.stderr"
 
     @property
-    def status_file(self) -> DualPath:
+    def status_file(self) -> SpecPath:
         """The status file of the job"""
         return self.metadir / "job.status"
 
     @property
-    def rc_file(self) -> DualPath:
+    def rc_file(self) -> SpecPath:
         """The rc file of the job"""
         return self.metadir / "job.rc"
 
     @property
-    def jid_file(self) -> DualPath:
+    def jid_file(self) -> SpecPath:
         """The jid file of the job"""
         return self.metadir / "job.jid"
 
     @property
-    def retry_dir(self) -> DualPath:
+    def retry_dir(self) -> SpecPath:
         """The retry directory of the job"""
         return self.metadir / "job.retry"
 
@@ -221,7 +221,7 @@ class Job:
 
             for file in files_to_clean:
                 if file.is_file():
-                    file.path.rename(retry_dir.path / file.name)
+                    file.rename(retry_dir / file.name)
         else:
             for file in files_to_clean:
                 if file.is_file():

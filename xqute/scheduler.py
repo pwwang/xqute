@@ -6,6 +6,7 @@ import os
 import shlex
 import signal
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import List, Type
 
 from yunpath import CloudPath
@@ -21,7 +22,7 @@ from .defaults import (
     get_jobcmd_wrapper_init,
 )
 from .utils import logger, CommandType
-from .path import PathType, DualPath
+from .path import SpecPath
 from .job import Job
 from .plugin import plugin
 
@@ -72,7 +73,7 @@ class Scheduler(ABC):
 
     def __init__(
         self,
-        workdir: str | PathType,
+        workdir: str | Path | CloudPath,
         forks: int = 1,
         error_strategy: str = DEFAULT_ERROR_STRATEGY,
         num_retries: int = DEFAULT_NUM_RETRIES,
@@ -83,7 +84,7 @@ class Scheduler(ABC):
     ):
         self.forks = forks
         mounted_workdir = kwargs.pop("mounted_workdir", None)
-        self.workdir = DualPath(workdir, mounted=mounted_workdir)
+        self.workdir = SpecPath(workdir, mounted=mounted_workdir)
 
         self.error_strategy = error_strategy
         self.num_retries = num_retries
@@ -375,7 +376,7 @@ class Scheduler(ABC):
             jobcmd_end=self.jobcmd_end(job),
         )
 
-    def wrapped_job_script(self, job: Job) -> DualPath:
+    def wrapped_job_script(self, job: Job) -> SpecPath:
         """Get the wrapped job script
 
         Args:

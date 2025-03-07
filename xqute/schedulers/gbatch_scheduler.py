@@ -11,7 +11,7 @@ from ..job import Job
 from ..scheduler import Scheduler
 from ..defaults import JOBCMD_WRAPPER_LANG, get_jobcmd_wrapper_init
 from ..utils import logger
-from ..path import DualPath
+from ..path import SpecPath
 
 
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")
@@ -37,7 +37,7 @@ class GbatchScheduler(Scheduler):
         kwargs.setdefault("mounted_workdir", DEFAULT_MOUNTED_WORKDIR)
         super().__init__(*args, **kwargs)
 
-        if not isinstance(self.workdir.path, GSPath):
+        if not isinstance(self.workdir, GSPath):
             raise ValueError(
                 "'gbatch' scheduler requires google cloud storage 'workdir'."
             )
@@ -86,7 +86,7 @@ class GbatchScheduler(Scheduler):
     def jobcmd_wrapper_init(self) -> str:
         return get_jobcmd_wrapper_init(True, self.remove_jid_after_done)
 
-    def job_config_file(self, job: Job) -> DualPath:
+    def job_config_file(self, job: Job) -> SpecPath:
         base = f"job.wrapped.{self.name}.json"
         conf_file = job.metadir / base
 

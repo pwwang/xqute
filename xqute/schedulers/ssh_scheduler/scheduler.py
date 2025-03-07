@@ -91,7 +91,7 @@ class SshScheduler(Scheduler):
                         f"Failed to submit job #{job.index}: {stderr.decode()}"
                     )
 
-                if isinstance(job.stdout_file.path, CloudPath):  # pragma: no cover
+                if isinstance(job.stdout_file, CloudPath):  # pragma: no cover
                     await asyncio.sleep(2)
                 else:  # pragma: no cover
                     await asyncio.sleep(0.1)

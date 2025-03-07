@@ -57,7 +57,7 @@ class LocalScheduler(Scheduler):
                     f"Failed to submit job #{job.index}: {stderr.decode()}"
                 )
 
-            if isinstance(job.stdout_file.path, CloudPath):
+            if isinstance(job.stdout_file, CloudPath):
                 await asyncio.sleep(2)
             else:
                 await asyncio.sleep(0.1)
