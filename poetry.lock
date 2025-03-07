@@ -1934,4 +1934,4 @@ gs = ["google-cloud-storage"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "adefafdc09e1a4a91f930153a6df05e9f438f74fafdd9ed49b452a912341b827"
+content-hash = "f3c554f3eaaf330e3d5809463a10f4142c740d030dfa5ae01a555e39f5361e14"
