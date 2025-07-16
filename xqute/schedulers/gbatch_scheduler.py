@@ -15,7 +15,7 @@ from ..path import SpecPath
 
 
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")
-DEFAULT_MOUNTED_WORKDIR = "/mnt/xqute_workdir"
+DEFAULT_MOUNTED_WORKDIR = "/mnt/disks/xqute_workdir"
 
 
 class GbatchScheduler(Scheduler):
@@ -48,29 +48,37 @@ class GbatchScheduler(Scheduler):
                 "^[a-zA-Z][a-zA-Z0-9-]{0,47}$."
             )
 
-        self.config.setdefault("taskGroups", [])
-        if not self.config.taskGroups:
-            self.config.taskGroups.append(Diot())
-        if not self.config.taskGroups[0]:
-            self.config.taskGroups[0] = Diot()
+        task_groups = self.config.setdefault("taskGroups", [])
+        if not task_groups:
+            task_groups.append(Diot())
+        if not task_groups[0]:
+            task_groups[0] = Diot()
 
-        self.config.taskGroups[0].setdefault("taskSpec", Diot())
-        self.config.taskGroups[0].taskSpec.setdefault("runnables", [])
-        if not self.config.taskGroups[0].taskSpec.runnables:
-            self.config.taskGroups[0].taskSpec.runnables.append(Diot())
-        if not self.config.taskGroups[0].taskSpec.runnables[0]:
-            self.config.taskGroups[0].taskSpec.runnables[0] = Diot()
-        self.config.taskGroups[0].taskSpec.runnables[0].script = Diot(
-            text=None  # placeholder for job command
-        )
+        task_spec = task_groups[0].setdefault("taskSpec", Diot())
+        runnables = task_spec.setdefault("runnables", [])
+        if not runnables:
+            runnables.append(Diot())
+        if not runnables[0]:
+            runnables[0] = Diot()
+
+        if "container" in runnables[0]:
+            if not isinstance(runnables[0].container, dict):  # pragma: no cover
+                raise ValueError(
+                    "'taskGroups[0].taskSpec.runnables[0].container' should be a "
+                    "dictionary for gbatch configuration."
+                )
+            runnables[0].container.setdefault("commands", [])
+        else:
+            runnables[0].script = Diot(text=None)  # placeholder for job command
+
         # Only logs the stdout/stderr of submission (when wrapped script doesn't run)
         # The logs of the wrapped script are logged to stdout/stderr files
         # in the workdir.
-        self.config.setdefault("logsPolicy", Diot())
-        self.config.logsPolicy.setdefault("destination", "CLOUD_LOGGING")
+        logs_policy = self.config.setdefault("logsPolicy", Diot())
+        logs_policy.setdefault("destination", "CLOUD_LOGGING")
 
-        self.config.taskGroups[0].taskSpec.setdefault("volumes", [])
-        if not isinstance(self.config.taskGroups[0].taskSpec.volumes, list):
+        volumes = task_spec.setdefault("volumes", [])
+        if not isinstance(volumes, list):
             raise ValueError(
                 "'taskGroups[0].taskSpec.volumes' should be a list for "
                 "gbatch configuration."
@@ -80,7 +88,7 @@ class GbatchScheduler(Scheduler):
         meta_volume.gcs = Diot(remotePath=self.workdir._no_prefix)
         meta_volume.mountPath = str(self.workdir.mounted)
 
-        self.config.taskGroups[0].taskSpec.volumes.insert(0, meta_volume)
+        volumes.insert(0, meta_volume)
 
     @property
     def jobcmd_wrapper_init(self) -> str:
@@ -92,9 +100,23 @@ class GbatchScheduler(Scheduler):
 
         wrapt_script = self.wrapped_job_script(job)
         config = deepcopy(self.config)
-        config.taskGroups[0].taskSpec.runnables[0].script.text = shlex.join(
-            shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script.mounted)]
-        )
+        runnable = config.taskGroups[0].taskSpec.runnables[0]
+        if "container" in runnable:
+            container = runnable.container
+            if "entrypoint" not in container:
+                container.entrypoint = JOBCMD_WRAPPER_LANG
+                container.commands.append(str(wrapt_script.mounted))
+            else:
+                container.commands.append(
+                    shlex.join(
+                        shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script.mounted)]
+                    )
+                )
+        else:
+            runnable.script.text = shlex.join(
+                shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script.mounted)]
+            )
+
         with conf_file.open("w") as f:
             json.dump(config, f, indent=2)
 

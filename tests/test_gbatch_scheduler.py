@@ -1,4 +1,5 @@
 import os
+import json
 import stat
 import pytest
 from cloudpathlib import AnyPath
@@ -67,12 +68,67 @@ async def test_job():
         scheduler.wrapped_job_script(job)
         == scheduler.workdir / "0" / "job.wrapped.gbatch"
     )
-    assert (
-        job.metadir.mounted == Path("/mnt/xqute_workdir/0")
-    )
+    assert job.metadir.mounted == Path("/mnt/disks/xqute_workdir/0")
 
     script = scheduler.wrap_job_script(job)
-    assert "/mnt/xqute_workdir/0/job.status" in script
+    assert "/mnt/disks/xqute_workdir/0/job.status" in script
+
+
+@pytest.mark.asyncio
+async def test_sched_with_container():
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        taskGroups=[
+            {"taskSpec": {"runnables": [{"container": {"image_uri": "ubuntu"}}]}}
+        ],
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    assert conf_file.name == "job.wrapped.gbatch.json"
+    conf = json.loads(conf_file.read_text())
+    container = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]
+    assert container["image_uri"] == "ubuntu"
+    assert container["commands"] == ["/mnt/disks/xqute_workdir/0/job.wrapped.gbatch"]
+    assert container["entrypoint"] == "/bin/bash"
+
+
+@pytest.mark.asyncio
+async def test_sched_with_container_entrypoint():
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        taskGroups=[
+            {
+                "taskSpec": {
+                    "runnables": [
+                        {
+                            "container": {
+                                "image_uri": "ubuntu",
+                                "entrypoint": "/bin/bash2",
+                                "commands": ["-c"],
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    assert conf_file.name == "job.wrapped.gbatch.json"
+    conf = json.loads(conf_file.read_text())
+    container = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]
+    assert container["image_uri"] == "ubuntu"
+    assert container["commands"] == [
+        "-c",
+        "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+    ]
+    assert container["entrypoint"] == "/bin/bash2"
 
 
 @pytest.mark.asyncio
@@ -107,7 +163,9 @@ async def test_submission_failure():
     gcloud = str(MOCKS / "no_such_gcloud")
 
     scheduler = GbatchScheduler(
-        project="test-project", location="us-central1", gcloud=gcloud,
+        project="test-project",
+        location="us-central1",
+        gcloud=gcloud,
         workdir=WORKDIR,
     )
     job = scheduler.create_job(0, ["echo", 1])
