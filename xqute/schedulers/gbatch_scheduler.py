@@ -19,7 +19,25 @@ DEFAULT_MOUNTED_WORKDIR = "/mnt/disks/xqute_workdir"
 
 
 class GbatchScheduler(Scheduler):
-    """Scheduler for Google Cloud Batch"""
+    """Scheduler for Google Cloud Batch
+
+    You can pass extra configuration parameters to the constructor
+    that will be used in the job configuration file.
+    For example, you can pass `taskGroups` to specify the task groups
+    and their specifications.
+
+    For using containers, it is a little bit tricky to specify the commands.
+    When no `entrypoint` is specified, the `commands` should be a list
+    with the first element being the interpreter (e.g. `/bin/bash`)
+    and the second element being the path to the wrapped job script.
+    If the `entrypoint` is specified, we can use the `{lang}` and `{script}`
+    placeholders in the `commands` list, where `{lang}` will be replaced
+    with the interpreter (e.g. `/bin/bash`) and `{script}` will be replaced
+    with the path to the wrapped job script.
+    With `entrypoint` specified and no `{script}` placeholder, the joined command
+    will be the interpreter followed by the path to the wrapped job script will be
+    appended to the `commands` list.
+    """
 
     name = "gbatch"
 
@@ -104,8 +122,18 @@ class GbatchScheduler(Scheduler):
         if "container" in runnable:
             container = runnable.container
             if "entrypoint" not in container:
+                # supports only /bin/bash, but not /bin/bash -u
                 container.entrypoint = JOBCMD_WRAPPER_LANG
                 container.commands.append(str(wrapt_script.mounted))
+            elif any("{script}" in cmd for cmd in container.commands):
+                # If the entrypoint is already set, we assume it is a script
+                # that will be executed with the job command.
+                container.commands = [
+                    cmd
+                    .replace("{lang}", str(JOBCMD_WRAPPER_LANG))
+                    .replace("{script}", str(wrapt_script.mounted))
+                    for cmd in container.commands
+                ]
             else:
                 container.commands.append(
                     shlex.join(

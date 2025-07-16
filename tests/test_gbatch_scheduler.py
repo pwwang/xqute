@@ -132,6 +132,42 @@ async def test_sched_with_container_entrypoint():
 
 
 @pytest.mark.asyncio
+async def test_sched_with_container_command_template():
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        taskGroups=[
+            {
+                "taskSpec": {
+                    "runnables": [
+                        {
+                            "container": {
+                                "image_uri": "ubuntu",
+                                "entrypoint": "/bin/bash2",
+                                "commands": ["-c", "{lang}3 {script}"],
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    assert conf_file.name == "job.wrapped.gbatch.json"
+    conf = json.loads(conf_file.read_text())
+    container = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]
+    assert container["image_uri"] == "ubuntu"
+    assert container["commands"] == [
+        "-c",
+        "/bin/bash3 /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+    ]
+    assert container["entrypoint"] == "/bin/bash2"
+
+
+@pytest.mark.asyncio
 async def test_scheduler(gcloud):
 
     scheduler = GbatchScheduler(
