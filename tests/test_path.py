@@ -20,6 +20,17 @@ from xqute.path import (
 )
 
 
+def test_mountedpath_is_hashable():
+    """Test that MountedPath is hashable."""
+    p = MountedPath("/path/to/file")
+    assert isinstance(p, Path)
+    assert isinstance(p, MountedPath)
+    assert isinstance(p, MountedLocalPath)
+
+    d = {p: "value"}
+    assert d[p] == "value"
+
+
 def test_mountedlocalpath():
     p = MountedPath("/path/to/file")
     assert p.name == "file"
@@ -319,6 +330,17 @@ def test_mountedcloudpath_with_spec():
     assert p7.spec == GSPath("gs://bucket/path/to")
 
     assert p7.spec.mounted.spec.mounted.spec.mounted.spec.mounted == p7
+
+
+def test_specpath_is_hashable():
+    """Test that SpecPath is hashable."""
+    p = SpecPath("/path/to/file")
+    assert isinstance(p, Path)
+    assert isinstance(p, SpecPath)
+    assert isinstance(p, SpecLocalPath)
+
+    d = {p: "value"}
+    assert d[p] == "value"
 
 
 def test_speclocalpath():

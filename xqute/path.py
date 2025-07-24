@@ -156,6 +156,14 @@ class MountedPath(ABC):
 
         return str(self) == str(other)
 
+    def __hash__(self) -> int:
+        """Generate a hash for the MountedPath.
+
+        Returns:
+            int: A hash value based on the path string and spec path string.
+        """
+        return hash((str(self), str(self.spec)))
+
 
 class MountedLocalPath(MountedPath, LocalPath):
     """A class to represent a mounted local path
@@ -640,6 +648,14 @@ class SpecPath(ABC):
             return str(self) == str(other) and str(self.mounted) == str(other.mounted)
 
         return str(self) == str(other)
+
+    def __hash__(self) -> int:
+        """Generate a hash for the SpecPath.
+
+        Returns:
+            int: A hash value based on the path string and mounted path string.
+        """
+        return hash((str(self), str(self.mounted)))
 
 
 class SpecLocalPath(SpecPath, LocalPath):
