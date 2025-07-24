@@ -126,7 +126,6 @@ cleanup() {{
     # plugins.on_jobcmd_end
     {jobcmd_end}
 
-    sync
     exit $rc
 }}
 
