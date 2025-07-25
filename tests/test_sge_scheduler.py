@@ -1,6 +1,6 @@
 import os
 import stat
-import pytest
+import pytest  # type: ignore
 from pathlib import Path
 
 from xqute.schedulers.sge_scheduler import SgeScheduler

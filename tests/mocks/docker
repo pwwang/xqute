@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Mock docker command for testing"""
+import sys
+import os
+import subprocess
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: docker <command> [options]", file=sys.stderr)
+        sys.exit(1)
+
+    command = sys.argv[1]
+
+    if command == "run":
+        handle_run_command(sys.argv[2:])
+    elif command == "version":
+        print("Docker version 20.10.0, build test")
+    elif command == "--version":
+        print("Docker version 20.10.0, build test")
+    else:
+        print(f"Unknown command: {command}", file=sys.stderr)
+        sys.exit(1)
+
+
+def handle_run_command(args):
+    """Handle docker run command"""
+    # Parse arguments
+    workdir = None
+    volumes = []
+    envs = {}
+    image = None
+    command_args = []
+
+    i = 0
+    while i < len(args):
+        arg = args[i]
+
+        if arg == "--rm":
+            pass  # Remove flag handled implicitly
+        elif arg == "--workdir":
+            i += 1
+            workdir = args[i]
+        elif arg == "-v":
+            i += 1
+            volumes.append(args[i])
+        elif arg == "-e":
+            i += 1
+            env_pair = args[i]
+            if "=" in env_pair:
+                key, value = env_pair.split("=", 1)
+                envs[key] = value
+        elif not arg.startswith("-"):
+            # This should be the image
+            image = arg
+            # Everything after this is the command to run
+            command_args = args[i + 1:]
+            break
+
+        i += 1
+
+    if not image:
+        print("Error: No image specified", file=sys.stderr)
+        sys.exit(1)
+
+    # Set up environment
+    env = os.environ.copy()
+    env.update(envs)
+
+    # Change to workdir if specified
+    if workdir:
+        try:
+            os.chdir(workdir)
+        except OSError:
+            print(f"Error: Cannot change to directory {workdir}", file=sys.stderr)
+            sys.exit(1)
+
+    # Handle volume mounts (for testing, we just ensure source paths exist)
+    for volume in volumes:
+        if ":" in volume:
+            source, target = volume.split(":", 1)
+            if not os.path.exists(source):
+                print(f"Error: Source path {source} does not exist", file=sys.stderr)
+                sys.exit(1)
+
+    # Execute the command
+    if command_args:
+        try:
+            # For testing, we'll execute the command directly
+            result = subprocess.run(command_args, env=env, cwd=workdir)
+            sys.exit(result.returncode)
+        except FileNotFoundError:
+            print(f"Error: Command not found: {command_args[0]}", file=sys.stderr)
+            sys.exit(127)
+        except Exception as e:
+            print(f"Error executing command: {e}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        # No command specified, just simulate container startup
+        print(f"Mock container started with image: {image}")
+
+
+if __name__ == "__main__":
+    main()

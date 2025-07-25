@@ -142,6 +142,41 @@ xqute = Xqute(
 
 SSH servers must share the same filesystem and using keyfile authentication.
 
+### Using Google Batch Jobs scheduler
+
+```python
+xqute = Xqute(
+    'gbatch',
+    forks=100,
+    scheduler_opts={
+        "project": "your-gcp-project-id",
+        "location": "us-central1",
+        "gcloud": "path to gcloud",  # must be authenticated
+        # see https://cloud.google.com/batch/docs/create-run-example-job#create-job
+        "taskGroups": [ ... ],
+    }
+)
+```
+
+### Using Container scheduler
+
+```python
+xqute = Xqute(
+    'container',
+    forks=100,
+    scheduler_opts={
+        "image": "docker://bash:latest",  # or path to sif file for apptainer
+        "entrypoint": "/usr/local/bin/bash",
+        "bin": "docker",  # or "podman" or "apptainer"
+        "volumes": "/path/on/host:/path/in/container",  # extra volume mapping
+        "envs": {"MY_ENV_VAR": "value"},  # environment variables to set
+        "remove": True,  # remove container after execution (Docker/Podman only)
+        # additional arguments to pass to the container runtime
+        "bin_args": ["--hostname", "xqute-container"],
+    }
+)
+```
+
 ### Plugins
 
 To write a plugin for `xqute`, you will need to implement the following hooks:
@@ -187,7 +222,7 @@ def on_init(scheduler):
 
 ### Implementing a scheduler
 
-Currently there are a few builtin schedulers: `local`, `slurm`, `gbatch` and `sge`.
+Currently there are a few builtin schedulers: `local`, `slurm`, `gbatch`, `container` and `sge`.
 
 One can implement a scheduler by subclassing the `Scheduler` abstract class. There are three abstract methods that have to be implemented in the subclass:
 

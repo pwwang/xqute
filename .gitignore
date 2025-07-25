@@ -162,3 +162,6 @@ t.ipynb
 
 gac_key.json
 gha-creds-*.json
+*.sif
+# apptainer cache
+/cache/
