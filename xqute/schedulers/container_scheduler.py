@@ -170,7 +170,9 @@ class ContainerScheduler(LocalScheduler):
                 # Something went wrong with the wrapper script?
                 stderr = await proc.stderr.read()
                 raise RuntimeError(
-                    f"Failed to submit job #{job.index}: {stderr.decode()}"
+                    f"Failed to submit job #{job.index}: {stderr.decode()}\n"
+                    f"Command: {self.jobcmd_shebang(job)} "
+                    f"{self.wrapped_job_script(job).mounted}\n"
                 )
 
             await asyncio.sleep(0.1)
