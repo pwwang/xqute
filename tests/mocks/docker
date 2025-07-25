@@ -41,6 +41,9 @@ def handle_run_command(args):
         elif arg == "--workdir":
             i += 1
             workdir = args[i]
+        elif arg == "--user":
+            i += 1
+            pass
         elif arg == "-v":
             i += 1
             volumes.append(args[i])

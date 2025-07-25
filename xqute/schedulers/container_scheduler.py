@@ -1,6 +1,7 @@
 """The scheduler to run jobs via containers"""
 from __future__ import annotations
 
+import os
 import shlex
 import shutil
 import asyncio
@@ -34,6 +35,8 @@ class ContainerScheduler(LocalScheduler):
         bin: Path to container runtime binary (e.g. /path/to/docker)
         volumes: host:container volume mapping string or strings
         envs: Environment variables to set in container
+        user: User to run the container as (only for Docker/Podman)
+            By default, it runs as the current user (os.getuid() and os.getgid())
         remove: Whether to remove the container after execution.
             Only applies to Docker/Podman.
         bin_args: Additional arguments to pass to the container runtime
@@ -49,6 +52,7 @@ class ContainerScheduler(LocalScheduler):
         "volumes",
         "envs",
         "remove",
+        "user",
         "bin_args",
         "_container_type",
     )
@@ -61,6 +65,7 @@ class ContainerScheduler(LocalScheduler):
         volumes: str | Sequence[str] | None = None,
         envs: Dict[str, str] | None = None,
         remove: bool = True,
+        user: str | None = None,
         bin_args: List[str] | None = None,
         **kwargs
     ):
@@ -85,6 +90,7 @@ class ContainerScheduler(LocalScheduler):
         )
         self.envs = envs or {}
         self.remove = remove
+        self.user = user or f"{os.getuid()}:{os.getgid()}"
         self.bin_args = bin_args or []
         self.volumes.append(f"{self.workdir}:{self.workdir.mounted}")
 
@@ -126,6 +132,7 @@ class ContainerScheduler(LocalScheduler):
         else:
             if self.remove:
                 cmd.append("--rm")
+            cmd.extend(["--user", self.user])
             for key, value in self.envs.items():
                 cmd.extend(["-e", f"{key}={value}"])
             for vol in self.volumes:
