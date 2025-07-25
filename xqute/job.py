@@ -73,7 +73,7 @@ class Job:
             )
         )
         self.index = index
-        self.metadir = workdir / str(self.index)
+        self.metadir = workdir / str(self.index)  # type: ignore
         self.metadir.mkdir(exist_ok=True, parents=True)
 
         # The name of the job, should be the unique id from the scheduler

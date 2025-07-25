@@ -66,7 +66,7 @@ class MountedPath(ABC):
         <class 'xqute.path.MountedGSPath'>
     """
 
-    def __new__(
+    def __new__(  # type: ignore
         cls,
         path: str | Path | CloudPath,
         spec: str | Path | CloudPath | None = None,
@@ -91,19 +91,19 @@ class MountedPath(ABC):
         """
 
         if cls is MountedPath:
-            path = AnyPath(path)
+            path = AnyPath(path)  # type: ignore
             if isinstance(path, GSPath):
                 mounted_class = MountedGSPath
             elif isinstance(path, AzureBlobPath):  # pragma: no cover
-                mounted_class = MountedAzureBlobPath
+                mounted_class = MountedAzureBlobPath  # type: ignore
             elif isinstance(path, S3Path):  # pragma: no cover
-                mounted_class = MountedS3Path
+                mounted_class = MountedS3Path  # type: ignore
             else:
-                mounted_class = MountedLocalPath
+                mounted_class = MountedLocalPath  # type: ignore
 
             return mounted_class.__new__(mounted_class, path, spec, *args, **kwargs)
 
-        return super().__new__(cls)  # pragma: no cover
+        return super().__new__(cls)  # type: ignore # pragma: no cover
 
     @property
     def spec(self) -> SpecPath:
@@ -112,7 +112,7 @@ class MountedPath(ABC):
         Returns:
             SpecPath: The path as it appears in the local environment.
         """
-        return SpecPath(self._spec, mounted=self)
+        return SpecPath(self._spec, mounted=self)  # type: ignore
 
     def is_mounted(self) -> bool:
         """Check if this path is actually mounted (different from spec path).
@@ -165,7 +165,7 @@ class MountedPath(ABC):
         return hash((str(self), str(self.spec)))
 
 
-class MountedLocalPath(MountedPath, LocalPath):
+class MountedLocalPath(MountedPath, LocalPath):  # type: ignore
     """A class to represent a mounted local path
 
     This class represents a path in a local filesystem as it appears in a remote
@@ -252,7 +252,7 @@ class MountedLocalPath(MountedPath, LocalPath):
         """
         if sys.version_info >= (3, 12):
             new_path = LocalPath(*pathsegments)
-            pathsegments = [str(p) for p in pathsegments]
+            pathsegments = tuple(str(p) for p in pathsegments)
             new_spec = AnyPath(self._spec).with_segments(*pathsegments)
 
             return MountedPath(new_path, spec=new_spec)
@@ -395,7 +395,7 @@ class MountedCloudPath(MountedPath, CloudPath):
             *args: Additional positional arguments passed to the path constructor.
             **kwargs: Additional keyword arguments passed to the path constructor.
         """
-        super().__init__(path, *args, **kwargs)
+        super().__init__(path, *args, **kwargs)  # type: ignore
 
     def __truediv__(self, other):
         """Implement the / operator for cloud paths.
@@ -570,7 +570,7 @@ class SpecPath(ABC):
         <class 'xqute.path.SpecGSPath'>
     """
 
-    def __new__(
+    def __new__(  # type: ignore
         cls,
         path: str | Path | CloudPath,
         mounted: str | Path | CloudPath | None = None,
@@ -594,19 +594,21 @@ class SpecPath(ABC):
             - SpecLocalPath for local filesystem paths
         """
         if cls is SpecPath:
-            path = AnyPath(path)
+            path = AnyPath(path)  # type: ignore
             if isinstance(path, GSPath):
                 spec_class = SpecGSPath
             elif isinstance(path, AzureBlobPath):  # pragma: no cover
-                spec_class = SpecAzureBlobPath
+                spec_class = SpecAzureBlobPath  # type: ignore
             elif isinstance(path, S3Path):  # pragma: no cover
-                spec_class = SpecS3Path
+                spec_class = SpecS3Path  # type: ignore
             else:
                 spec_class = SpecLocalPath
 
-            return spec_class.__new__(spec_class, path, mounted, *args, **kwargs)
+            return spec_class.__new__(
+                spec_class, path, mounted, *args, **kwargs  # type: ignore
+            )
 
-        return super().__new__(cls)  # pragma: no cover
+        return super().__new__(cls)  # type: ignore # pragma: no cover
 
     @property
     def mounted(self) -> MountedPath:
@@ -616,7 +618,7 @@ class SpecPath(ABC):
             MountedPath: The path as it appears in the remote execution environment.
         """
         # Make sure we handle the case where _mounted might not be set
-        return MountedPath(self._mounted, spec=self)
+        return MountedPath(self._mounted, spec=self)  # type: ignore
 
     def __repr__(self) -> str:
         """Generate a string representation of the SpecPath.
@@ -658,7 +660,7 @@ class SpecPath(ABC):
         return hash((str(self), str(self.mounted)))
 
 
-class SpecLocalPath(SpecPath, LocalPath):
+class SpecLocalPath(SpecPath, LocalPath):  # type: ignore
     """A class to represent a spec local path
 
     This class represents a path in the local filesystem as it appears in the
@@ -897,7 +899,7 @@ class SpecCloudPath(SpecPath, CloudPath):
             *args: Additional positional arguments passed to the path constructor.
             **kwargs: Additional keyword arguments passed to the path constructor.
         """
-        super().__init__(path, *args, **kwargs)
+        super().__init__(path, *args, **kwargs)  # type: ignore[arg-type]
 
     def __truediv__(self, other):
         """Implement the / operator for cloud paths.
