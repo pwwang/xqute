@@ -155,7 +155,7 @@ def get_jobcmd_wrapper_init(local: bool, remove_jid_after_done: bool) -> str:
     """
     if local:
         rm_file = (
-            'rm -f "$file"'
+            'mv "$file" "${file}.used"'
             if remove_jid_after_done
             else 'if [ "file" != *"job.jid" ]; then rm -f "$file"; fi'
         )
@@ -184,7 +184,7 @@ def get_jobcmd_wrapper_init(local: bool, remove_jid_after_done: bool) -> str:
         )
     else:
         rm_file = (
-            'cloudsh rm -f "$file"'
+            'cloudsh mv "$file" "${file}_used"'
             if remove_jid_after_done
             else 'if [ "file" != *"job.jid" ]; then cloudsh rm -f "$file"; fi'
         )

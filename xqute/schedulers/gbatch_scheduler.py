@@ -40,9 +40,6 @@ class GbatchScheduler(Scheduler):
     """
 
     name = "gbatch"
-    # We need to keep the job.jid file to delete the job before submitting a new one
-    # Because Google Cloud Batch doesn't allow jobs with the same id.
-    remove_jid_after_done: bool = False
 
     __slots__ = Scheduler.__slots__ + (
         "gcloud",
