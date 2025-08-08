@@ -33,7 +33,6 @@ def qstat():
     return cmd
 
 
-@pytest.mark.asyncio
 async def test_job(tmp_path):
     scheduler = SgeScheduler(
         forks=1,
@@ -50,6 +49,26 @@ async def test_job(tmp_path):
     assert "#$ -l vmem=2G" in script
     assert "#$ -l gpu=1" in script
     assert "#$ -m abe" in script
+
+
+async def test_cwd(tmp_path):
+    scheduler = SgeScheduler(
+        forks=1,
+        notify=True,
+        l=["vmem=2G", "gpu=1"],
+        m="abe",
+        workdir=tmp_path,
+        cwd="/tmp/cwd",
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+
+    script = scheduler.wrap_job_script(job)
+    assert "#$ -notify" in script
+    assert "#$ -l vmem=2G" in script
+    assert "#$ -l gpu=1" in script
+    assert "#$ -m abe" in script
+    assert "#$ -cwd" not in script
+    assert "#$ -wd /tmp/cwd" in script
 
 
 @pytest.mark.asyncio

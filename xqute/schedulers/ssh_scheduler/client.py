@@ -97,14 +97,18 @@ class SSHClient:
         proc = await self.create_proc(*cmds)
         return await proc.wait()
 
-    async def submit(self, *cmds: Any) -> tuple[int, bytes, bytes]:
+    async def submit(
+        self,
+        *cmds: Any,
+        cwd: str | Path = None,
+    ) -> tuple[int, bytes, bytes]:
         """Submit a job to SSH, get the pid of the job on the remote server"""
         submitter = Path(__file__).parent.resolve() / "submitter.py"
         proc = await self.create_proc(
             sys.executable,
             submitter,
             self.name,
-            os.getcwd(),
+            cwd or os.getcwd(),
             *cmds,
         )
         stdout, stderr = await proc.communicate()

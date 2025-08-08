@@ -39,6 +39,20 @@ def test_job(tmp_path):
     assert "#SBATCH -p gpu" in script
 
 
+def test_cwd(tmp_path):
+    scheduler = SlurmScheduler(
+        forks=1,
+        mem="4G",
+        p="gpu",
+        workdir=tmp_path,
+        cwd="/tmp/cwd",
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+
+    script = scheduler.wrap_job_script(job)
+    assert "#SBATCH --chdir=/tmp/cwd" in script
+
+
 @pytest.mark.asyncio
 async def test_scheduler(tmp_path):
     sbatch = str(MOCKS / "sbatch")

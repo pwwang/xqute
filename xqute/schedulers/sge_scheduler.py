@@ -37,7 +37,10 @@ class SgeScheduler(Scheduler):
         options = self.config.copy()
         sha = hashlib.sha256(str(self.workdir).encode()).hexdigest()[:8]
         options["N"] = f"{self.jobname_prefix}-{sha}-{job.index}"
-        options["cwd"] = True
+        if self.cwd:
+            options["wd"] = self.cwd
+        else:
+            options["cwd"] = True
         # options["o"] = self.stdout_file
         # options["e"] = self.stderr_file
 

@@ -124,7 +124,10 @@ class ContainerScheduler(LocalScheduler):
         """The shebang of the wrapper script"""
         cmd = [self.bin, "run"]
         if self._container_type == "apptainer":
-            cmd.extend(["--pwd", str(self.workdir.mounted)])
+            if self.cwd:  # pragma: no cover
+                cmd.extend(["--pwd", self.cwd])
+            else:
+                cmd.extend(["--pwd", str(self.workdir.mounted)])
             for key, value in self.envs.items():
                 cmd.extend(["--env", f"{key}={value}"])
             for vol in self.volumes:
@@ -137,7 +140,11 @@ class ContainerScheduler(LocalScheduler):
                 cmd.extend(["-e", f"{key}={value}"])
             for vol in self.volumes:
                 cmd.extend(["-v", vol])
-            cmd.extend(["--workdir", str(self.workdir.mounted)])
+
+            if self.cwd:
+                cmd.extend(["--workdir", self.cwd])
+            else:
+                cmd.extend(["--workdir", str(self.workdir.mounted)])
 
         cmd.extend(self.bin_args)
         cmd.append(self.image)

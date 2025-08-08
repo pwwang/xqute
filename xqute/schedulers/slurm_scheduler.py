@@ -36,7 +36,7 @@ class SlurmScheduler(Scheduler):
 
         sha = hashlib.sha256(str(self.workdir).encode()).hexdigest()[:8]
         options["job-name"] = f"{self.jobname_prefix}-{sha}-{job.index}"
-        # options["chdir"] = str(Path.cwd().resolve())
+        options["chdir"] = self.cwd
         # options["output"] = self.stdout_file
         # options["error"] = self.stderr_file
 

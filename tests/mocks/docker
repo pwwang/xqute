@@ -41,6 +41,8 @@ def handle_run_command(args):
         elif arg == "--workdir":
             i += 1
             workdir = args[i]
+            if workdir == "None":
+                workdir = None
         elif arg == "--user":
             i += 1
             pass

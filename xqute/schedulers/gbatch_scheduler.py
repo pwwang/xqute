@@ -9,7 +9,7 @@ from diot import Diot
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..defaults import JOBCMD_WRAPPER_LANG, get_jobcmd_wrapper_init
+from ..defaults import JOBCMD_WRAPPER_LANG
 from ..utils import logger
 from ..path import SpecPath
 
@@ -40,6 +40,9 @@ class GbatchScheduler(Scheduler):
     """
 
     name = "gbatch"
+    # We need to keep the job.jid file to delete the job before submitting a new one
+    # Because Google Cloud Batch doesn't allow jobs with the same id.
+    remove_jid_after_done: bool = False
 
     __slots__ = Scheduler.__slots__ + (
         "gcloud",
@@ -107,10 +110,6 @@ class GbatchScheduler(Scheduler):
         meta_volume.mountPath = str(self.workdir.mounted)
 
         volumes.insert(0, meta_volume)
-
-    @property
-    def jobcmd_wrapper_init(self) -> str:
-        return get_jobcmd_wrapper_init(True, self.remove_jid_after_done)
 
     def job_config_file(self, job: Job) -> SpecPath:
         base = f"job.wrapped.{self.name}.json"

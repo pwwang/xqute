@@ -58,6 +58,7 @@ class Scheduler(ABC):
         "prescript",
         "postscript",
         "jobname_prefix",
+        "cwd",
     )
 
     # The name of the scheduler
@@ -80,6 +81,7 @@ class Scheduler(ABC):
         prescript: str = "",
         postscript: str = "",
         jobname_prefix: str | None = None,
+        cwd: str | Path = None,
         **kwargs,
     ):
         self.forks = forks
@@ -91,6 +93,7 @@ class Scheduler(ABC):
         self.prescript = prescript
         self.postscript = postscript
         self.jobname_prefix = jobname_prefix or self.name
+        self.cwd = None if cwd is None else str(cwd)
 
         self.config = Diot(**kwargs)
 
@@ -324,10 +327,17 @@ class Scheduler(ABC):
     @property
     def jobcmd_wrapper_init(self) -> str:
         """The init script for the job command wrapper"""
-        return get_jobcmd_wrapper_init(
+        wrapper_init = get_jobcmd_wrapper_init(
             not isinstance(self.workdir.mounted, CloudPath),
             self.remove_jid_after_done,
         )
+        if self.cwd:
+            # Some schedulers (e.g. Google Cloud Batch) doesn't support changing the
+            # working directory via configuration, so we need to change it in the
+            # wrapper script.
+            # See: https://issuetracker.google.com/issues/336164416
+            wrapper_init = f"cd {shlex.quote(self.cwd)}\n\n{wrapper_init}"
+        return wrapper_init
 
     def jobcmd_shebang(self, job: Job) -> str:
         """The shebang of the wrapper script"""

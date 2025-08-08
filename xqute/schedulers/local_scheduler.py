@@ -43,6 +43,10 @@ class LocalScheduler(Scheduler):
             self.wrapped_job_script(job).fspath,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            # Changing the working directory here may cause wrapped_job_script to fail
+            # to be found, so we don't set cwd here.
+            # The cwd is changed in the wrapper script instead.
+            # cwd=self.cwd
         )
         # wait for a while to make sure the process is running
         # this is to avoid the real command is not run when proc is recycled too early

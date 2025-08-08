@@ -21,7 +21,7 @@ def teardown_module():
     WORKDIR.rmtree()
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def gcloud():
     cmd = str(MOCKS / "gcloud")
     st = os.stat(cmd)
@@ -210,3 +210,15 @@ async def test_submission_failure():
     assert await scheduler.job_is_running(job) is False
     assert job.status == JobStatus.FAILED
     assert "Failed to submit job" in job.stderr_file.read_text()
+
+
+@pytest.mark.asyncio
+async def test_cwd():
+    """Test that the job script uses the correct working directory"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        workdir=WORKDIR,
+        cwd="/custom/cwd",
+    )
+    assert "cd /custom/cwd" in scheduler.jobcmd_wrapper_init

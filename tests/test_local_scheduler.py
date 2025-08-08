@@ -61,3 +61,16 @@ async def test_killing_running_jobs(tmp_path):
     assert job2.status == JobStatus.FINISHED
     assert job1.rc != 0
     assert job2.rc != 0
+
+
+@pytest.mark.asyncio
+async def test_cwd(tmp_path):
+    cwd = tmp_path / "cwd"
+    cwd.mkdir()
+    scheduler = LocalScheduler(workdir=tmp_path, cwd=cwd)
+    job = scheduler.create_job(0, ["pwd"])
+    await scheduler.submit_job_and_update_status(job)
+    while job.status == JobStatus.INIT:
+        await asyncio.sleep(.1)
+
+    assert job.stdout_file.read_text().strip() == str(cwd)

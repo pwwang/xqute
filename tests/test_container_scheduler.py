@@ -10,10 +10,15 @@ from xqute.defaults import JobStatus
 from xqute.schedulers.container_scheduler import ContainerScheduler
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def mock_bin_path():
     """Fixture to provide path to mock binaries"""
-    return str(Path(__file__).parent / "mocks")
+    p = Path(__file__).parent / "mocks"
+    docker_bin = p / "docker"
+    docker_bin.chmod(docker_bin.stat().st_mode | stat.S_IEXEC)
+    apptainer_bin = p / "apptainer"
+    apptainer_bin.chmod(apptainer_bin.stat().st_mode | stat.S_IEXEC)
+    return str(p)
 
 
 @pytest.fixture
@@ -27,8 +32,6 @@ def temp_workdir():
 async def test_scheduler(mock_bin_path, temp_workdir):
 
     docker_bin = Path(mock_bin_path) / "docker"
-    # Make it executable
-    docker_bin.chmod(docker_bin.stat().st_mode | stat.S_IEXEC)
 
     host_dir = temp_workdir / "host"
     mounted_dir = temp_workdir / "mounted"
@@ -134,8 +137,6 @@ def test_jobcmd_shebang_docker(temp_workdir):
 def test_jobcmd_shebang_apptainer(mock_bin_path, temp_workdir):
     """Test job command shebang generation for apptainer"""
     apptainer_bin = Path(mock_bin_path) / "apptainer"
-    # Make it executable
-    apptainer_bin.chmod(apptainer_bin.stat().st_mode | stat.S_IEXEC)
 
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
@@ -172,3 +173,22 @@ def test_jobcmd_shebang_with_entrypoint_list(mock_bin_path, temp_workdir):
         shebang = scheduler.jobcmd_shebang(job)
 
         assert "python3 -u" in shebang
+
+
+def test_docker_cwd(mock_bin_path, temp_workdir):
+    """Test that Apptainer uses the correct working directory"""
+    docker_bin = Path(mock_bin_path) / "docker"
+
+    scheduler = ContainerScheduler(
+        image="ubuntu:20.04",
+        bin=str(docker_bin),
+        workdir=temp_workdir,
+        cwd="/custom/cwd"
+    )
+
+    job = MagicMock()
+    job.workdir = temp_workdir
+
+    shebang = scheduler.jobcmd_shebang(job)
+
+    assert "--workdir /custom/cwd" in shebang
