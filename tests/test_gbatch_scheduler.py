@@ -81,7 +81,6 @@ async def test_labels():
     assert conf["labels"]["key1"] == "value1"
     assert conf["labels"]["key2"] == "value2"
     assert conf["labels"]["xqute"] == "true"
-    assert conf["labels"]["email"] == "test-account"
     assert conf["labels"]["user"] == "test-account"
 
 

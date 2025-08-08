@@ -117,8 +117,8 @@ class GbatchScheduler(Scheduler):
             .get("email")
         )
         if email:
-            # 63 character limit
-            labels.setdefault("email", email[:63])
+            # 63 character limit, '@' is not allowed in labels
+            # labels.setdefault("email", email[:63])
             labels.setdefault("user", email.split("@", 1)[0][:63])
 
     def job_config_file(self, job: Job) -> SpecPath:
