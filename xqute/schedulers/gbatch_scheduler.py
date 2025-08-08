@@ -108,6 +108,18 @@ class GbatchScheduler(Scheduler):
 
         volumes.insert(0, meta_volume)
 
+        # Add some labels for filtering by `gcloud batch jobs list`
+        labels = self.config.setdefault("labels", Diot())
+        labels.setdefault("xqute", "true")
+        email = (
+            self.config.get("allocationPolicy", {})
+            .get("serviceAccount", {})
+            .get("email")
+        )
+        if email:
+            labels.setdefault("email", email)
+            labels.setdefault("user", email)
+
     def job_config_file(self, job: Job) -> SpecPath:
         base = f"job.wrapped.{self.name}.json"
         conf_file = job.metadir / base
@@ -125,9 +137,9 @@ class GbatchScheduler(Scheduler):
                 # If the entrypoint is already set, we assume it is a script
                 # that will be executed with the job command.
                 container.commands = [
-                    cmd
-                    .replace("{lang}", str(JOBCMD_WRAPPER_LANG))
-                    .replace("{script}", str(wrapt_script.mounted))
+                    cmd.replace("{lang}", str(JOBCMD_WRAPPER_LANG)).replace(
+                        "{script}", str(wrapt_script.mounted)
+                    )
                     for cmd in container.commands
                 ]
             else:
