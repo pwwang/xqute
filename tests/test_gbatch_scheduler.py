@@ -55,6 +55,36 @@ def test_error_with_non_list_volumes_config():
         )
 
 
+async def test_cwd():
+    """Test that the job script uses the correct working directory"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        workdir=WORKDIR,
+        cwd="/custom/cwd",
+    )
+    assert "cd /custom/cwd" in scheduler.jobcmd_wrapper_init
+
+
+async def test_labels():
+    """Test that the job script includes labels"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        workdir=WORKDIR,
+        labels={"key1": "value1", "key2": "value2"},
+        allocationPolicy={"serviceAccount": {"email": "test-account"}},
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+    assert conf["labels"]["key1"] == "value1"
+    assert conf["labels"]["key2"] == "value2"
+    assert conf["labels"]["xqute"] == "true"
+    assert conf["labels"]["email"] == "test-account"
+    assert conf["labels"]["user"] == "test-account"
+
+
 @pytest.mark.asyncio
 async def test_job():
     scheduler = GbatchScheduler(
@@ -210,15 +240,3 @@ async def test_submission_failure():
     assert await scheduler.job_is_running(job) is False
     assert job.status == JobStatus.FAILED
     assert "Failed to submit job" in job.stderr_file.read_text()
-
-
-@pytest.mark.asyncio
-async def test_cwd():
-    """Test that the job script uses the correct working directory"""
-    scheduler = GbatchScheduler(
-        project="test-project",
-        location="us-central1",
-        workdir=WORKDIR,
-        cwd="/custom/cwd",
-    )
-    assert "cd /custom/cwd" in scheduler.jobcmd_wrapper_init
