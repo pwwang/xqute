@@ -46,6 +46,9 @@ class Scheduler(ABC):
             It is a piece of script that inserted into the wrapper script, running
             on the scheduler system.
         jobname_prefix: The prefix for the job name
+        recheck_interval: The interval to recheck the job status.
+            Default is every 600 polls (each takes about 0.1 seconds).
+        cwd: The working directory for the job command wrapper
         **kwargs: Other arguments for the scheduler
     """
 
@@ -58,6 +61,7 @@ class Scheduler(ABC):
         "prescript",
         "postscript",
         "jobname_prefix",
+        "recheck_interval",
         "cwd",
     )
 
@@ -81,6 +85,7 @@ class Scheduler(ABC):
         prescript: str = "",
         postscript: str = "",
         jobname_prefix: str | None = None,
+        recheck_interval: int = 600,
         cwd: str | Path = None,
         **kwargs,
     ):
@@ -93,6 +98,7 @@ class Scheduler(ABC):
         self.prescript = prescript
         self.postscript = postscript
         self.jobname_prefix = jobname_prefix or self.name
+        self.recheck_interval = recheck_interval
         self.cwd = None if cwd is None else str(cwd)
 
         self.config = Diot(**kwargs)
@@ -221,12 +227,19 @@ class Scheduler(ABC):
         job.status = JobStatus.FINISHED
         await plugin.hooks.on_job_killed(self, job)
 
-    async def polling_jobs(self, jobs: List[Job], on: str) -> bool:
+    async def polling_jobs(
+        self,
+        jobs: List[Job],
+        on: str,
+        polling_counter: int,
+    ) -> bool:
         """Check if all jobs are done or new jobs can submit
 
         Args:
             jobs: The list of jobs
             on: query on status: `submittable` or `all_done`
+            polling_counter: The polling counter, used to limit the number of polls or
+                skip some polls if the scheduler is busy.
 
         Returns:
             True if yes otherwise False.
@@ -273,14 +286,49 @@ class Scheduler(ABC):
                 elif status == JobStatus.RUNNING:
                     await plugin.hooks.on_job_started(self, job)
             elif status == JobStatus.RUNNING:
-                await plugin.hooks.on_job_polling(self, job)
+                await plugin.hooks.on_job_polling(self, job, polling_counter)
+                # Let's make sure the job is really running
+                # For example, a node can be preempted by the cloud and
+                # the job status and rc will not be updated
+                # If we have an rc file, that means the job is done
+                # and we can skip the polling
+                if (
+                    not job.rc_file.is_file()
+                    and (polling_counter + 1) % self.recheck_interval == 0
+                    and not await self.job_is_running(job)
+                ):  # pragma: no cover
+                    logger.warning(
+                        "/Scheduler-%s Job %s is not running in the scheduler, "
+                        "but its status is still RUNNING, setting it to FAILED",
+                        self.name,
+                        job.index,
+                    )
+                    job.status = JobStatus.FAILED
+                    job.rc_file.write_text("-3")
+                    with job.stderr_file.open("a") as f:
+                        f.write(
+                            "\nError: job is not running in the scheduler, "
+                            "but its status is still RUNNING.\n",
+                            "It is likely that the resource is preempted.\n"
+                        )
+
+                    await plugin.hooks.on_job_failed(self, job)
+                    if self.error_strategy == JobErrorStrategy.HALT:
+                        logger.error(
+                            "/Scheduler-%s Pipeline will halt since job failed: %r",
+                            self.name,
+                            job,
+                        )
+                        os.kill(os.getpid(), signal.SIGTERM)
+                        # job.status = JobStatus.FINISHED
+                        break
 
             if (
                 self.error_strategy == JobErrorStrategy.HALT
                 and status == JobStatus.FAILED
             ):
                 logger.error(
-                    "/Scheduler-%s Pipeline will halt " "since job failed: %r",
+                    "/Scheduler-%s Pipeline will halt since job failed: %r",
                     self.name,
                     job,
                 )

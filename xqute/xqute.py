@@ -141,6 +141,7 @@ class Xqute:
 
     async def _producer(self) -> None:
         """The producer"""
+        polling_counter = 0
 
         while True:
             if not self.buffer_queue:
@@ -149,10 +150,15 @@ class Xqute:
                 continue
 
             job = self.buffer_queue.popleft()
-            if not await self.scheduler.polling_jobs(self.jobs, "submittable"):
+            if not await self.scheduler.polling_jobs(
+                self.jobs,
+                "submittable",
+                polling_counter,
+            ):
                 logger.debug("/%s Hit max forks of scheduler ...", self.name)
                 await asyncio.sleep(0.1)
                 self.buffer_queue.appendleft(job)
+                polling_counter += 1
                 continue
 
             job.status = JobStatus.QUEUED
@@ -195,11 +201,14 @@ class Xqute:
 
         If yes, cancel the producer-consumer task naturally.
         """
+        polling_counter = 0
         while self._cancelling is False and not await self.scheduler.polling_jobs(
             self.jobs,
             "all_done",
+            polling_counter,
         ):
             await asyncio.sleep(1.0)
+            polling_counter += 1
 
         if self._cancelling is False:
             self.cancel()

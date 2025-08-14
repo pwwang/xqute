@@ -99,12 +99,14 @@ async def on_job_started(scheduler: Scheduler, job: Job):
 
 
 @plugin.spec
-async def on_job_polling(scheduler: Scheduler, job: Job):
+async def on_job_polling(scheduler: Scheduler, job: Job, counter: int):
     """When the system is polling job status
 
     Args:
         scheduler: The scheduler object
         job: The job object
+        counter: The polling counter, used to limit the number of polls or
+            skip some polls if the scheduler is busy.
     """
 
 

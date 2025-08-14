@@ -27,7 +27,7 @@ class EchoPlugin:
         print("Job %s started" % job.index)
 
     @plugin.impl
-    async def on_job_polling(scheduler, job):
+    async def on_job_polling(scheduler, job, counter):
         print("Job %s polling" % job.index)
 
     @plugin.impl

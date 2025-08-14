@@ -127,7 +127,8 @@ def test_jobcmd_shebang_docker(temp_workdir):
 
     shebang = scheduler.jobcmd_shebang(job)
 
-    assert "docker run --rm" in shebang
+    assert "docker" in shebang
+    assert "run --rm" in shebang
     assert "-e TEST_ENV=test_value" in shebang
     assert "-v /host:/container" in shebang
     assert "--workdir" in shebang

@@ -61,6 +61,7 @@ Available arguments are:
 - submission_batch: The number of consumers to submit jobs
 - scheduler_opts: Additional keyword arguments for scheduler
 - jobname_prefix: The prefix of the job name
+- recheck_interval: The interval to recheck the job status
 
 Note that the producer must be initialized in an event loop.
 
@@ -187,7 +188,7 @@ To write a plugin for `xqute`, you will need to implement the following hooks:
 - `async def on_job_queued(scheduler, job)`: When the job is queued
 - `async def on_job_submitted(scheduler, job)`: When the job is submitted
 - `async def on_job_started(scheduler, job)`: When the job is started (when status changed to running)
-- `async def on_job_polling(scheduler, job)`: When job status is being polled
+- `async def on_job_polling(scheduler, job, counter)`: When job status is being polled
 - `async def on_job_killing(scheduler, job)`: When the job is being killed
 - `async def on_job_killed(scheduler, job)`: When the job is killed
 - `async def on_job_failed(scheduler, job)`: When the job is failed
