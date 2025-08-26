@@ -54,6 +54,20 @@ class GbatchScheduler(Scheduler):
         provisioning_model: GCP provisioning model (e.g. SPOT)
         image_uri: Container image URI (e.g. ubuntu-2004-lts)
         entrypoint: Container entrypoint (e.g. /bin/bash)
+        commands: The command list to run in the container.
+            There are three ways to specify the commands:
+            1. If no entrypoint is specified, the final command will be
+            [commands, wrapped_script], where the entrypoint is the wrapper script
+            interpreter that is determined by `JOBCMD_WRAPPER_LANG` (e.g. /bin/bash),
+            commands is the list you provided, and wrapped_script is the path to the
+            wrapped job script.
+            2. You can specify something like "-c", then the final command
+            will be ["-c", "wrapper_script_interpreter, wrapper_script"]
+            3. You can use the placeholders `{lang}` and `{script}` in the commands
+            list, where `{lang}` will be replaced with the interpreter (e.g. /bin/bash)
+            and `{script}` will be replaced with the path to the wrapped job script.
+            For example, you can specify ["{lang} {script}"] and the final command
+            will be ["wrapper_interpreter, wrapper_script"]
         *args, **kwargs: Other arguments passed to base Scheduler class
     """
 
@@ -79,6 +93,7 @@ class GbatchScheduler(Scheduler):
         provisioning_model: str | None = None,
         image_uri: str | None = None,
         entrypoint: str = None,
+        commands: str | Sequence[str] | None = None,
         **kwargs,
     ):
         """Construct the gbatch scheduler"""
@@ -124,7 +139,7 @@ class GbatchScheduler(Scheduler):
             if entrypoint:
                 runnables[0]["container"].setdefault("entrypoint", entrypoint)
 
-            runnables[0]["container"].setdefault("commands", [])
+            runnables[0]["container"].setdefault("commands", commands or [])
         else:
             runnables[0]["script"] = {"text": None}  # placeholder for job command
 
@@ -216,28 +231,28 @@ class GbatchScheduler(Scheduler):
         config = deepcopy(self.config)
         runnable = config.taskGroups[0].taskSpec.runnables[0]
         if "container" in runnable:
-            container = runnable.container
+            container = runnable["container"]
             if "entrypoint" not in container:
                 # supports only /bin/bash, but not /bin/bash -u
-                container.entrypoint = JOBCMD_WRAPPER_LANG
-                container.commands.append(str(wrapt_script.mounted))
-            elif any("{script}" in cmd for cmd in container.commands):
+                container["entrypoint"] = JOBCMD_WRAPPER_LANG
+                container["commands"].append(str(wrapt_script.mounted))
+            elif any("{script}" in cmd for cmd in container["commands"]):
                 # If the entrypoint is already set, we assume it is a script
                 # that will be executed with the job command.
-                container.commands = [
+                container["commands"] = [
                     cmd.replace("{lang}", str(JOBCMD_WRAPPER_LANG)).replace(
                         "{script}", str(wrapt_script.mounted)
                     )
-                    for cmd in container.commands
+                    for cmd in container["commands"]
                 ]
             else:
-                container.commands.append(
+                container["commands"].append(
                     shlex.join(
                         shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script.mounted)]
                     )
                 )
         else:
-            runnable.script.text = shlex.join(
+            runnable["script"]["text"] = shlex.join(
                 shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script.mounted)]
             )
 

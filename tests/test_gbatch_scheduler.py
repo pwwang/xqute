@@ -99,6 +99,7 @@ def test_config_shortcuts():
         provisioning_model="SPOT",
         image_uri="ubuntu-2004-lts",
         entrypoint="/bin/bash",
+        commands=["-c"],
         labels={"key1": "value1"},
     )
     job = scheduler.create_job(0, ["echo", 1])
@@ -141,6 +142,12 @@ def test_config_shortcuts():
         conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]["entrypoint"]
         == "/bin/bash"
     )
+    assert conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"][
+        "commands"
+    ] == [
+        "-c",
+        "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+    ]
     assert conf["labels"]["key1"] == "value1"
     assert conf["labels"]["xqute"] == "true"
 
@@ -161,6 +168,7 @@ def test_shortcuts_not_overwrite_config():
         image_uri="ubuntu-2004-lts",
         entrypoint="/bin/bash",
         labels={"key1": "value1"},
+        commands=["-d"],
         allocationPolicy={
             "serviceAccount": {"email": "other-account@example.com"},
             "network": {
@@ -189,6 +197,7 @@ def test_shortcuts_not_overwrite_config():
                             "container": {
                                 "image_uri": "other-image",
                                 "entrypoint": "/bin/bash2",
+                                "commands": ["-c"],
                             }
                         }
                     ],
@@ -216,6 +225,41 @@ def test_shortcuts_not_overwrite_config():
     assert conf["allocationPolicy"]["serviceAccount"]["email"] == (
         "other-account@example.com"
     )
+    assert (
+        conf["allocationPolicy"]["network"]["networkInterfaces"][0]["network"]
+        == "other-network"
+    )
+    assert (
+        conf["allocationPolicy"]["network"]["networkInterfaces"][0]["subnetwork"]
+        == "regions/us-central1/subnetworks/other"
+    )
+    assert (
+        conf["allocationPolicy"]["network"]["networkInterfaces"][0][
+            "noExternalIpAddress"
+        ]
+        is False
+    )
+    assert conf["allocationPolicy"]["instances"][0]["policy"]["machineType"] == (
+        "n1-standard-1"
+    )
+    assert (
+        conf["allocationPolicy"]["instances"][0]["policy"]["provisioningModel"]
+        == "STANDARD"
+    )
+    assert (
+        conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]["image_uri"]
+        == "other-image"
+    )
+    assert (
+        conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]["entrypoint"]
+        == "/bin/bash2"
+    )
+    assert conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"][
+        "commands"
+    ] == [
+        "-c",
+        "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+    ]
     assert conf["labels"]["key1"] == "value1"
     assert conf["labels"]["xqute"] == "true"
 
