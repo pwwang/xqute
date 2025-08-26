@@ -220,8 +220,7 @@ def test_shortcuts_not_overwrite_config():
     assert conf["labels"]["xqute"] == "true"
 
 
-@pytest.mark.asyncio
-async def test_job():
+def test_job():
     scheduler = GbatchScheduler(
         project="test-project",
         location="us-central1",
@@ -239,8 +238,7 @@ async def test_job():
     assert "/mnt/disks/xqute_workdir/0/job.status" in script
 
 
-@pytest.mark.asyncio
-async def test_sched_with_container():
+def test_sched_with_container():
     scheduler = GbatchScheduler(
         project="test-project",
         location="us-central1",
@@ -260,8 +258,7 @@ async def test_sched_with_container():
     assert container["entrypoint"] == "/bin/bash"
 
 
-@pytest.mark.asyncio
-async def test_sched_with_container_entrypoint():
+def test_sched_with_container_entrypoint():
     scheduler = GbatchScheduler(
         project="test-project",
         location="us-central1",
@@ -296,8 +293,7 @@ async def test_sched_with_container_entrypoint():
     assert container["entrypoint"] == "/bin/bash2"
 
 
-@pytest.mark.asyncio
-async def test_sched_with_container_command_template():
+def test_sched_with_container_command_template():
     scheduler = GbatchScheduler(
         project="test-project",
         location="us-central1",
