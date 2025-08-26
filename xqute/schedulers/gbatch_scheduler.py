@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import re
 import shlex
+import getpass
+from typing import Sequence
 from copy import deepcopy
 from hashlib import sha256
 from yunpath import GSPath
-from diot import Diot
 
 from ..job import Job
 from ..scheduler import Scheduler
@@ -37,6 +40,21 @@ class GbatchScheduler(Scheduler):
     With `entrypoint` specified and no `{script}` placeholder, the joined command
     will be the interpreter followed by the path to the wrapped job script will be
     appended to the `commands` list.
+
+    Args:
+        project: GCP project ID
+        location: GCP location (e.g. us-central1)
+        mount: GCS path to mount (e.g. gs://my-bucket:/mnt/my-bucket)
+            You can pass a list of mounts.
+        service_account: GCP service account email (e.g. test-account@example.com)
+        network: GCP network (e.g. default-network)
+        subnetwork: GCP subnetwork (e.g. regions/us-central1/subnetworks/default)
+        no_external_ip_address: Whether to disable external IP address
+        machine_type: GCP machine type (e.g. e2-standard-4)
+        provisioning_model: GCP provisioning model (e.g. SPOT)
+        image_uri: Container image URI (e.g. ubuntu-2004-lts)
+        entrypoint: Container entrypoint (e.g. /bin/bash)
+        *args, **kwargs: Other arguments passed to base Scheduler class
     """
 
     name = "gbatch"
@@ -47,7 +65,22 @@ class GbatchScheduler(Scheduler):
         "location",
     )
 
-    def __init__(self, *args, project: str, location: str, **kwargs):
+    def __init__(
+        self,
+        *args,
+        project: str,
+        location: str,
+        mount: str | Sequence[str] | None = None,
+        service_account: str | None = None,
+        network: str | None = None,
+        subnetwork: str | None = None,
+        no_external_ip_address: bool | None = None,
+        machine_type: str | None = None,
+        provisioning_model: str | None = None,
+        image_uri: str | None = None,
+        entrypoint: str = None,
+        **kwargs,
+    ):
         """Construct the gbatch scheduler"""
         self.gcloud = kwargs.pop("gcloud", "gcloud")
         self.project = project
@@ -68,31 +101,37 @@ class GbatchScheduler(Scheduler):
 
         task_groups = self.config.setdefault("taskGroups", [])
         if not task_groups:
-            task_groups.append(Diot())
+            task_groups.append({})
         if not task_groups[0]:
-            task_groups[0] = Diot()
+            task_groups[0] = {}
 
-        task_spec = task_groups[0].setdefault("taskSpec", Diot())
+        task_spec = task_groups[0].setdefault("taskSpec", {})
         runnables = task_spec.setdefault("runnables", [])
         if not runnables:
-            runnables.append(Diot())
+            runnables.append({})
         if not runnables[0]:
-            runnables[0] = Diot()
+            runnables[0] = {}
 
-        if "container" in runnables[0]:
-            if not isinstance(runnables[0].container, dict):  # pragma: no cover
+        if "container" in runnables[0] or image_uri:
+            runnables[0].setdefault("container", {})
+            if not isinstance(runnables[0]["container"], dict):  # pragma: no cover
                 raise ValueError(
                     "'taskGroups[0].taskSpec.runnables[0].container' should be a "
                     "dictionary for gbatch configuration."
                 )
-            runnables[0].container.setdefault("commands", [])
+            if image_uri:
+                runnables[0]["container"].setdefault("image_uri", image_uri)
+            if entrypoint:
+                runnables[0]["container"].setdefault("entrypoint", entrypoint)
+
+            runnables[0]["container"].setdefault("commands", [])
         else:
-            runnables[0].script = Diot(text=None)  # placeholder for job command
+            runnables[0]["script"] = {"text": None}  # placeholder for job command
 
         # Only logs the stdout/stderr of submission (when wrapped script doesn't run)
         # The logs of the wrapped script are logged to stdout/stderr files
         # in the workdir.
-        logs_policy = self.config.setdefault("logsPolicy", Diot())
+        logs_policy = self.config.setdefault("logsPolicy", {})
         logs_policy.setdefault("destination", "CLOUD_LOGGING")
 
         volumes = task_spec.setdefault("volumes", [])
@@ -102,24 +141,72 @@ class GbatchScheduler(Scheduler):
                 "gbatch configuration."
             )
 
-        meta_volume = Diot()
-        meta_volume.gcs = Diot(remotePath=self.workdir._no_prefix)
-        meta_volume.mountPath = str(self.workdir.mounted)
+        volumes.insert(
+            0,
+            {
+                "gcs": {"remotePath": self.workdir._no_prefix},
+                "mountPath": str(self.workdir.mounted),
+            },
+        )
 
-        volumes.insert(0, meta_volume)
+        if mount and not isinstance(mount, (tuple, list)):
+            mount = [mount]
+        if mount:
+            for m in mount:
+                gcs, mount_path = m.rsplit(":", 1)
+                if gcs.startswith("gs://"):
+                    gcs = gcs[5:]
+                volumes.append(
+                    {
+                        "gcs": {"remotePath": gcs},
+                        "mountPath": mount_path,
+                    }
+                )
 
         # Add some labels for filtering by `gcloud batch jobs list`
-        labels = self.config.setdefault("labels", Diot())
+        labels = self.config.setdefault("labels", {})
+
         labels.setdefault("xqute", "true")
-        email = (
-            self.config.get("allocationPolicy", {})
-            .get("serviceAccount", {})
-            .get("email")
-        )
+        labels.setdefault("user", getpass.getuser())
+
+        allocation_policy = self.config.setdefault("allocationPolicy", {})
+
+        if service_account:
+            allocation_policy.setdefault("serviceAccount", {}).setdefault(
+                "email", service_account
+            )
+
+        if network or subnetwork or no_external_ip_address is not None:
+            network_interface = allocation_policy.setdefault("network", {}).setdefault(
+                "networkInterfaces", []
+            )
+            if not network_interface:
+                network_interface.append({})
+            network_interface = network_interface[0]
+            if network:
+                network_interface.setdefault("network", network)
+            if subnetwork:
+                network_interface.setdefault("subnetwork", subnetwork)
+            if no_external_ip_address is not None:
+                network_interface.setdefault(
+                    "noExternalIpAddress", no_external_ip_address
+                )
+
+        if machine_type or provisioning_model:
+            instances = allocation_policy.setdefault("instances", [])
+            if not instances:
+                instances.append({})
+            policy = instances[0].setdefault("policy", {})
+            if machine_type:
+                policy.setdefault("machineType", machine_type)
+            if provisioning_model:
+                policy.setdefault("provisioningModel", provisioning_model)
+
+        email = allocation_policy.get("serviceAccount", {}).get("email")
         if email:
             # 63 character limit, '@' is not allowed in labels
             # labels.setdefault("email", email[:63])
-            labels.setdefault("user", email.split("@", 1)[0][:63])
+            labels.setdefault("sacct", email.split("@", 1)[0][:63])
 
     def job_config_file(self, job: Job) -> SpecPath:
         base = f"job.wrapped.{self.name}.json"

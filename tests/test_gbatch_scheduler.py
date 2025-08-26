@@ -55,7 +55,7 @@ def test_error_with_non_list_volumes_config():
         )
 
 
-async def test_cwd():
+def test_cwd():
     """Test that the job script uses the correct working directory"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -66,7 +66,7 @@ async def test_cwd():
     assert "cd /custom/cwd" in scheduler.jobcmd_wrapper_init
 
 
-async def test_labels():
+def test_labels():
     """Test that the job script includes labels"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -81,7 +81,143 @@ async def test_labels():
     assert conf["labels"]["key1"] == "value1"
     assert conf["labels"]["key2"] == "value2"
     assert conf["labels"]["xqute"] == "true"
-    assert conf["labels"]["user"] == "test-account"
+    assert conf["labels"]["sacct"] == "test-account"
+
+
+def test_config_shortcuts():
+    """Test that the job script includes config shortcuts"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        workdir=WORKDIR,
+        mount="gs://my-bucket:/mnt/my-bucket",
+        service_account="test-account@example.com",
+        network="default-network",
+        subnetwork="regions/us-central1/subnetworks/default",
+        no_external_ip_address=True,
+        machine_type="e2-standard-4",
+        provisioning_model="SPOT",
+        image_uri="ubuntu-2004-lts",
+        entrypoint="/bin/bash",
+        labels={"key1": "value1"},
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+    assert conf["taskGroups"][0]["taskSpec"]["volumes"][-1] == {
+        "gcs": {"remotePath": "my-bucket"},
+        "mountPath": "/mnt/my-bucket",
+    }
+
+    assert conf["allocationPolicy"]["serviceAccount"]["email"] == (
+        "test-account@example.com"
+    )
+    assert (
+        conf["allocationPolicy"]["network"]["networkInterfaces"][0]["network"]
+        == "default-network"
+    )
+    assert (
+        conf["allocationPolicy"]["network"]["networkInterfaces"][0]["subnetwork"]
+        == "regions/us-central1/subnetworks/default"
+    )
+    assert (
+        conf["allocationPolicy"]["network"]["networkInterfaces"][0][
+            "noExternalIpAddress"
+        ]
+        is True
+    )
+    assert conf["allocationPolicy"]["instances"][0]["policy"]["machineType"] == (
+        "e2-standard-4"
+    )
+    assert (
+        conf["allocationPolicy"]["instances"][0]["policy"]["provisioningModel"]
+        == "SPOT"
+    )
+    assert (
+        conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]["image_uri"]
+        == "ubuntu-2004-lts"
+    )
+    assert (
+        conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]["entrypoint"]
+        == "/bin/bash"
+    )
+    assert conf["labels"]["key1"] == "value1"
+    assert conf["labels"]["xqute"] == "true"
+
+
+def test_shortcuts_not_overwrite_config():
+    """Test that the job script includes config shortcuts"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        workdir=WORKDIR,
+        mount="gs://my-bucket:/mnt/my-bucket",
+        service_account="test-account@example.com",
+        network="default-network",
+        subnetwork="regions/us-central1/subnetworks/default",
+        no_external_ip_address=True,
+        machine_type="e2-standard-4",
+        provisioning_model="SPOT",
+        image_uri="ubuntu-2004-lts",
+        entrypoint="/bin/bash",
+        labels={"key1": "value1"},
+        allocationPolicy={
+            "serviceAccount": {"email": "other-account@example.com"},
+            "network": {
+                "networkInterfaces": [
+                    {
+                        "network": "other-network",
+                        "subnetwork": "regions/us-central1/subnetworks/other",
+                        "noExternalIpAddress": False,
+                    }
+                ]
+            },
+            "instances": [
+                {
+                    "policy": {
+                        "machineType": "n1-standard-1",
+                        "provisioningModel": "STANDARD",
+                    }
+                }
+            ],
+        },
+        taskGroups=[
+            {
+                "taskSpec": {
+                    "runnables": [
+                        {
+                            "container": {
+                                "image_uri": "other-image",
+                                "entrypoint": "/bin/bash2",
+                            }
+                        }
+                    ],
+                    "volumes": [
+                        {
+                            "gcs": {"remotePath": "other-bucket"},
+                            "mountPath": "/mnt/other-bucket",
+                        }
+                    ],
+                }
+            }
+        ],
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+    assert conf["taskGroups"][0]["taskSpec"]["volumes"][-2] == {
+        "gcs": {"remotePath": "other-bucket"},
+        "mountPath": "/mnt/other-bucket",
+    }
+    assert conf["taskGroups"][0]["taskSpec"]["volumes"][-1] == {
+        "gcs": {"remotePath": "my-bucket"},
+        "mountPath": "/mnt/my-bucket",
+    }
+    assert conf["allocationPolicy"]["serviceAccount"]["email"] == (
+        "other-account@example.com"
+    )
+    assert conf["labels"]["key1"] == "value1"
+    assert conf["labels"]["xqute"] == "true"
 
 
 @pytest.mark.asyncio
