@@ -68,8 +68,16 @@ class GbatchScheduler(Scheduler):
             and `{script}` will be replaced with the path to the wrapped job script.
             For example, you can specify ["{lang} {script}"] and the final command
             will be ["wrapper_interpreter, wrapper_script"]
+        runnables: Additional runnables to run before or after the main job.
+            Each runnable should be a dictionary that follows the
+            [GCP Batch API specification](https://cloud.google.com/batch/docs/reference/rest/v1/projects.locations.jobs#runnable).
+            You can also specify an "order" key in the dictionary to control the
+            execution order of the runnables. Runnables with negative order
+            will be executed before the main job, and those with non-negative
+            order will be executed after the main job. The main job runnable
+            will always be executed in the order it is defined in the list.
         *args, **kwargs: Other arguments passed to base Scheduler class
-    """
+    """  # noqa: E501
 
     name = "gbatch"
 
@@ -77,6 +85,7 @@ class GbatchScheduler(Scheduler):
         "gcloud",
         "project",
         "location",
+        "runnable_index",
     )
 
     def __init__(
@@ -94,6 +103,7 @@ class GbatchScheduler(Scheduler):
         image_uri: str | None = None,
         entrypoint: str = None,
         commands: str | Sequence[str] | None = None,
+        runnables: Sequence[dict] | None = None,
         **kwargs,
     ):
         """Construct the gbatch scheduler"""
@@ -121,27 +131,61 @@ class GbatchScheduler(Scheduler):
             task_groups[0] = {}
 
         task_spec = task_groups[0].setdefault("taskSpec", {})
-        runnables = task_spec.setdefault("runnables", [])
-        if not runnables:
-            runnables.append({})
-        if not runnables[0]:
-            runnables[0] = {}
+        task_runnables = task_spec.setdefault("runnables", [])
 
-        if "container" in runnables[0] or image_uri:
-            runnables[0].setdefault("container", {})
-            if not isinstance(runnables[0]["container"], dict):  # pragma: no cover
+        # Process additional runnables with ordering
+        additional_runnables = []
+        if runnables:
+            for runnable_dict in runnables:
+                runnable_copy = deepcopy(runnable_dict)
+                order = runnable_copy.pop("order", 0)
+                additional_runnables.append((order, runnable_copy))
+
+        # Sort by order
+        additional_runnables.sort(key=lambda x: x[0])
+
+        # Create main job runnable
+        if not task_runnables:
+            task_runnables.append({})
+        if not task_runnables[0]:
+            task_runnables[0] = {}
+
+        job_runnable = task_runnables[0]
+        if "container" in job_runnable or image_uri:
+            job_runnable.setdefault("container", {})
+            if not isinstance(job_runnable["container"], dict):  # pragma: no cover
                 raise ValueError(
                     "'taskGroups[0].taskSpec.runnables[0].container' should be a "
                     "dictionary for gbatch configuration."
                 )
             if image_uri:
-                runnables[0]["container"].setdefault("image_uri", image_uri)
+                job_runnable["container"].setdefault("image_uri", image_uri)
             if entrypoint:
-                runnables[0]["container"].setdefault("entrypoint", entrypoint)
+                job_runnable["container"].setdefault("entrypoint", entrypoint)
 
-            runnables[0]["container"].setdefault("commands", commands or [])
+            job_runnable["container"].setdefault("commands", commands or [])
         else:
-            runnables[0]["script"] = {"text": None}  # placeholder for job command
+            job_runnable["script"] = {
+                "text": None,  # placeholder for job command
+                "_commands": commands,  # Store commands for later use
+            }
+
+        # Clear existing runnables and rebuild with proper ordering
+        task_runnables.clear()
+
+        # Add runnables with negative order (before job)
+        for order, runnable_dict in additional_runnables:
+            if order < 0:
+                task_runnables.append(runnable_dict)
+
+        # Add the main job runnable
+        task_runnables.append(job_runnable)
+        self.runnable_index = len(task_runnables) - 1
+
+        # Add runnables with positive order (after job)
+        for order, runnable_dict in additional_runnables:
+            if order >= 0:
+                task_runnables.append(runnable_dict)
 
         # Only logs the stdout/stderr of submission (when wrapped script doesn't run)
         # The logs of the wrapped script are logged to stdout/stderr files
@@ -229,7 +273,7 @@ class GbatchScheduler(Scheduler):
 
         wrapt_script = self.wrapped_job_script(job)
         config = deepcopy(self.config)
-        runnable = config.taskGroups[0].taskSpec.runnables[0]
+        runnable = config["taskGroups"][0]["taskSpec"]["runnables"][self.runnable_index]
         if "container" in runnable:
             container = runnable["container"]
             if "entrypoint" not in container:
@@ -252,9 +296,35 @@ class GbatchScheduler(Scheduler):
                     )
                 )
         else:
-            runnable["script"]["text"] = shlex.join(
-                shlex.split(JOBCMD_WRAPPER_LANG) + [str(wrapt_script.mounted)]
-            )
+            # Apply commands for script runnables as well
+            stored_commands = runnable["script"].pop("_commands", None)
+            if stored_commands:
+                if any("{script}" in str(cmd) for cmd in stored_commands):
+                    # Use commands with script placeholder replacement
+                    command_parts = [
+                        shlex.quote(cmd)
+                        .replace("{lang}", str(JOBCMD_WRAPPER_LANG))
+                        .replace("{script}", str(wrapt_script.mounted))
+                        for cmd in stored_commands
+                    ]
+                else:
+                    # Append script to commands
+                    command_parts = [
+                        *(shlex.quote(str(cmd)) for cmd in stored_commands),
+                        shlex.quote(shlex.join(
+                            (
+                                *shlex.split(JOBCMD_WRAPPER_LANG),
+                                str(wrapt_script.mounted),
+                            )
+                        )),
+                    ]
+            else:
+                command_parts = [
+                    *shlex.split(JOBCMD_WRAPPER_LANG),
+                    str(wrapt_script.mounted),
+                ]
+
+            runnable["script"]["text"] = " ".join(command_parts)
 
         with conf_file.open("w") as f:
             json.dump(config, f, indent=2)

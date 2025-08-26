@@ -372,6 +372,270 @@ def test_sched_with_container_command_template():
     assert container["entrypoint"] == "/bin/bash2"
 
 
+def test_sched_with_script_runnable():
+    """Test scheduler with script runnable (no container)"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+
+    script_runnable = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]
+    expected_text = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    assert script_runnable["text"] == expected_text
+    # Ensure _commands is removed after text composition
+    assert "_commands" not in script_runnable
+
+
+def test_sched_with_script_commands():
+    """Test scheduler with script runnable and custom commands"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        commands=["-c", "echo starting"],
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+
+    script_runnable = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]
+    expected_text = (
+        "-c 'echo starting' "
+        "'/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch'"
+    )
+    assert script_runnable["text"] == expected_text
+    assert "_commands" not in script_runnable
+
+
+def test_sched_with_script_commands_template():
+    """Test scheduler with script runnable using command templates"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        commands=["{lang}", "-u {script}"],
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+
+    script_runnable = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]
+    expected_text = "'/bin/bash' '-u /mnt/disks/xqute_workdir/0/job.wrapped.gbatch'"
+    assert script_runnable["text"] == expected_text
+    assert "_commands" not in script_runnable
+
+
+def test_additional_runnables_basic():
+    """Test basic additional runnables functionality"""
+    runnables = [
+        {"script": {"text": "echo setup"}},
+        {"script": {"text": "echo cleanup"}},
+    ]
+
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        runnables=runnables,
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+
+    task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
+    assert len(task_runnables) == 3  # 2 additional + 1 main job
+
+    # Check that the main job runnable is at the expected index
+    assert scheduler.runnable_index == 0
+    expected_script = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    assert task_runnables[scheduler.runnable_index]["script"]["text"] == expected_script
+
+
+def test_additional_runnables_with_ordering():
+    """Test additional runnables with ordering"""
+    runnables = [
+        {"script": {"text": "echo after"}, "order": 1},
+        {"script": {"text": "echo before"}, "order": -1},
+        {"script": {"text": "echo middle"}, "order": 0},
+    ]
+
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        runnables=runnables,
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+
+    task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
+    assert len(task_runnables) == 4  # 3 additional + 1 main job
+
+    # Check ordering: before (-1), main job, middle (0), after (1)
+    assert task_runnables[0]["script"]["text"] == "echo before"
+    expected_script = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    assert task_runnables[1]["script"]["text"] == expected_script
+    assert task_runnables[2]["script"]["text"] == "echo middle"
+    assert task_runnables[3]["script"]["text"] == "echo after"
+
+    # Main job should be at index 1
+    assert scheduler.runnable_index == 1
+
+
+def test_additional_runnables_with_container():
+    """Test additional runnables work with container-based main job"""
+    runnables = [
+        {"script": {"text": "echo setup"}, "order": -1},
+        {"script": {"text": "echo cleanup"}, "order": 1},
+    ]
+
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        image_uri="ubuntu",
+        entrypoint="/bin/bash",
+        commands=["-c"],
+        runnables=runnables,
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+
+    task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
+    assert len(task_runnables) == 3
+
+    # Check setup runnable
+    assert task_runnables[0]["script"]["text"] == "echo setup"
+
+    # Check main container job
+    container = task_runnables[1]["container"]
+    assert container["image_uri"] == "ubuntu"
+    assert container["entrypoint"] == "/bin/bash"
+    expected_commands = [
+        "-c",
+        "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+    ]
+    assert container["commands"] == expected_commands
+
+    # Check cleanup runnable
+    assert task_runnables[2]["script"]["text"] == "echo cleanup"
+
+
+def test_additional_runnables_complex_ordering():
+    """Test complex ordering scenarios"""
+    runnables = [
+        {"script": {"text": "echo step3"}, "order": 3},
+        {"script": {"text": "echo step-2"}, "order": -2},
+        {"script": {"text": "echo step1"}, "order": 1},
+        {"script": {"text": "echo step-1"}, "order": -1},
+        {"script": {"text": "echo step2"}, "order": 2},
+    ]
+
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        runnables=runnables,
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+
+    task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
+    assert len(task_runnables) == 6  # 5 additional + 1 main job
+
+    # Check ordering: -2, -1, main job, 1, 2, 3
+    assert task_runnables[0]["script"]["text"] == "echo step-2"
+    assert task_runnables[1]["script"]["text"] == "echo step-1"
+    expected_script = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    assert task_runnables[2]["script"]["text"] == expected_script
+    assert task_runnables[3]["script"]["text"] == "echo step1"
+    assert task_runnables[4]["script"]["text"] == "echo step2"
+    assert task_runnables[5]["script"]["text"] == "echo step3"
+
+    # Main job should be at index 2
+    assert scheduler.runnable_index == 2
+
+
+def test_additional_runnables_no_order_key():
+    """Test additional runnables without order key (defaults to 0)"""
+    runnables = [
+        {"script": {"text": "echo no-order-1"}},
+        {"script": {"text": "echo no-order-2"}},
+        {"script": {"text": "echo before"}, "order": -1},
+    ]
+
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        runnables=runnables,
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+
+    task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
+    assert len(task_runnables) == 4
+
+    # Check ordering: before (-1), main job, no-order-1 (0), no-order-2 (0)
+    assert task_runnables[0]["script"]["text"] == "echo before"
+    expected_script = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    assert task_runnables[1]["script"]["text"] == expected_script
+    assert task_runnables[2]["script"]["text"] == "echo no-order-1"
+    assert task_runnables[3]["script"]["text"] == "echo no-order-2"
+
+
+def test_existing_runnable_with_additional():
+    """Test that existing runnable configuration is preserved with
+    additional runnables"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        jobname_prefix="jobprefix",
+        workdir=WORKDIR,
+        taskGroups=[
+            {
+                "taskSpec": {
+                    "runnables": [
+                        {"container": {"image_uri": "existing-image", "commands": []}}
+                    ]
+                }
+            }
+        ],
+        runnables=[
+            {"script": {"text": "echo setup"}, "order": -1},
+            {"script": {"text": "echo cleanup"}, "order": 1},
+        ],
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    conf_file = scheduler.job_config_file(job)
+    conf = json.loads(conf_file.read_text())
+
+    task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
+    assert len(task_runnables) == 3
+
+    # Check that existing container configuration is preserved
+    container = task_runnables[1]["container"]
+    assert container["image_uri"] == "existing-image"
+    assert container["entrypoint"] == "/bin/bash"
+    assert container["commands"] == ["/mnt/disks/xqute_workdir/0/job.wrapped.gbatch"]
+
+
 @pytest.mark.asyncio
 async def test_scheduler(gcloud):
 
