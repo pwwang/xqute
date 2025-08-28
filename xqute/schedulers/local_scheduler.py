@@ -64,6 +64,10 @@ class LocalScheduler(Scheduler):
         # this happens for python < 3.12
         await asyncio.sleep(0.1)
 
+        if job.stdout_file.exists():
+            # job submitted successfully and already started very soon
+            return proc.pid
+
         if proc.returncode is not None and proc.returncode != 0:
             # The process has already finished and no stdout/stderr files are
             # generated
