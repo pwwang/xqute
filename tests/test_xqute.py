@@ -167,7 +167,7 @@ async def test_job_failed_hook(tmp_path, caplog, capsys):
         await xqute.put(["echo", 1])
         await xqute.run_until_complete()
         assert "Job Failed: <Job-0" in capsys.readouterr().out
-        assert "/Job-0 Status changed: 'SUBMITTED' -> 'FAILED'" in caplog.text
+        assert "/Job-0 Status changed: 'QUEUED' -> 'FAILED'" in caplog.text
         assert "/Job-1 Status changed: 'SUBMITTED' -> 'FINISHED'" in caplog.text
 
         # should clean retry directories

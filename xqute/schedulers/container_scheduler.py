@@ -4,7 +4,6 @@ from __future__ import annotations
 import os
 import shlex
 import shutil
-import asyncio
 from pathlib import Path
 from typing import Dict, List, Sequence
 
@@ -161,28 +160,4 @@ class ContainerScheduler(LocalScheduler):
         Returns:
             The process id
         """
-        proc = await asyncio.create_subprocess_exec(
-            *shlex.split(self.jobcmd_shebang(job)),
-            str(self.wrapped_job_script(job).mounted),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        # wait for a while to make sure the process is running
-        # this is to avoid the real command is not run when proc is recycled too early
-        # this happens for python < 3.12
-        while not job.stdout_file.exists() and not job.stderr_file.exists():
-            if proc.returncode is not None:
-                # The process has already finished and no stdout/stderr files are
-                # generated
-                # Something went wrong with the wrapper script?
-                stderr = await proc.stderr.read()
-                raise RuntimeError(
-                    f"Failed to submit job #{job.index}: {stderr.decode()}\n"
-                    f"Command: {self.jobcmd_shebang(job)} "
-                    f"{self.wrapped_job_script(job).mounted}\n"
-                )
-
-            await asyncio.sleep(0.1)
-
-        # don't await for the results, as this will run the real command
-        return proc.pid
+        return await super().submit_job(job, _mounted=True)

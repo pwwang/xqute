@@ -21,59 +21,6 @@ def mock_bin_path():
     return str(p)
 
 
-@pytest.fixture
-def temp_workdir():
-    """Fixture to provide temporary working directory"""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield Path(tmpdir)
-
-
-@pytest.mark.asyncio
-async def test_scheduler(mock_bin_path, temp_workdir):
-
-    docker_bin = Path(mock_bin_path) / "docker"
-
-    host_dir = temp_workdir / "host"
-    mounted_dir = temp_workdir / "mounted"
-    host_dir.mkdir(parents=True, exist_ok=True)
-    mounted_dir.symlink_to(host_dir)
-
-    scheduler = ContainerScheduler(
-        bin=str(docker_bin),
-        image="ubuntu:20.04",
-        workdir=host_dir,
-        mounted_workdir=mounted_dir,
-    )
-    job = scheduler.create_job(0, ["echo", 1])
-    wrapt_script = str(scheduler.wrapped_job_script(job).mounted)
-    assert wrapt_script == str(mounted_dir / "0" / "job.wrapped.docker")
-
-    pid = await scheduler.submit_job(job)
-    assert isinstance(pid, int)
-
-
-@pytest.mark.asyncio
-async def test_submission_failure(temp_workdir):
-
-    host_dir = temp_workdir / "host"
-    mounted_dir = temp_workdir / "mounted"
-    host_dir.mkdir(parents=True, exist_ok=True)
-    mounted_dir.symlink_to(host_dir)
-
-    scheduler = ContainerScheduler(
-        bin="false",
-        image="ubuntu:20.04",
-        workdir=host_dir,
-        mounted_workdir=mounted_dir,
-    )
-    job = scheduler.create_job(0, ["echo", 1])
-
-    assert await scheduler.submit_job_and_update_status(job) is None
-    assert await scheduler.job_is_running(job) is False
-    assert job.status == JobStatus.FAILED
-    assert "Failed to submit job" in job.stderr_file.read_text()
-
-
 def test_init_docker(mock_bin_path, temp_workdir):
     """Test initialization with docker"""
     scheduler = ContainerScheduler(
@@ -193,3 +140,56 @@ def test_docker_cwd(mock_bin_path, temp_workdir):
     shebang = scheduler.jobcmd_shebang(job)
 
     assert "--workdir /custom/cwd" in shebang
+
+
+@pytest.fixture
+def temp_workdir():
+    """Fixture to provide temporary working directory"""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield Path(tmpdir)
+
+
+@pytest.mark.asyncio
+async def test_scheduler(mock_bin_path, temp_workdir):
+
+    docker_bin = Path(mock_bin_path) / "docker"
+
+    host_dir = temp_workdir / "host"
+    mounted_dir = temp_workdir / "mounted"
+    host_dir.mkdir(parents=True, exist_ok=True)
+    mounted_dir.symlink_to(host_dir)
+
+    scheduler = ContainerScheduler(
+        bin=str(docker_bin),
+        image="ubuntu:20.04",
+        workdir=host_dir,
+        mounted_workdir=mounted_dir,
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+    wrapt_script = str(scheduler.wrapped_job_script(job).mounted)
+    assert wrapt_script == str(mounted_dir / "0" / "job.wrapped.docker")
+
+    pid = await scheduler.submit_job(job)
+    assert isinstance(pid, int)
+
+
+@pytest.mark.asyncio
+async def test_submission_failure(temp_workdir):
+
+    host_dir = temp_workdir / "host"
+    mounted_dir = temp_workdir / "mounted"
+    host_dir.mkdir(parents=True, exist_ok=True)
+    mounted_dir.symlink_to(host_dir)
+
+    scheduler = ContainerScheduler(
+        bin="false",
+        image="ubuntu:20.04",
+        workdir=host_dir,
+        mounted_workdir=mounted_dir,
+    )
+    job = scheduler.create_job(0, ["echo", 1])
+
+    assert await scheduler.submit_job_and_update_status(job) is None
+    assert await scheduler.job_is_running(job) is False
+    assert job.status == JobStatus.FAILED
+    assert "Failed to submit job" in job.stderr_file.read_text()
