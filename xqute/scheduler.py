@@ -7,7 +7,7 @@ import shlex
 import signal
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Type
+from typing import Any, List, Type
 
 from yunpath import CloudPath
 from diot import Diot  # type: ignore
@@ -103,7 +103,12 @@ class Scheduler(ABC):
 
         self.config = Diot(**kwargs)
 
-    def create_job(self, index: int, cmd: CommandType) -> Job:
+    def create_job(
+        self,
+        index: int,
+        cmd: CommandType,
+        envs: dict[str, Any] | None = None,
+    ) -> Job:
         """Create a job
 
         Args:
@@ -119,6 +124,7 @@ class Scheduler(ABC):
             workdir=self.workdir,
             error_retry=self.error_strategy == JobErrorStrategy.RETRY,
             num_retries=self.num_retries,
+            envs=envs,
         )
 
     async def submit_job_and_update_status(self, job: Job):
@@ -309,7 +315,7 @@ class Scheduler(ABC):
                         f.write(
                             "\nError: job is not running in the scheduler, "
                             "but its status is still RUNNING.\n",
-                            "It is likely that the resource is preempted.\n"
+                            "It is likely that the resource is preempted.\n",
                         )
 
                     await plugin.hooks.on_job_failed(self, job)
@@ -385,6 +391,7 @@ class Scheduler(ABC):
             # wrapper script.
             # See: https://issuetracker.google.com/issues/336164416
             wrapper_init = f"cd {shlex.quote(self.cwd)}\n\n{wrapper_init}"
+
         return wrapper_init
 
     def jobcmd_shebang(self, job: Job) -> str:
@@ -398,9 +405,19 @@ class Scheduler(ABC):
 
     def jobcmd_init(self, job) -> str:
         """The job command init"""
+        init_code = []
+        if job.envs:
+            init_code.append("# Environment variables")
+            init_code.extend(
+                [
+                    f"export {key}={shlex.quote(str(value))}"
+                    for key, value in job.envs.items()
+                ]
+            )
+
         codes = plugin.hooks.on_jobcmd_init(self, job)
-        codes = [code for code in codes if code]
-        return "\n".join(codes)
+        init_code.extend([code for code in codes if code])
+        return "\n".join(init_code)
 
     def jobcmd_prep(self, job) -> str:
         """The job command preparation"""

@@ -5,7 +5,7 @@ import os
 import shlex
 import shutil
 from pathlib import Path
-from typing import Dict, List, Sequence
+from typing import List, Sequence
 
 from ..job import Job
 from ..defaults import JOBCMD_WRAPPER_LANG
@@ -33,7 +33,6 @@ class ContainerScheduler(LocalScheduler):
         entrypoint: Entrypoint command for the container
         bin: Path to container runtime binary (e.g. /path/to/docker)
         volumes: host:container volume mapping string or strings
-        envs: Environment variables to set in container
         user: User to run the container as (only for Docker/Podman)
             By default, it runs as the current user (os.getuid() and os.getgid())
         remove: Whether to remove the container after execution.
@@ -49,7 +48,7 @@ class ContainerScheduler(LocalScheduler):
         "entrypoint",
         "bin",
         "volumes",
-        "envs",
+        # "envs",
         "remove",
         "user",
         "bin_args",
@@ -62,7 +61,7 @@ class ContainerScheduler(LocalScheduler):
         entrypoint: str | List[str] = JOBCMD_WRAPPER_LANG,
         bin: str = "docker",
         volumes: str | Sequence[str] | None = None,
-        envs: Dict[str, str] | None = None,
+        # envs: Dict[str, str] | None = None,
         remove: bool = True,
         user: str | None = None,
         bin_args: List[str] | None = None,
@@ -87,7 +86,7 @@ class ContainerScheduler(LocalScheduler):
         self.volumes = (
             [self.volumes] if isinstance(self.volumes, str) else list(self.volumes)
         )
-        self.envs = envs or {}
+        # self.envs = envs or {}
         self.remove = remove
         self.user = user or f"{os.getuid()}:{os.getgid()}"
         self.bin_args = bin_args or []
@@ -127,7 +126,7 @@ class ContainerScheduler(LocalScheduler):
                 cmd.extend(["--pwd", self.cwd])
             else:
                 cmd.extend(["--pwd", str(self.workdir.mounted)])
-            for key, value in self.envs.items():
+            for key, value in job.envs.items():
                 cmd.extend(["--env", f"{key}={value}"])
             for vol in self.volumes:
                 cmd.extend(["--bind", f"{vol}"])
@@ -135,7 +134,7 @@ class ContainerScheduler(LocalScheduler):
             if self.remove:
                 cmd.append("--rm")
             cmd.extend(["--user", self.user])
-            for key, value in self.envs.items():
+            for key, value in job.envs.items():
                 cmd.extend(["-e", f"{key}={value}"])
             for vol in self.volumes:
                 cmd.extend(["-v", vol])

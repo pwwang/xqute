@@ -32,19 +32,19 @@ def test_init_docker(mock_bin_path, temp_workdir):
     assert scheduler.bin.endswith("docker")
     assert isinstance(scheduler.entrypoint, list)
     assert isinstance(scheduler.volumes, list)
-    assert isinstance(scheduler.envs, dict)
+    # assert isinstance(scheduler.envs, dict)
 
     scheduler = ContainerScheduler(
         image="docker://ubuntu:20.04",
         workdir=temp_workdir,
         volumes=["/host/path:/container/path"],
-        envs={"VAR1": "value1", "VAR2": "value2"},
+        # envs={"VAR1": "value1", "VAR2": "value2"},
         bin_args=["--privileged", "--network=host"],
     )
     assert scheduler.image == "ubuntu:20.04"
     assert "/host/path:/container/path" in scheduler.volumes
-    assert scheduler.envs["VAR1"] == "value1"
-    assert scheduler.envs["VAR2"] == "value2"
+    # assert scheduler.envs["VAR1"] == "value1"
+    # assert scheduler.envs["VAR2"] == "value2"
     assert "--privileged" in scheduler.bin_args
     assert "--network=host" in scheduler.bin_args
 
@@ -64,12 +64,11 @@ def test_jobcmd_shebang_docker(temp_workdir):
     """Test job command shebang generation for docker"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
-        envs={"TEST_ENV": "test_value"},
         volumes=["/host:/container"],
         workdir=temp_workdir
     )
 
-    job = MagicMock()
+    job = MagicMock(envs={"TEST_ENV": "test_value"})
     job.workdir = temp_workdir
 
     shebang = scheduler.jobcmd_shebang(job)
@@ -89,12 +88,12 @@ def test_jobcmd_shebang_apptainer(mock_bin_path, temp_workdir):
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
         bin=str(apptainer_bin),
-        envs={"TEST_ENV": "test_value"},
+        # envs={"TEST_ENV": "test_value"},
         volumes=["/host:/container"],
         workdir=temp_workdir
     )
 
-    job = MagicMock()
+    job = MagicMock(envs={"TEST_ENV": "test_value"})
     job.workdir = temp_workdir
 
     shebang = scheduler.jobcmd_shebang(job)

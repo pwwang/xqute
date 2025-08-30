@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import shlex
-from typing import Tuple
+from typing import Any, Tuple
 
 from .defaults import JobStatus
 from .utils import logger, CommandType
@@ -47,6 +47,7 @@ class Job:
         "_error_retry",
         "_num_retries",
         "prev_status",
+        "envs",
     )
 
     def __init__(
@@ -56,6 +57,7 @@ class Job:
         workdir: SpecPath,
         error_retry: bool | None = None,
         num_retries: int | None = None,
+        envs: dict[str, Any] | None = None,
     ):
         """Construct a new Job
 
@@ -73,7 +75,11 @@ class Job:
             )
         )
         self.index = index
+        self.envs = envs or {}
+        self.envs["XQUTE_JOB_INDEX"] = str(self.index)
+        self.envs["XQUTE_METADIR"] = str(workdir)
         self.metadir = workdir / str(self.index)  # type: ignore
+        self.envs["XQUTE_JOB_METADIR"] = str(self.metadir)
         self.metadir.mkdir(exist_ok=True, parents=True)
 
         # The name of the job, should be the unique id from the scheduler

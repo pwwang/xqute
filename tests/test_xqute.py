@@ -220,3 +220,19 @@ async def test_plugin_context():
 
     xqute = Xqute(plugins=["-a", "-b"])
     await xqute.run_until_complete()
+
+
+@pytest.mark.asyncio
+async def test_put_job_with_envs(tmp_path):
+    xqute = Xqute(workdir=tmp_path)
+    await xqute.put("echo $MYVAR", envs={"MYVAR": "123"})
+
+    job2 = xqute.scheduler.create_job(1, "echo $MYVAR", envs={"MYVAR": "111"})
+    await xqute.put(job2, envs={"MYVAR": "456"})
+    await xqute.run_until_complete()
+    job = xqute.jobs[0]
+    assert job.rc == 0
+    assert job.stdout_file.read_text().strip() == "123"
+
+    assert job2.rc == 0
+    assert job2.stdout_file.read_text().strip() == "456"

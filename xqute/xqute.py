@@ -176,18 +176,22 @@ class Xqute:
             await self.scheduler.submit_job_and_update_status(job)
             self.queue.task_done()
 
-    async def put(self, cmd: CommandType | Job) -> None:
+    async def put(self, cmd: CommandType | Job, envs: dict[str, Any] = None) -> None:
         """Put a command into the buffer
 
         Args:
             cmd: The command
+            envs: The environment variables for the job
         """
         from .job import Job
 
+        envs = envs or {}
+
         if isinstance(cmd, Job):
             job = cmd
+            job.envs.update(envs)
         else:
-            job = self.scheduler.create_job(len(self.jobs), cmd)
+            job = self.scheduler.create_job(len(self.jobs), cmd, envs)
 
         await plugin.hooks.on_job_init(self.scheduler, job)
         self.jobs.append(job)
