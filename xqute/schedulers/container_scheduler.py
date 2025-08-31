@@ -1,4 +1,5 @@
 """The scheduler to run jobs via containers"""
+
 from __future__ import annotations
 
 import os
@@ -11,9 +12,8 @@ from ..job import Job
 from ..defaults import JOBCMD_WRAPPER_LANG
 from ..path import SpecPath
 from .local_scheduler import LocalScheduler
+from .gbatch_scheduler import NAMED_MOUNT_RE, DEFAULT_MOUNTED_ROOT
 
-
-DEFAULT_MOUNTED_WORKDIR = "/mnt/disks/xqute_workdir"
 CONTAINER_TYPES = {
     "docker": "docker",
     "podman": "podman",
@@ -33,6 +33,10 @@ class ContainerScheduler(LocalScheduler):
         entrypoint: Entrypoint command for the container
         bin: Path to container runtime binary (e.g. /path/to/docker)
         volumes: host:container volume mapping string or strings
+            or named volume mapping like `MOUNTED=/path/on/host`
+            then it will be mounted to `/mnt/disks/MOUNTED` in the container.
+            You can use environment variable `MOUNTED` in your job scripts to
+            refer to the mounted path.
         user: User to run the container as (only for Docker/Podman)
             By default, it runs as the current user (os.getuid() and os.getgid())
         remove: Whether to remove the container after execution.
@@ -53,6 +57,7 @@ class ContainerScheduler(LocalScheduler):
         "user",
         "bin_args",
         "_container_type",
+        "_path_envs",
     )
 
     def __init__(
@@ -65,27 +70,51 @@ class ContainerScheduler(LocalScheduler):
         remove: bool = True,
         user: str | None = None,
         bin_args: List[str] | None = None,
-        **kwargs
+        **kwargs,
     ):
-        kwargs.setdefault("mounted_workdir", DEFAULT_MOUNTED_WORKDIR)
+        if "mount" in kwargs:
+            raise ValueError(
+                "You used 'mount' argument for container scheduler, "
+                "did you mean 'volumes'?"
+            )
+
+        kwargs.setdefault("mounted_workdir", f"{DEFAULT_MOUNTED_ROOT}/xqute_workdir")
         super().__init__(**kwargs)
 
         self.bin = shutil.which(bin)
         if not self.bin:
-            raise ValueError(
-                f"Container runtime binary '{bin}' not found in PATH"
-            )
+            raise ValueError(f"Container runtime binary '{bin}' not found in PATH")
 
         self.image = image
         self.entrypoint = (
-            list(entrypoint)
-            if isinstance(entrypoint, (list, tuple))
-            else [entrypoint]
+            list(entrypoint) if isinstance(entrypoint, (list, tuple)) else [entrypoint]
         )
+        self._path_envs = {}
         self.volumes = volumes or []
         self.volumes = (
             [self.volumes] if isinstance(self.volumes, str) else list(self.volumes)
         )
+        for i, vol in enumerate(self.volumes):
+            if NAMED_MOUNT_RE.match(vol):
+                name, host_path = vol.split("=", 1)
+                host_path_obj = Path(host_path).expanduser().resolve()
+                if not host_path_obj.exists():
+                    raise FileNotFoundError(
+                        f"Volume host path '{host_path}' does not exist"
+                    )
+                if host_path_obj.is_file():
+                    host_path = str(host_path_obj.parent)
+                    mount_path = (
+                        f"{DEFAULT_MOUNTED_ROOT}/{name}/{host_path_obj.parent.name}"
+                    )
+                    self._path_envs[name] = f"{mount_path}/{host_path_obj.name}"
+                    self.volumes[i] = f"{host_path}:{mount_path}"
+                else:
+                    host_path = str(host_path_obj)
+                    mount_path = f"{DEFAULT_MOUNTED_ROOT}/{name}"
+                    self._path_envs[name] = mount_path
+                    self.volumes[i] = f"{host_path}:{mount_path}"
+
         # self.envs = envs or {}
         self.remove = remove
         self.user = user or f"{os.getuid()}:{os.getgid()}"
@@ -96,9 +125,8 @@ class ContainerScheduler(LocalScheduler):
             Path(self.bin).name.lower(),
             "docker",
         )
-        if (
-            self._container_type in ("docker", "podman")
-            and self.image.startswith("docker://")
+        if self._container_type in ("docker", "podman") and self.image.startswith(
+            "docker://"
         ):
             # Convert docker://image to image name
             self.image = self.image[9:]
@@ -160,3 +188,15 @@ class ContainerScheduler(LocalScheduler):
             The process id
         """
         return await super().submit_job(job, _mounted=True)
+
+    def jobcmd_init(self, job) -> str:
+        init_cmd = super().jobcmd_init(job)
+        path_envs_exports = [
+            f"export {key}={shlex.quote(value)}"
+            for key, value in self._path_envs.items()
+        ]
+        if path_envs_exports:
+            path_envs_exports.insert(0, "# Mounted paths")
+            init_cmd = "\n".join(path_envs_exports) + "\n" + init_cmd
+
+        return init_cmd

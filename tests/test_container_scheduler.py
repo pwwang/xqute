@@ -1,13 +1,18 @@
 """Tests for container scheduler"""
+
 import os
 import stat
 import pytest  # type: ignore
+import shlex
 import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 from xqute.defaults import JobStatus
 
-from xqute.schedulers.container_scheduler import ContainerScheduler
+from xqute.schedulers.container_scheduler import (
+    ContainerScheduler,
+    DEFAULT_MOUNTED_ROOT,
+)
 
 
 @pytest.fixture(scope="module")
@@ -49,6 +54,53 @@ def test_init_docker(mock_bin_path, temp_workdir):
     assert "--network=host" in scheduler.bin_args
 
 
+def test_init_scheduler_using_mount_instead_of_volumes():
+    """Test initialization with 'mount' instead of 'volumes'"""
+    expected_msg = (
+        "You used 'mount' argument for container scheduler, did you mean 'volumes'?"
+    )
+    with pytest.raises(ValueError, match=expected_msg):
+        ContainerScheduler(
+            image="ubuntu:20.04",
+            workdir="/tmp",
+            mount=["/host/path:/container/path"],  # type: ignore
+        )
+
+
+def test_named_volume_handling(temp_workdir):
+    """Test handling of named volumes"""
+    host_dir = temp_workdir / "dir1"
+    host_dir.mkdir(parents=True, exist_ok=True)
+    host_file = temp_workdir / "dir2" / "file.txt"
+    host_file.parent.mkdir(parents=True, exist_ok=True)
+    host_file.write_text("test content")
+    scheduler = ContainerScheduler(
+        image="ubuntu:20.04",
+        workdir=temp_workdir,
+        volumes=[f"DIR={host_dir}", f"FILE={host_file}"],
+    )
+    assert len(scheduler.volumes) == 3
+    assert scheduler.volumes[0] == f"{str(host_dir)}:{DEFAULT_MOUNTED_ROOT}/DIR"
+    assert (
+        scheduler.volumes[1]
+        == f"{str(host_file.parent)}:{DEFAULT_MOUNTED_ROOT}/FILE/dir2"
+    )
+    assert scheduler._path_envs["DIR"] == f"{DEFAULT_MOUNTED_ROOT}/DIR"
+    assert scheduler._path_envs["FILE"] == f"{DEFAULT_MOUNTED_ROOT}/FILE/dir2/file.txt"
+
+    job = scheduler.create_job(0, ["echo", "Hello"])
+    init_cmd = scheduler.jobcmd_init(job)
+    assert f"export DIR={shlex.quote(scheduler._path_envs['DIR'])}" in init_cmd
+    assert f"export FILE={shlex.quote(scheduler._path_envs['FILE'])}" in init_cmd
+
+    with pytest.raises(FileNotFoundError):
+        ContainerScheduler(
+            image="ubuntu:20.04",
+            workdir=temp_workdir,
+            volumes=["DATA=/non/existent/path"],
+        )
+
+
 def test_init_binary_not_found(temp_workdir):
     """Test initialization with non-existent binary"""
     expected_msg = "Container runtime binary 'docker_not_exist' not found"
@@ -63,9 +115,7 @@ def test_init_binary_not_found(temp_workdir):
 def test_jobcmd_shebang_docker(temp_workdir):
     """Test job command shebang generation for docker"""
     scheduler = ContainerScheduler(
-        image="ubuntu:20.04",
-        volumes=["/host:/container"],
-        workdir=temp_workdir
+        image="ubuntu:20.04", volumes=["/host:/container"], workdir=temp_workdir
     )
 
     job = MagicMock(envs={"TEST_ENV": "test_value"})
@@ -90,7 +140,7 @@ def test_jobcmd_shebang_apptainer(mock_bin_path, temp_workdir):
         bin=str(apptainer_bin),
         # envs={"TEST_ENV": "test_value"},
         volumes=["/host:/container"],
-        workdir=temp_workdir
+        workdir=temp_workdir,
     )
 
     job = MagicMock(envs={"TEST_ENV": "test_value"})
@@ -109,9 +159,7 @@ def test_jobcmd_shebang_with_entrypoint_list(mock_bin_path, temp_workdir):
     """Test job command shebang with entrypoint as list"""
     with patch.dict(os.environ, {"PATH": mock_bin_path}):
         scheduler = ContainerScheduler(
-            image="ubuntu:20.04",
-            entrypoint=["python3", "-u"],
-            workdir=temp_workdir
+            image="ubuntu:20.04", entrypoint=["python3", "-u"], workdir=temp_workdir
         )
 
         job = MagicMock()
@@ -130,7 +178,7 @@ def test_docker_cwd(mock_bin_path, temp_workdir):
         image="ubuntu:20.04",
         bin=str(docker_bin),
         workdir=temp_workdir,
-        cwd="/custom/cwd"
+        cwd="/custom/cwd",
     )
 
     job = MagicMock()
