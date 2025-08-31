@@ -8,7 +8,7 @@ import getpass
 from typing import Sequence
 from copy import deepcopy
 from hashlib import sha256
-from yunpath import GSPath
+from yunpath import GSPath, AnyPath
 
 from ..job import Job
 from ..scheduler import Scheduler
@@ -18,7 +18,8 @@ from ..path import SpecPath
 
 
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")
-DEFAULT_MOUNTED_WORKDIR = "/mnt/disks/xqute_workdir"
+NAMED_MOUNT_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*=.+$")
+DEFAULT_MOUNTED_ROOT = "/mnt/disks"
 
 
 class GbatchScheduler(Scheduler):
@@ -46,6 +47,10 @@ class GbatchScheduler(Scheduler):
         location: GCP location (e.g. us-central1)
         mount: GCS path to mount (e.g. gs://my-bucket:/mnt/my-bucket)
             You can pass a list of mounts.
+            You can also use named mount like `NAME=gs://bucket/dir`
+            then it will be mounted to `/mnt/disks/NAME` in the container.
+            You can use environment variable `NAME` in your job scripts to
+            refer to the mounted path.
         service_account: GCP service account email (e.g. test-account@example.com)
         network: GCP network (e.g. default-network)
         subnetwork: GCP subnetwork (e.g. regions/us-central1/subnetworks/default)
@@ -86,6 +91,7 @@ class GbatchScheduler(Scheduler):
         "project",
         "location",
         "runnable_index",
+        "_path_envs",
     )
 
     def __init__(
@@ -110,7 +116,7 @@ class GbatchScheduler(Scheduler):
         self.gcloud = kwargs.pop("gcloud", "gcloud")
         self.project = project
         self.location = location
-        kwargs.setdefault("mounted_workdir", DEFAULT_MOUNTED_WORKDIR)
+        kwargs.setdefault("mounted_workdir", f"{DEFAULT_MOUNTED_ROOT}/xqute_workdir")
         super().__init__(*args, **kwargs)
 
         if not isinstance(self.workdir, GSPath):
@@ -124,6 +130,7 @@ class GbatchScheduler(Scheduler):
                 "^[a-zA-Z][a-zA-Z0-9-]{0,47}$."
             )
 
+        self._path_envs = {}
         task_groups = self.config.setdefault("taskGroups", [])
         if not task_groups:
             task_groups.append({})
@@ -212,15 +219,48 @@ class GbatchScheduler(Scheduler):
             mount = [mount]
         if mount:
             for m in mount:
-                gcs, mount_path = m.rsplit(":", 1)
-                if gcs.startswith("gs://"):
-                    gcs = gcs[5:]
-                volumes.append(
-                    {
-                        "gcs": {"remotePath": gcs},
-                        "mountPath": mount_path,
-                    }
-                )
+                # Let's check if mount is provided as "OUTDIR=gs://bucket/dir"
+                # If so, we mounted it to $DEFAULT_MOUNTED_ROOT/OUTDIR
+                # and set OUTDIR env variable to the mounted path in self._path_envs
+                if NAMED_MOUNT_RE.match(m):
+                    name, gcs = m.split("=", 1)
+                    if not gcs.startswith("gs://"):
+                        raise ValueError(
+                            "When using named mount, it should be in the format "
+                            "'NAME=gs://bucket/dir', where NAME matches "
+                            "^[A-Za-z][A-Za-z0-9_]*$"
+                        )
+                    gcs_path = AnyPath(gcs)
+                    # Check if it is a file path
+                    if gcs_path.is_file():
+                        # Mount the parent directory
+                        gcs = str(gcs_path.parent._no_prefix)
+                        mount_path = (
+                            f"{DEFAULT_MOUNTED_ROOT}/{name}/{gcs_path.parent.name}"
+                        )
+                        self._path_envs[name] = f"{mount_path}/{gcs_path.name}"
+                    else:
+                        gcs = gcs[5:]
+                        mount_path = f"{DEFAULT_MOUNTED_ROOT}/{name}"
+                        self._path_envs[name] = mount_path
+
+                    volumes.append(
+                        {
+                            "gcs": {"remotePath": gcs},
+                            "mountPath": mount_path,
+                        }
+                    )
+                else:
+                    # Or, we expect a literal mount "gs://bucket/dir:/mount/path"
+                    gcs, mount_path = m.rsplit(":", 1)
+                    if gcs.startswith("gs://"):
+                        gcs = gcs[5:]
+                    volumes.append(
+                        {
+                            "gcs": {"remotePath": gcs},
+                            "mountPath": mount_path,
+                        }
+                    )
 
         # Add some labels for filtering by `gcloud batch jobs list`
         labels = self.config.setdefault("labels", {})
@@ -311,12 +351,14 @@ class GbatchScheduler(Scheduler):
                     # Append script to commands
                     command_parts = [
                         *(shlex.quote(str(cmd)) for cmd in stored_commands),
-                        shlex.quote(shlex.join(
-                            (
-                                *shlex.split(JOBCMD_WRAPPER_LANG),
-                                str(wrapt_script.mounted),
+                        shlex.quote(
+                            shlex.join(
+                                (
+                                    *shlex.split(JOBCMD_WRAPPER_LANG),
+                                    str(wrapt_script.mounted),
+                                )
                             )
-                        )),
+                        ),
                     ]
             else:
                 command_parts = [
@@ -476,3 +518,15 @@ class GbatchScheduler(Scheduler):
     async def job_is_running(self, job: Job) -> bool:
         status = await self._get_job_status(job)
         return status in ("RUNNING", "QUEUED", "SCHEDULED")
+
+    def jobcmd_init(self, job) -> str:
+        init_cmd = super().jobcmd_init(job)
+        path_envs_exports = [
+            f"export {key}={shlex.quote(value)}"
+            for key, value in self._path_envs.items()
+        ]
+        if path_envs_exports:
+            path_envs_exports.insert(0, "# Mounted paths")
+            init_cmd = "\n".join(path_envs_exports) + "\n" + init_cmd
+
+        return init_cmd

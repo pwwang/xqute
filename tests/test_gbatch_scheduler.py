@@ -5,6 +5,7 @@ import pytest
 from cloudpathlib import AnyPath
 from pathlib import Path
 from uuid import uuid4
+from unittest.mock import patch
 
 from xqute.schedulers.gbatch_scheduler import GbatchScheduler
 from xqute.defaults import JobStatus
@@ -262,6 +263,87 @@ def test_shortcuts_not_overwrite_config():
     ]
     assert conf["labels"]["key1"] == "value1"
     assert conf["labels"]["xqute"] == "true"
+
+
+def test_named_mount_handling_in_gbatch():
+    """Test handling of named mounts in GbatchScheduler"""
+
+    # patch gbatch_scheduler.AnyPath to avoid actual GCS access
+    # AnyPath.is_file should return True for bucket_file and False for bucket_dir
+    # AnyPath.parent should return the parent path correctly, which is also an AnyPath
+    # AnyPath._no_prefix should return the path without the "gs://" prefix
+    # AnyPath.name should return the name of the path
+    # AnyPath.__str__ should return the full path
+    # Create a simple mock class that behaves like AnyPath
+    class MockAnyPath:
+        def __init__(self, path_str):
+            self.path_str = str(path_str)
+            self._path_obj = Path(self.path_str.replace("gs://", ""))
+
+        def __str__(self):
+            return self.path_str
+
+        def is_file(self):
+            return self.path_str.endswith("file.txt")
+
+        @property
+        def parent(self):
+            if self.path_str.startswith("gs://"):
+                parent_path = "gs://" + str(self._path_obj.parent)
+            else:
+                parent_path = str(self._path_obj.parent)
+            return MockAnyPath(parent_path)
+
+        @property
+        def _no_prefix(self):
+            if self.path_str.startswith("gs://"):
+                return self.path_str[5:]
+            return self.path_str
+
+        @property
+        def name(self):
+            return self._path_obj.name
+
+    with patch("xqute.schedulers.gbatch_scheduler.AnyPath", MockAnyPath):
+        bucket = "gs://my-bucket"
+        bucket_dir = f"{bucket}/dir1"
+        bucket_file = f"{bucket}/dir2/file.txt"
+
+        scheduler = GbatchScheduler(
+            project="test-project",
+            location="us-central1",
+            workdir=WORKDIR,
+            mount=[f"DIR={bucket_dir}", f"FILE={bucket_file}"],
+        )
+        volumes = scheduler.config["taskGroups"][0]["taskSpec"]["volumes"]
+        assert len(volumes) == 3
+        assert volumes[1] == {
+            "gcs": {"remotePath": "my-bucket/dir1"},
+            "mountPath": "/mnt/disks/DIR",
+        }
+        assert volumes[2] == {
+            "gcs": {"remotePath": "my-bucket/dir2"},
+            "mountPath": "/mnt/disks/FILE/dir2",
+        }
+        assert scheduler._path_envs["DIR"] == "/mnt/disks/DIR"
+        assert scheduler._path_envs["FILE"] == "/mnt/disks/FILE/dir2/file.txt"
+
+        job = scheduler.create_job(0, ["echo", 1])
+        init_cmd = scheduler.jobcmd_init(job)
+        assert 'export DIR=/mnt/disks/DIR' in init_cmd
+        assert 'export FILE=/mnt/disks/FILE/dir2/file.txt' in init_cmd
+
+
+def test_named_mount_is_not_gs_path():
+    """Test error is raised if named mount is not a gs:// path"""
+    expected_msg = "When using named mount"
+    with pytest.raises(ValueError, match=expected_msg):
+        GbatchScheduler(
+            project="test-project",
+            location="us-central1",
+            workdir=WORKDIR,
+            mount=["DIR=/local/path"],
+        )
 
 
 def test_job():
