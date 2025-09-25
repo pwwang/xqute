@@ -90,24 +90,22 @@ class SlurmScheduler(Scheduler):
         )
         await proc.wait()
 
-    async def job_is_running(self, job: Job) -> bool:
-        """Tell if a job is really running, not only the job.jid_file
-
-        In case where the jid file is not cleaned when job is done.
+    async def _get_job_status(self, job: Job) -> str:
+        """Tell the status of a job on Slurm
 
         Args:
             job: The job
 
         Returns:
-            True if it is, otherwise False
+            The status string
         """
         try:
             jid = job.jid_file.read_text().strip()
         except FileNotFoundError:
-            return False
+            return "UNKNOWN"
 
         if not jid:
-            return False
+            return "UNKNOWN"
 
         proc = await asyncio.create_subprocess_exec(
             self.squeue,
@@ -119,12 +117,48 @@ class SlurmScheduler(Scheduler):
         )
         await proc.wait()
         if proc.returncode != 0:
-            return False
+            return "UNKNOWN"
 
         # ['8792', 'queue', 'merge', 'user', 'R', '7:34:34', '1', 'server']
-        st = (await proc.stdout.read()).decode().strip().split()[4]  # type: ignore
-        # If job is still take resources, it is running
-        return st in (
+        stdout = await proc.stdout.read()
+        return stdout.decode().strip().split()[4].upper()  # type: ignore
+
+    async def job_fails_before_running(self, job):  # pragma: no cover
+        status = await self._get_job_status(job)
+        return status in (
+            "CA",
+            "CANCELLED",
+            "F",
+            "FAILED",
+            "NF",
+            "NODE_FAIL",
+            "PR",
+            "PREEMPTED",
+            "BF",
+            "BOOT_FAIL",
+            "SE",
+            "SPECIAL_EXIT",
+            "ST",
+            "STOPPED",
+            "TO",
+            "TIMEOUT",
+            "SI",
+            "SIGNALING",
+        )
+
+    async def job_is_running(self, job: Job) -> bool:
+        """Tell if a job is really running, not only the job.jid_file
+
+        In case where the jid file is not cleaned when job is done.
+
+        Args:
+            job: The job
+
+        Returns:
+            True if it is, otherwise False
+        """
+        status = await self._get_job_status(job)
+        return status in (
             "R",
             "RUNNING",
             "PD",

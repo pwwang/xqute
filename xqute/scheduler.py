@@ -291,6 +291,33 @@ class Scheduler(ABC):
                             pass
                 elif status == JobStatus.RUNNING:
                     await plugin.hooks.on_job_started(self, job)
+            elif status == JobStatus.SUBMITTED:  # pragma: no cover
+                # Check if the job fails before running
+                if await self.job_fails_before_running(job):
+                    logger.warning(
+                        "/Scheduler-%s Job %s seems to fail before running, "
+                        "check your scheduler logs if necessary.",
+                        self.name,
+                        job.index,
+                    )
+                    job.status = JobStatus.FAILED
+                    job.rc_file.write_text("-3")
+                    with job.stderr_file.open("a") as f:
+                        f.write(
+                            "\nError: job seems to fail before running.\n"
+                            "Check your scheduler logs if necessary.\n",
+                        )
+
+                    await plugin.hooks.on_job_failed(self, job)
+                    if self.error_strategy == JobErrorStrategy.HALT:
+                        logger.error(
+                            "/Scheduler-%s Pipeline will halt since job failed: %r",
+                            self.name,
+                            job,
+                        )
+                        os.kill(os.getpid(), signal.SIGTERM)
+                        # job.status = JobStatus.FINISHED
+                        break
             elif status == JobStatus.RUNNING:
                 await plugin.hooks.on_job_polling(self, job, polling_counter)
                 # Let's make sure the job is really running
@@ -376,6 +403,27 @@ class Scheduler(ABC):
             if await self.job_is_running(job):
                 job.status = JobStatus.SUBMITTED
                 return True
+        return False
+
+    async def job_fails_before_running(self, job: Job) -> bool:
+        """Check if a job fails before running.
+
+        For some schedulers, the job might fail before running (after submission).
+        For example, the job might fail to allocate resources. In such a case,
+        the wrapped script might not be executed, and the job status will not be
+        updated (stays in SUBMITTED). We need to check such jobs and mark them as
+        FAILED.
+
+        For the instant scheduler, for example, the local scheduler, the failure will
+        be immediately reported when submitting the job, so we don't need to check
+        such jobs.
+
+        Args:
+            job: The job to check
+
+        Returns:
+            True if the job fails before running, otherwise False.
+        """
         return False
 
     @property

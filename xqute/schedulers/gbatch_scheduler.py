@@ -216,7 +216,7 @@ class GbatchScheduler(Scheduler):
         )
 
         if mount and not isinstance(mount, (tuple, list)):
-            mount = [mount]
+            mount = [mount]  # type: ignore
         if mount:
             for m in mount:
                 # Let's check if mount is provided as "OUTDIR=gs://bucket/dir"
@@ -514,6 +514,10 @@ class GbatchScheduler(Scheduler):
 
         stdout = (await proc.stdout.read()).decode()
         return re.search(r"state: (.+)", stdout).group(1)
+
+    async def job_fails_before_running(self, job: Job) -> bool:  # pragma: no cover
+        status = await self._get_job_status(job)
+        return status in ("FAILED", "DELETION_IN_PROGRESS", "CANCELLED")
 
     async def job_is_running(self, job: Job) -> bool:
         status = await self._get_job_status(job)

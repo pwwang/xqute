@@ -178,7 +178,7 @@ class ContainerScheduler(LocalScheduler):
 
         return shlex.join(cmd)
 
-    async def submit_job(self, job: Job) -> int:
+    async def submit_job(self, job: Job) -> int:  # type: ignore[override]
         """Submit a job locally
 
         Args:
