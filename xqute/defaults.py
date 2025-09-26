@@ -106,8 +106,6 @@ update_metafile "" "{job.stdout_file.mounted}"
 # plugins.on_jobcmd_init
 {jobcmd_init}
 
-# prescript
-{scheduler.prescript}
 
 cleanup() {{
     rc=$?
@@ -131,6 +129,9 @@ cleanup() {{
 
 # register trap
 trap "cleanup" EXIT
+
+# prescript
+{scheduler.prescript}
 
 cmd=$(compose_cmd "{cmd}" "{job.stdout_file.mounted}" "{job.stderr_file.mounted}")
 
