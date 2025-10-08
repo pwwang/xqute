@@ -153,12 +153,28 @@ class Scheduler(ABC):
         exception: Exception | None = None
         try:
             if await plugin.hooks.on_job_submitting(self, job) is False:
+                logger.info(
+                    "/Scheduler-%s Job %s submission cancelled by hook.",
+                    self.name,
+                    job.index,
+                )
                 return
+
+            logger.debug(
+                "/Scheduler-%s Cleaning job %s before submission",
+                self.name,
+                job.index,
+            )
             job.clean()
 
             try:
                 # raise the exception immediately
                 # it somehow cannot be catched immediately
+                logger.debug(
+                    "/Scheduler-%s Submitting job %s ...",
+                    self.name,
+                    job.index,
+                )
                 job.jid = await self.submit_job(job)
             except Exception as exc:
                 exception = RuntimeError(f"Failed to submit job: {exc}")
@@ -219,11 +235,22 @@ class Scheduler(ABC):
         job.status = JobStatus.KILLING
         ret = await plugin.hooks.on_job_killing(self, job)
         if ret is False:  # pragma: no cover
+            logger.info(
+                "/Scheduler-%s Job %s killing cancelled by hook.",
+                self.name,
+                job.index,
+            )
             return
 
+        logger.warning("/Scheduler-%s Killing job %s ...", self.name, job.index)
         await self.kill_job(job)
         try:
             # in case the jid file is removed by the wrapped script
+            logger.debug(
+                "/Scheduler-%s Removing jid file %s ...",
+                self.name,
+                job.jid_file,
+            )
             job.jid_file.unlink(missing_ok=True)
         except Exception:  # pragma: no cover
             # missing_ok is not working for some cloud paths
@@ -231,6 +258,11 @@ class Scheduler(ABC):
             pass
 
         job.status = JobStatus.FINISHED
+        logger.info(
+            "/Scheduler-%s Job %s killed, calling hook ...",
+            self.name,
+            job.index,
+        )
         await plugin.hooks.on_job_killed(self, job)
 
     async def polling_jobs(
@@ -252,6 +284,12 @@ class Scheduler(ABC):
         """
         n_running = 0
         ret = True
+        logger.debug(
+            "/Scheduler-%s Polling jobs (%s) (%s) ...",
+            self.name,
+            on,
+            polling_counter,
+        )
         for job in jobs:
             status = job.status
             if on == "submittable" and status in (
@@ -260,12 +298,39 @@ class Scheduler(ABC):
                 JobStatus.RUNNING,
                 JobStatus.KILLING,
             ):
+                logger.debug(
+                    "/Scheduler-%s Job %s is %s, incrementing n_running to (%s)...",
+                    self.name,
+                    job.index,
+                    JobStatus.get_name(status),
+                    n_running + 1,
+                )
                 n_running += 1
 
             if job.prev_status != status:
                 if status in (JobStatus.FAILED, JobStatus.RETRYING):
+                    logger.debug(
+                        "/Scheduler-%s Job %s changed status: %s -> %s",
+                        self.name,
+                        job.index,
+                        JobStatus.get_name(job.prev_status),
+                        JobStatus.get_name(status),
+                    )
+
                     if job.prev_status != JobStatus.RUNNING:
+                        logger.debug(
+                            "/Scheduler-%s Job %s was not running before failure, "
+                            "running on_job_started hook to ensure lifecycle ...",
+                            self.name,
+                            job.index,
+                        )
                         await plugin.hooks.on_job_started(self, job)
+
+                    logger.debug(
+                        "/Scheduler-%s Job %s calling on_job_failed hook ...",
+                        self.name,
+                        job.index,
+                    )
                     await plugin.hooks.on_job_failed(self, job)
                     if self.remove_jid_after_done:
                         # We are also doing this in the wrapped script
@@ -280,8 +345,27 @@ class Scheduler(ABC):
                             # FileNotFoundError, google.api_core.exceptions.NotFound
                             pass
                 elif status == JobStatus.FINISHED:
+                    logger.debug(
+                        "/Scheduler-%s Job %s changed status: %s -> %s",
+                        self.name,
+                        job.index,
+                        JobStatus.get_name(job.prev_status),
+                        JobStatus.get_name(status),
+                    )
                     if job.prev_status != JobStatus.RUNNING:
+                        logger.debug(
+                            "/Scheduler-%s Job %s was not running before finishing, "
+                            "running on_job_started hook to ensure lifecycle ...",
+                            self.name,
+                            job.index,
+                        )
                         await plugin.hooks.on_job_started(self, job)
+
+                    logger.debug(
+                        "/Scheduler-%s Job %s calling on_job_succeeded hook ...",
+                        self.name,
+                        job.index,
+                    )
                     await plugin.hooks.on_job_succeeded(self, job)
                     if self.remove_jid_after_done:
                         try:
@@ -290,6 +374,18 @@ class Scheduler(ABC):
                             # FileNotFoundError, google.api_core.exceptions.NotFound
                             pass
                 elif status == JobStatus.RUNNING:
+                    logger.debug(
+                        "/Scheduler-%s Job %s changed status: %s -> %s",
+                        self.name,
+                        job.index,
+                        JobStatus.get_name(job.prev_status),
+                        JobStatus.get_name(status),
+                    )
+                    logger.debug(
+                        "/Scheduler-%s Job %s calling on_job_started hook ...",
+                        self.name,
+                        job.index,
+                    )
                     await plugin.hooks.on_job_started(self, job)
             elif status == JobStatus.SUBMITTED:  # pragma: no cover
                 # Check if the job fails before running
@@ -319,6 +415,12 @@ class Scheduler(ABC):
                         # job.status = JobStatus.FINISHED
                         break
             elif status == JobStatus.RUNNING:
+                logger.debug(
+                    "/Scheduler-%s Job %s is running, calling polling hook ...",
+                    self.name,
+                    job.index,
+                )
+                # Call the polling hook
                 await plugin.hooks.on_job_polling(self, job, polling_counter)
                 # Let's make sure the job is really running
                 # For example, a node can be preempted by the cloud and
@@ -370,8 +472,19 @@ class Scheduler(ABC):
                 break
 
             if status not in (JobStatus.FINISHED, JobStatus.FAILED):
+                logger.debug(
+                    "/Scheduler-%s Not all jobs are done yet, job %s is %s",
+                    self.name,
+                    job.index,
+                    JobStatus.get_name(status),
+                )
                 # Try to resubmit the job for retrying
                 if status == JobStatus.RETRYING:
+                    logger.debug(
+                        "/Scheduler-%s Job %s is retrying ...",
+                        self.name,
+                        job.index,
+                    )
                     await self.retry_job(job)
                 ret = False
                 # not returning here
