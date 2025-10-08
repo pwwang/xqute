@@ -446,14 +446,14 @@ class GbatchScheduler(Scheduler):
             "--location",
             self.location,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
         )
 
-        _, stderr = await proc.communicate()
+        stdout, _ = await proc.communicate()
         if proc.returncode != 0:  # pragma: no cover
             raise RuntimeError(
                 "Can't submit job to Google Cloud Batch: \n"
-                f"{stderr.decode()}\n"
+                f"{stdout.decode()}\n"
                 "Check the configuration file:\n"
                 f"{conf_file}"
             )

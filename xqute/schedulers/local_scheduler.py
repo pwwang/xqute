@@ -51,8 +51,8 @@ class LocalScheduler(Scheduler):
             *shlex.split(self.jobcmd_shebang(job)),
             wrapt_script_path,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            preexec_fn=os.setsid,
+            stderr=asyncio.subprocess.STDOUT,
+            start_new_session=True,
             # Changing the working directory here may cause wrapped_job_script to fail
             # to be found, so we don't set cwd here.
             # The cwd is changed in the wrapper script instead.
@@ -72,7 +72,7 @@ class LocalScheduler(Scheduler):
             # The process has already finished and no stdout/stderr files are
             # generated
             # Something went wrong with the wrapper script?
-            stderr = await proc.stderr.read()
+            stderr = await proc.stdout.read()
             raise RuntimeError(
                 f"Failed to submit job #{job.index} (rc={proc.returncode}): "
                 f"{stderr.decode()}\n"

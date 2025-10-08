@@ -64,11 +64,11 @@ class SlurmScheduler(Scheduler):
             self.sbatch,
             self.wrapped_job_script(job).fspath,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
         )
         rc = await proc.wait()
         if rc != 0:  # pragma: no cover
-            stderr = await proc.stderr.read()
+            stderr = await proc.stdout.read()
             raise Exception(stderr.decode().strip())
 
         stdout = await proc.stdout.read()
