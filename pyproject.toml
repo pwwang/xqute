@@ -16,7 +16,7 @@ python = "^3.9"
 simplug = "^0.5"
 rich = "^14"
 uvloop = "^0"
-yunpath = "^0.0"
+yunpath = "^0.1"
 argx = "^0.3"
 google-cloud-storage = {version = "^3", optional = true}
 cloudsh = {version = "^0.1", optional = true}
