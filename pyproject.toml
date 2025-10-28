@@ -19,7 +19,7 @@ uvloop = "^0"
 yunpath = "^0.1"
 argx = "^0.3"
 google-cloud-storage = {version = "^3", optional = true}
-cloudsh = {version = "^0.1", optional = true}
+cloudsh = {version = "^0.2", optional = true}
 
 [tool.poetry.extras]
 gcs = ["google-cloud-storage"]
