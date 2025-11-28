@@ -32,6 +32,7 @@ pytest-cov = "^6"
 pytest-asyncio = "^1"
 python-dotenv = "^1"
 ipykernel = "^6.29.5"
+backports-asyncio-runner = {version = "^1.1.0", python = "<3.11"}
 
 [build-system]
 requires = ["poetry>=1.0"]
