@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import random
 import signal
 from collections import deque
 from typing import TYPE_CHECKING, Any, List, Mapping, Type
@@ -56,8 +57,11 @@ class Xqute:
             either all plugin names should be prefixed with '+'/'-' or none
             of them should
         workdir: The job meta directory
-        submission_batch: The number of consumers to submit jobs. So that the
-            submission process won't exhaust the local resources
+        submission_batch: The number of consumers to submit jobs. This allows
+            multiple jobs to be submitted in parallel. This is useful when
+            there are many jobs to be submitted and the scheduler has a high
+            latency for each submission. Set this to a smaller number if the
+            scheduler cannot handle too many simultaneous submissions.
         error_strategy: The strategy when there is error happened
         num_retries: Max number of retries when error_strategy is retry
         forks: Max number of job forks for scheduler
@@ -170,6 +174,8 @@ class Xqute:
         Args:
             index: The index of the consumer
         """
+        # Stagger the consumers a bit
+        await asyncio.sleep(random.uniform(0.0, 1.0))
         while True:
             job = await self.queue.get()
             logger.debug("/%s 'Consumer-%s' submitting %s", self.name, index, job)
