@@ -1,7 +1,9 @@
 import os
+import sys
 import asyncio
 import signal
 import pytest
+from yunpath import AnyPath
 from simplug import NoSuchPlugin
 from xqute import Xqute, plugin
 from xqute.defaults import JobStatus
@@ -102,14 +104,20 @@ async def test_main(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_xqute_cloud_workdir():
-    xqute = Xqute(LocalScheduler, workdir=f"{BUCKET}/xqute_local_test")
+async def test_xqute_cloud_workdir(request):
+    # generate a unique request id based on sys.executable and the python version
+    requestid = (
+        hash((request.node.name, sys.executable, sys.version_info)) & 0xFFFFFFFF
+    )
+    workdir = f"{BUCKET}/xqute_local_test.{requestid}"
+    xqute = Xqute(LocalScheduler, workdir=workdir)
     await xqute.put(["echo", 1])
     job = xqute.scheduler.create_job(1, ["echo", 1])
     await xqute.put(job)
     await xqute.run_until_complete()
     assert xqute.jobs[0].rc == 0
     assert xqute.jobs[1].rc == 0
+    AnyPath(workdir).rmtree()
 
 
 @pytest.mark.asyncio
