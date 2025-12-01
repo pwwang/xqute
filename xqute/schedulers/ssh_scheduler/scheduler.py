@@ -25,6 +25,7 @@ class SshScheduler(Scheduler):
     """
 
     name: str = "ssh"
+    submission_batch: int = 4
 
     __slots__ = Scheduler.__slots__ + ("ssh", "servers")
 

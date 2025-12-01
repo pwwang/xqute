@@ -8,7 +8,6 @@ Attributes:
         DEFAULT_ERROR_STRATEGY is retry
     DEFAULT_JOB_CMD_WRAPPER_SHELL: The default shell for job wrapper
     DEFAULT_SCHEDULER_FORKS: Default number of job forks for scheduler
-    DEFAULT_SUBMISSION_BATCH: Default consumer workers
 """
 
 from __future__ import annotations
@@ -92,7 +91,7 @@ DEFAULT_SCHEDULER_FORKS: int = 1
 DEFAULT_WORKDIR = "./.xqute"
 DEFAULT_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
 DEFAULT_NUM_RETRIES: int = 3
-DEFAULT_SUBMISSION_BATCH: int = 8
+# DEFAULT_SUBMISSION_BATCH: int = 8
 JOBCMD_WRAPPER_LANG: str = "/bin/bash"
 JOBCMD_WRAPPER_TEMPLATE: str = r"""#!{shebang}
 set -u -E -o pipefail

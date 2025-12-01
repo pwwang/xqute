@@ -26,6 +26,7 @@ class LocalScheduler(Scheduler):
     """
 
     name = "local"
+    submission_batch = 8
 
     async def submit_job(self, job: Job, _mounted: bool = False) -> int:
         """Submit a job locally

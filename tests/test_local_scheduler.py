@@ -12,6 +12,7 @@ MOCKS = Path(__file__).parent / "mocks"
 
 def test_with_cloud_workdir():
     scheduler = LocalScheduler(workdir=f"{BUCKET}/xqute_local_test")
+    assert scheduler.subm_batch == 8
     job = scheduler.create_job(0, ["echo", 1])
     assert str(job.metadir) == f"{BUCKET}/xqute_local_test/0"
 

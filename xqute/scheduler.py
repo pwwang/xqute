@@ -46,6 +46,11 @@ class Scheduler(ABC):
             It is a piece of script that inserted into the wrapper script, running
             on the scheduler system.
         jobname_prefix: The prefix for the job name
+        submission_batch: The number of consumers to submit jobs. This allows
+            multiple jobs to be submitted in parallel. This is useful when
+            there are many jobs to be submitted and the scheduler has a high
+            latency for each submission. Set this to a smaller number if the
+            scheduler cannot handle too many simultaneous submissions.
         recheck_interval: The interval to recheck the job status.
             Default is every 600 polls (each takes about 0.1 seconds).
         cwd: The working directory for the job command wrapper
@@ -62,11 +67,14 @@ class Scheduler(ABC):
         "postscript",
         "jobname_prefix",
         "recheck_interval",
+        "subm_batch",
         "cwd",
     )
 
     # The name of the scheduler
     name: str
+    # The number of consumers to submit jobs in parallel
+    submission_batch: int = 1
     # Should we remove the jid file after job done
     # This is useful for local scheduler and alike. The biggest reason for this is
     # that the pid can be reused by other processes, which might cause the
@@ -85,6 +93,7 @@ class Scheduler(ABC):
         prescript: str = "",
         postscript: str = "",
         jobname_prefix: str | None = None,
+        submission_batch: int | None = None,
         recheck_interval: int = 600,
         cwd: str | Path = None,
         **kwargs,
@@ -98,6 +107,7 @@ class Scheduler(ABC):
         self.prescript = prescript
         self.postscript = postscript
         self.jobname_prefix = jobname_prefix or self.name
+        self.subm_batch = submission_batch or self.__class__.submission_batch
         self.recheck_interval = recheck_interval
         self.cwd = None if cwd is None else str(cwd)
 

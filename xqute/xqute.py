@@ -14,7 +14,7 @@ from .defaults import (
     DEFAULT_ERROR_STRATEGY,
     DEFAULT_NUM_RETRIES,
     DEFAULT_SCHEDULER_FORKS,
-    DEFAULT_SUBMISSION_BATCH,
+    # DEFAULT_SUBMISSION_BATCH,
     JobStatus,
 )
 from .utils import logger, CommandType
@@ -77,7 +77,7 @@ class Xqute:
         *,
         plugins: List[Any] | None = None,
         workdir: str | PathType = DEFAULT_WORKDIR,
-        submission_batch: int = DEFAULT_SUBMISSION_BATCH,
+        submission_batch: int | None = None,
         error_strategy: str = DEFAULT_ERROR_STRATEGY,
         num_retries: int = DEFAULT_NUM_RETRIES,
         forks: int = DEFAULT_SCHEDULER_FORKS,
@@ -108,6 +108,7 @@ class Xqute:
             error_strategy=error_strategy,
             num_retries=num_retries,
             jobname_prefix=jobname_prefix,
+            submission_batch=submission_batch,
             **scheduler_opts,
         )
 
@@ -118,7 +119,7 @@ class Xqute:
 
         self.task = asyncio.gather(
             self._producer(),
-            *(self._consumer(i) for i in range(submission_batch)),
+            *(self._consumer(i) for i in range(self.scheduler.subm_batch)),
         )
         plugin.hooks.on_init(self)
 

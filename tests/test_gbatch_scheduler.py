@@ -353,6 +353,7 @@ def test_job():
         jobname_prefix="jobprefix",
         workdir=WORKDIR,
     )
+    assert scheduler.subm_batch == 1
     job = scheduler.create_job(0, ["echo", 1])
     assert (
         scheduler.wrapped_job_script(job)
