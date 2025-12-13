@@ -206,7 +206,7 @@ class Job:
             return self._rc  # pragma: no cover
         return int(self.rc_file.read_text())
 
-    def clean(self, retry=False):
+    def clean(self, retry: bool = False) -> None:
         """Clean up the meta files
 
         Args:

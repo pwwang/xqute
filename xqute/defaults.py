@@ -142,23 +142,17 @@ eval "$cmd"
 """  # noqa: E501
 
 
-def get_jobcmd_wrapper_init(local: bool, remove_jid_after_done: bool) -> str:
+def get_jobcmd_wrapper_init(local: bool) -> str:
     """Get the job command wrapper initialization script
 
     Args:
         local: Whether the job is running locally
-        remove_jid_after_done: Whether to remove the remote job id file
-            after the job is done
 
     Returns:
         The job command wrapper initialization script
     """
     if local:
-        rm_file = (
-            'mv "$file" "${file}.used"'
-            if remove_jid_after_done
-            else 'if [ "file" != *"job.jid" ]; then rm -f "$file"; fi'
-        )
+        rm_file = 'mv "$file" "${file}.used"'
         return textwrap.dedent(
             f"""
             export META_ON_CLOUD=0
@@ -183,11 +177,7 @@ def get_jobcmd_wrapper_init(local: bool, remove_jid_after_done: bool) -> str:
             """
         )
     else:
-        rm_file = (
-            'cloudsh mv "$file" "${file}_used"'
-            if remove_jid_after_done
-            else 'if [ "file" != *"job.jid" ]; then cloudsh rm -f "$file"; fi'
-        )
+        rm_file = 'cloudsh mv "$file" "${file}_used"'
         return textwrap.dedent(
             f"""
             export META_ON_CLOUD=1

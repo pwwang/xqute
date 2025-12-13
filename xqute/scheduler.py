@@ -51,8 +51,11 @@ class Scheduler(ABC):
             there are many jobs to be submitted and the scheduler has a high
             latency for each submission. Set this to a smaller number if the
             scheduler cannot handle too many simultaneous submissions.
-        recheck_interval: The interval to recheck the job status.
-            Default is every 600 polls (each takes about 0.1 seconds).
+        recheck_interval: The number of polling iterations between rechecks of
+            whether a job is still running on the scheduler. Helps detect jobs
+            that fail before the wrapped script updates status (e.g., resource
+            allocation failures). Each iteration takes ~0.1s, so default 600 means
+            rechecking every ~60 seconds.
         cwd: The working directory for the job command wrapper
         **kwargs: Other arguments for the scheduler
     """
@@ -75,13 +78,6 @@ class Scheduler(ABC):
     name: str
     # The number of consumers to submit jobs in parallel
     submission_batch: int = 1
-    # Should we remove the jid file after job done
-    # This is useful for local scheduler and alike. The biggest reason for this is
-    # that the pid can be reused by other processes, which might cause the
-    # scheduler to think the job is still running.
-    # But for schedulers like google batch jobs, the jid file is used to delete
-    # the job if we want to retry the job.
-    remove_jid_after_done: bool = True
     job_class: Type[Job] = Job
 
     def __init__(
@@ -342,18 +338,12 @@ class Scheduler(ABC):
                         job.index,
                     )
                     await plugin.hooks.on_job_failed(self, job)
-                    if self.remove_jid_after_done:
-                        # We are also doing this in the wrapped script
-                        # But for the could jid file, it is not 100% sure
-                        # the file is removed, because it is still held by
-                        # the GSPath object and in some cases when it is
-                        # recycled, the file is recreated on the cloud.
-                        try:
-                            job.jid_file.unlink(missing_ok=True)
-                        except Exception:  # pragma: no cover
-                            # missing_ok is not working for some cloud paths
-                            # FileNotFoundError, google.api_core.exceptions.NotFound
-                            pass
+                    try:
+                        job.jid_file.unlink(missing_ok=True)
+                    except Exception:  # pragma: no cover
+                        # missing_ok is not working for some cloud paths
+                        # FileNotFoundError, google.api_core.exceptions.NotFound
+                        pass
                 elif status == JobStatus.FINISHED:
                     logger.debug(
                         "/Scheduler-%s Job %s changed status: %s -> %s",
@@ -377,12 +367,12 @@ class Scheduler(ABC):
                         job.index,
                     )
                     await plugin.hooks.on_job_succeeded(self, job)
-                    if self.remove_jid_after_done:
-                        try:
-                            job.jid_file.unlink(missing_ok=True)
-                        except Exception:  # pragma: no cover
-                            # FileNotFoundError, google.api_core.exceptions.NotFound
-                            pass
+                    try:
+                        job.jid_file.unlink(missing_ok=True)
+                    except Exception:  # pragma: no cover
+                        # missing_ok is not working for some cloud paths
+                        # FileNotFoundError, google.api_core.exceptions.NotFound
+                        pass
                 elif status == JobStatus.RUNNING:
                     logger.debug(
                         "/Scheduler-%s Job %s changed status: %s -> %s",
@@ -453,8 +443,8 @@ class Scheduler(ABC):
                     with job.stderr_file.open("a") as f:
                         f.write(
                             "\nError: job is not running in the scheduler, "
-                            "but its status is still RUNNING.\n",
-                            "It is likely that the resource is preempted.\n",
+                            "but its status is still RUNNING.\n"
+                            "It is likely that the resource is preempted.\n"
                         )
 
                     await plugin.hooks.on_job_failed(self, job)
@@ -553,8 +543,7 @@ class Scheduler(ABC):
     def jobcmd_wrapper_init(self) -> str:
         """The init script for the job command wrapper"""
         wrapper_init = get_jobcmd_wrapper_init(
-            not isinstance(self.workdir.mounted, CloudPath),
-            self.remove_jid_after_done,
+            not isinstance(self.workdir.mounted, CloudPath)
         )
         if self.cwd:
             # Some schedulers (e.g. Google Cloud Batch) doesn't support changing the
