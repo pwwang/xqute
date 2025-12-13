@@ -15,7 +15,7 @@ import sys
 import time
 import subprocess
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     server, cwd, *cmds = sys.argv[1:]
 
     proc = subprocess.Popen(

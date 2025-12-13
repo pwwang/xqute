@@ -97,6 +97,8 @@ class Xqute:
         )
 
         self._cancelling: bool | signal.Signals = False
+        self._keep_feeding: bool = False
+        self._completion_task: asyncio.Task | None = None
 
         self.buffer_queue: deque = deque()
         self.queue: asyncio.Queue = asyncio.Queue()
@@ -122,6 +124,15 @@ class Xqute:
             *(self._consumer(i) for i in range(self.scheduler.subm_batch)),
         )
         plugin.hooks.on_init(self)
+
+    def __del__(self) -> None:
+        """Destructor to warn if stop_feeding was not called"""
+        if self._keep_feeding and self._completion_task:
+            logger.warning(
+                "/%s Xqute instance destroyed while still in keep_feeding mode. "
+                "Did you forget to call 'await xqute.stop_feeding()'?",
+                self.name,
+            )
 
     def cancel(self, sig: signal.Signals | None = None) -> None:
         """Cancel the producer-consumer task
@@ -150,6 +161,14 @@ class Xqute:
 
         while True:
             if not self.buffer_queue:
+                # If not in keep_feeding mode and buffer is empty, exit
+                if not self._keep_feeding:
+                    logger.debug(
+                        "/%s Buffer empty and not in keep_feeding mode, "
+                        "producer exiting ...",
+                        self.name,
+                    )
+                    break
                 logger.debug("/%s Buffer queue is empty, waiting ...", self.name)
                 await asyncio.sleep(self.EMPTY_BUFFER_SLEEP_TIME)
                 continue
@@ -207,11 +226,49 @@ class Xqute:
         self.buffer_queue.append(job)
         await plugin.hooks.on_job_queued(self.scheduler, job)
 
+    def is_feeding(self) -> bool:
+        """Check if the system is in keep_feeding mode.
+
+        Returns:
+            True if in keep_feeding mode and waiting for stop_feeding() to be called.
+        """
+        return self._keep_feeding and self._completion_task is not None
+
+    async def stop_feeding(self) -> None:
+        """Stop feeding mode and wait for all jobs to complete.
+
+        After calling this method, the producer will exit once the buffer
+        queue is empty, and this method will wait for all jobs to complete.
+        This should be called after all jobs have been submitted when using
+        run_until_complete(keep_feeding=True).
+
+        Raises:
+            RuntimeError: If called without first calling
+                run_until_complete(keep_feeding=True)
+        """
+        if not self._completion_task:
+            raise RuntimeError(
+                "stop_feeding() called but keep_feeding mode was not started. "
+                "Did you forget to call "
+                "'await xqute.run_until_complete(keep_feeding=True)'?"
+            )
+
+        logger.debug("/%s Stopping feeding mode", self.name)
+        self._keep_feeding = False
+
+        # Wait for completion if we started in keep_feeding mode
+        await self._completion_task
+        self._completion_task = None
+
     async def _polling_jobs(self) -> None:
         """Polling the jobs to see if they are all done.
 
         If yes, cancel the producer-consumer task naturally.
         """
+        # Wait for feeding to stop if in keep_feeding mode
+        while self._keep_feeding:
+            await asyncio.sleep(0.1)
+
         polling_counter = 0
         while self._cancelling is False and not await self.scheduler.polling_jobs(
             self.jobs,
@@ -235,11 +292,53 @@ class Xqute:
 
         logger.info("/%s Done!", self.name)
 
-    async def run_until_complete(self) -> None:
-        """Wait until all jobs complete"""
+    async def run_until_complete(self, keep_feeding: bool = False) -> None:
+        """Wait until all jobs complete
+
+        Args:
+            keep_feeding: If True, starts running in background and returns immediately,
+                allowing jobs to be added after calling this method.
+                You must call stop_feeding() when done adding jobs, which will
+                wait for all jobs to complete.
+                If False (default), waits for all current jobs to complete immediately.
+
+        Examples:
+            Traditional usage:
+            ```python
+            xqute = Xqute()
+            await xqute.put(['echo', '1'])
+            await xqute.put(['echo', '2'])
+            await xqute.run_until_complete()
+            ```
+
+            Keep feeding mode:
+            ```python
+            xqute = Xqute()
+            await xqute.put(['echo', '1'])
+            await xqute.run_until_complete(keep_feeding=True)  # Returns immediately
+            await xqute.put(['echo', '2'])  # Can add more jobs
+            await xqute.stop_feeding()  # Waits for completion
+            ```
+        """
+        self._keep_feeding = keep_feeding
+
+        if keep_feeding:
+            # Start completion tasks in background
+            logger.debug("/%s Starting in keep_feeding mode ...", self.name)
+            self._completion_task = asyncio.create_task(
+                self._run_completion_tasks()
+            )
+            # Return immediately to allow more jobs to be added
+            return
+
+        # Traditional mode - wait for completion
         logger.debug(
             "/%s Done feeding jobs, waiting for jobs to be done ...", self.name
         )
+        await self._run_completion_tasks()
+
+    async def _run_completion_tasks(self) -> None:
+        """Run the completion tasks (polling and await)"""
         try:
             await asyncio.gather(self._polling_jobs(), self._await_task())
         finally:

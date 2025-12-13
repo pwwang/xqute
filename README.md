@@ -34,6 +34,37 @@ if __name__ == '__main__':
     asyncio.run(main())
 ```
 
+### Daemon Mode (Keep Feeding)
+
+You can also run Xqute in daemon mode, where jobs can be added continuously after starting:
+
+```python
+import asyncio
+from xqute import Xqute
+
+async def main():
+    xqute = Xqute(forks=3)
+    
+    # Add initial job
+    await xqute.put(['echo', 'Job 1'])
+    
+    # Start in keep_feeding mode (returns immediately)
+    await xqute.run_until_complete(keep_feeding=True)
+    
+    # Continue adding jobs dynamically
+    for i in range(2, 11):
+        await xqute.put(['sleep', '1'])
+        await asyncio.sleep(0.1)  # Jobs can be added over time
+    
+    # Signal completion and wait for all jobs to finish
+    await xqute.stop_feeding()
+
+if __name__ == '__main__':
+    asyncio.run(main())
+```
+
+**Tip:** Use `xqute.is_feeding()` to check if you need to call `stop_feeding()`.
+
 ![xqute](./xqute.png)
 
 ## API Documentation
@@ -69,6 +100,18 @@ To add a job to the queue:
 
 ```python
 await xqute.put(['echo', 'Hello, World!'])
+```
+
+To run until all jobs complete:
+
+```python
+# Traditional mode - wait for all jobs to complete
+await xqute.run_until_complete()
+
+# Or daemon mode - add jobs continuously
+await xqute.run_until_complete(keep_feeding=True)
+# ... add more jobs ...
+await xqute.stop_feeding()  # Signal completion and wait
 ```
 
 ### Using SGE Scheduler
