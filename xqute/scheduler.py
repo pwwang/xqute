@@ -493,6 +493,226 @@ class Scheduler(ABC):
                 # might wait for callbacks or halt on other jobs
         return n_running < self.forks if on == "submittable" else ret
 
+    async def count_running_jobs(self, jobs: List[Job]) -> int:
+        """Count currently running/active jobs (lightweight check)
+
+        This is optimized for the producer to check if new jobs can be submitted.
+        It only counts jobs without refreshing status or calling hooks.
+
+        Args:
+            jobs: The list of jobs
+
+        Returns:
+            Number of jobs currently in active states
+        """
+        n_running = 0
+        for job in jobs:
+            # Use cached status, don't refresh from disk
+            if job.status in (
+                JobStatus.QUEUED,
+                JobStatus.SUBMITTED,
+                JobStatus.RUNNING,
+                JobStatus.KILLING,
+            ):
+                n_running += 1
+        return n_running
+
+    async def check_all_done(
+        self,
+        jobs: List[Job],
+        polling_counter: int,
+    ) -> bool:
+        """Check if all jobs are done (full polling with hooks)
+
+        This does complete status refresh and calls all lifecycle hooks.
+        Used by the main polling loop to track job completion.
+
+        Args:
+            jobs: The list of jobs
+            polling_counter: The polling counter for hook calls
+
+        Returns:
+            True if all jobs are done, False otherwise
+        """
+        ret = True
+        logger.debug(
+            "/Scheduler-%s Checking all jobs done (%s) ...",
+            self.name,
+            polling_counter,
+        )
+
+        for job in jobs:
+            # Refresh status from filesystem to get latest state
+            status = job.refresh_status()
+
+            if job.prev_status != status:
+                if status in (JobStatus.FAILED, JobStatus.RETRYING):
+                    logger.debug(
+                        "/Scheduler-%s Job %s changed status: %s -> %s",
+                        self.name,
+                        job.index,
+                        JobStatus.get_name(job.prev_status),
+                        JobStatus.get_name(status),
+                    )
+
+                    if job.prev_status != JobStatus.RUNNING:
+                        logger.debug(
+                            "/Scheduler-%s Job %s was not running before failure, "
+                            "running on_job_started hook to ensure lifecycle ...",
+                            self.name,
+                            job.index,
+                        )
+                        await plugin.hooks.on_job_started(self, job)
+
+                    logger.debug(
+                        "/Scheduler-%s Job %s calling on_job_failed hook ...",
+                        self.name,
+                        job.index,
+                    )
+                    await plugin.hooks.on_job_failed(self, job)
+                    try:
+                        job.jid_file.unlink(missing_ok=True)
+                    except Exception:  # pragma: no cover
+                        # missing_ok is not working for some cloud paths
+                        pass
+                elif status == JobStatus.FINISHED:
+                    logger.debug(
+                        "/Scheduler-%s Job %s changed status: %s -> %s",
+                        self.name,
+                        job.index,
+                        JobStatus.get_name(job.prev_status),
+                        JobStatus.get_name(status),
+                    )
+                    if job.prev_status != JobStatus.RUNNING:
+                        logger.debug(
+                            "/Scheduler-%s Job %s was not running before finishing, "
+                            "running on_job_started hook to ensure lifecycle ...",
+                            self.name,
+                            job.index,
+                        )
+                        await plugin.hooks.on_job_started(self, job)
+
+                    logger.debug(
+                        "/Scheduler-%s Job %s calling on_job_succeeded hook ...",
+                        self.name,
+                        job.index,
+                    )
+                    await plugin.hooks.on_job_succeeded(self, job)
+                    try:
+                        job.jid_file.unlink(missing_ok=True)
+                    except Exception:  # pragma: no cover
+                        # missing_ok is not working for some cloud paths
+                        pass
+                elif status == JobStatus.RUNNING:
+                    logger.debug(
+                        "/Scheduler-%s Job %s changed status: %s -> %s",
+                        self.name,
+                        job.index,
+                        JobStatus.get_name(job.prev_status),
+                        JobStatus.get_name(status),
+                    )
+                    logger.debug(
+                        "/Scheduler-%s Job %s calling on_job_started hook ...",
+                        self.name,
+                        job.index,
+                    )
+                    await plugin.hooks.on_job_started(self, job)
+            elif status == JobStatus.SUBMITTED:  # pragma: no cover
+                # Check if the job fails before running
+                if await self.job_fails_before_running(job):
+                    logger.warning(
+                        "/Scheduler-%s Job %s seems to fail before running, "
+                        "check your scheduler logs if necessary.",
+                        self.name,
+                        job.index,
+                    )
+                    job.status = JobStatus.FAILED
+                    job.rc_file.write_text("-3")
+                    with job.stderr_file.open("a") as f:
+                        f.write(
+                            "\nError: job seems to fail before running.\n"
+                            "Check your scheduler logs if necessary.\n",
+                        )
+
+                    await plugin.hooks.on_job_failed(self, job)
+                    if self.error_strategy == JobErrorStrategy.HALT:
+                        logger.error(
+                            "/Scheduler-%s Pipeline will halt since job failed: %r",
+                            self.name,
+                            job,
+                        )
+                        os.kill(os.getpid(), signal.SIGTERM)
+                        break
+            elif status == JobStatus.RUNNING:
+                logger.debug(
+                    "/Scheduler-%s Job %s is running, calling polling hook ...",
+                    self.name,
+                    job.index,
+                )
+                # Call the polling hook
+                await plugin.hooks.on_job_polling(self, job, polling_counter)
+                # Let's make sure the job is really running
+                if (
+                    not job.rc_file.is_file()
+                    and (polling_counter + 1) % self.recheck_interval == 0
+                    and not await self.job_is_running(job)
+                ):  # pragma: no cover
+                    logger.warning(
+                        "/Scheduler-%s Job %s is not running in the scheduler, "
+                        "but its status is still RUNNING, setting it to FAILED",
+                        self.name,
+                        job.index,
+                    )
+                    job.status = JobStatus.FAILED
+                    job.rc_file.write_text("-3")
+                    with job.stderr_file.open("a") as f:
+                        f.write(
+                            "\nError: job is not running in the scheduler, "
+                            "but its status is still RUNNING.\n"
+                            "It is likely that the resource is preempted.\n"
+                        )
+
+                    await plugin.hooks.on_job_failed(self, job)
+                    if self.error_strategy == JobErrorStrategy.HALT:
+                        logger.error(
+                            "/Scheduler-%s Pipeline will halt since job failed: %r",
+                            self.name,
+                            job,
+                        )
+                        os.kill(os.getpid(), signal.SIGTERM)
+                        break
+
+            if (
+                self.error_strategy == JobErrorStrategy.HALT
+                and status == JobStatus.FAILED
+            ):
+                logger.error(
+                    "/Scheduler-%s Pipeline will halt since job failed: %r",
+                    self.name,
+                    job,
+                )
+                os.kill(os.getpid(), signal.SIGTERM)
+                break
+
+            if status not in (JobStatus.FINISHED, JobStatus.FAILED):
+                logger.debug(
+                    "/Scheduler-%s Not all jobs are done yet, job %s is %s",
+                    self.name,
+                    job.index,
+                    JobStatus.get_name(status),
+                )
+                # Try to resubmit the job for retrying
+                if status == JobStatus.RETRYING:
+                    logger.debug(
+                        "/Scheduler-%s Job %s is retrying ...",
+                        self.name,
+                        job.index,
+                    )
+                    await self.retry_job(job)
+                ret = False
+
+        return ret
+
     async def kill_running_jobs(self, jobs: List[Job]):
         """Try to kill all running jobs
 

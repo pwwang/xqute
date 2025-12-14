@@ -182,11 +182,9 @@ class Xqute:
                 continue
 
             job = self.buffer_queue.popleft()
-            if not await self.scheduler.polling_jobs(
-                self.jobs,
-                "submittable",
-                polling_counter,
-            ):
+            # Lightweight check: just count running jobs, no hooks
+            n_running = await self.scheduler.count_running_jobs(self.jobs)
+            if n_running >= self.scheduler.forks:
                 logger.debug("/%s Hit max forks of scheduler ...", self.name)
                 self.buffer_queue.appendleft(job)
                 # Wait longer when hitting max forks to reduce polling overhead
@@ -325,9 +323,8 @@ class Xqute:
             await asyncio.sleep(0.1)
 
         polling_counter = 0
-        while self._cancelling is False and not await self.scheduler.polling_jobs(
+        while self._cancelling is False and not await self.scheduler.check_all_done(
             self.jobs,
-            "all_done",
             polling_counter,
         ):
             await asyncio.sleep(1.0)
