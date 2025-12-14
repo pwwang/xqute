@@ -343,8 +343,6 @@ class Xqute:
             if self._cancelling not in (True, False):  # signaled
                 await self.scheduler.kill_running_jobs(self.jobs)
 
-        logger.info("/%s Done!", self.name)
-
     async def run_until_complete(self, keep_feeding: bool = False) -> None:
         """Wait until all jobs complete
 
@@ -395,5 +393,6 @@ class Xqute:
         try:
             await asyncio.gather(self._polling_jobs(), self._await_task())
         finally:
+            logger.info("/%s Done!", self.name)
             if self.plugin_context:
                 self.plugin_context.__exit__()
