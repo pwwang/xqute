@@ -48,6 +48,7 @@ class Job:
         "_num_retries",
         "prev_status",
         "envs",
+        "_status_cache_valid",
     )
 
     def __init__(
@@ -91,6 +92,7 @@ class Job:
         self._rc = -1
         self._error_retry = error_retry
         self._num_retries = num_retries
+        self._status_cache_valid = True  # Status is valid initially
 
     def __repr__(self) -> str:
         """repr of the job"""
@@ -150,15 +152,25 @@ class Job:
 
         If the job is submitted, try to query it from the status file
         Make sure the status is updated by trap in wrapped script
+
+        Uses caching to avoid excessive file I/O. Cache is invalidated
+        when status is explicitly set.
         """
         self.prev_status = self._status
-        if self.status_file.is_file() and self._status in (
-            JobStatus.SUBMITTED,
-            JobStatus.RUNNING,
-            JobStatus.KILLING,
+
+        # Only read from file if cache is invalid and job is in pollable state
+        if (
+            not self._status_cache_valid
+            and self.status_file.is_file()
+            and self._status in (
+                JobStatus.SUBMITTED,
+                JobStatus.RUNNING,
+                JobStatus.KILLING,
+            )
         ):
             try:
                 self._status = int(self.status_file.read_text())
+                self._status_cache_valid = True
             except (
                 FileNotFoundError,
                 ValueError,
@@ -198,6 +210,68 @@ class Job:
         )
         self.prev_status = self._status
         self._status = stat
+        # Invalidate cache when status is explicitly set
+        self._status_cache_valid = False
+
+    def refresh_status(self) -> int:
+        """Force refresh status from file system
+
+        This invalidates the cache and reads the current status.
+        Use this in polling loops to get the latest status.
+
+        Returns:
+            The current job status
+        """
+        self._status_cache_valid = False
+        return self.status
+
+    async def refresh_status_async(self) -> int:
+        """Async version of refresh_status for batch operations
+
+        This invalidates the cache and reads the current status asynchronously.
+        Use this in polling loops with asyncio.gather() for parallel reads.
+
+        Returns:
+            The current job status
+        """
+        import asyncio
+
+        self._status_cache_valid = False
+        # Read status file asynchronously using run_in_executor
+        loop = asyncio.get_running_loop()
+
+        # Don't update prev_status here - let the polling logic handle transitions
+        if (
+            self.status_file.is_file()
+            and self._status in (
+                JobStatus.SUBMITTED,
+                JobStatus.RUNNING,
+                JobStatus.KILLING,
+            )
+        ):
+            try:
+                # Run blocking I/O in executor for true async operation
+                status_text = await loop.run_in_executor(
+                    None, self.status_file.read_text
+                )
+                self._status = int(status_text)
+                self._status_cache_valid = True
+            except (
+                FileNotFoundError,
+                ValueError,
+                TypeError,
+            ):  # pragma: no cover
+                pass
+
+        if (
+            self._status == JobStatus.FAILED
+            and self._error_retry
+            and self.trial_count < self._num_retries  # type: ignore
+        ):
+            self._status = JobStatus.RETRYING
+
+        # Don't log here - let scheduler handle transition logging
+        return self._status
 
     @property
     def rc(self) -> int:

@@ -296,8 +296,10 @@ class Scheduler(ABC):
             on,
             polling_counter,
         )
+
         for job in jobs:
-            status = job.status
+            # Refresh status from filesystem to get latest state
+            status = job.refresh_status()
             if on == "submittable" and status in (
                 JobStatus.QUEUED,
                 JobStatus.SUBMITTED,
