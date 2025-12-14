@@ -101,6 +101,7 @@ class Xqute:
         self._completion_task: asyncio.Task | None = None
 
         self.buffer_queue: deque = deque()
+        self._buffer_event: asyncio.Event = asyncio.Event()
         self.queue: asyncio.Queue = asyncio.Queue()
 
         scheduler_opts = scheduler_opts or {}
@@ -127,7 +128,12 @@ class Xqute:
 
     def __del__(self) -> None:
         """Destructor to warn if stop_feeding was not called"""
-        if self._keep_feeding and self._completion_task:
+        if (
+            hasattr(self, '_keep_feeding')
+            and self._keep_feeding
+            and hasattr(self, '_completion_task')
+            and self._completion_task
+        ):
             logger.warning(
                 "/%s Xqute instance destroyed while still in keep_feeding mode. "
                 "Did you forget to call 'await xqute.stop_feeding()'?",
@@ -170,7 +176,9 @@ class Xqute:
                     )
                     break
                 logger.debug("/%s Buffer queue is empty, waiting ...", self.name)
-                await asyncio.sleep(self.EMPTY_BUFFER_SLEEP_TIME)
+                # Wait for buffer event instead of sleep polling
+                await self._buffer_event.wait()
+                self._buffer_event.clear()
                 continue
 
             job = self.buffer_queue.popleft()
@@ -243,6 +251,8 @@ class Xqute:
         logger.info("/%s Pushing job: %r", self.name, job)
 
         self.buffer_queue.append(job)
+        # Signal producer that buffer has new jobs
+        self._buffer_event.set()
         await plugin.hooks.on_job_queued(self.scheduler, job)
 
     def is_feeding(self) -> bool:
