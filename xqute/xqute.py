@@ -180,8 +180,9 @@ class Xqute:
                 polling_counter,
             ):
                 logger.debug("/%s Hit max forks of scheduler ...", self.name)
-                await asyncio.sleep(0.1)
                 self.buffer_queue.appendleft(job)
+                # Wait longer when hitting max forks to reduce polling overhead
+                await asyncio.sleep(1.0)
                 polling_counter += 1
                 continue
 
