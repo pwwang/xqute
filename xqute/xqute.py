@@ -187,6 +187,15 @@ class Xqute:
 
             job.status = JobStatus.QUEUED
             await self.queue.put(job)
+            polling_counter = 0  # Reset counter after successful queuing
+
+        # Send sentinel values to stop consumers
+        logger.debug(
+            "/%s Producer finished, sending sentinels to consumers ...",
+            self.name,
+        )
+        for _ in range(self.scheduler.subm_batch):
+            await self.queue.put(None)
 
     async def _consumer(self, index: int) -> None:
         """The consumer
@@ -198,6 +207,15 @@ class Xqute:
         await asyncio.sleep(random.uniform(0.0, 1.0))
         while True:
             job = await self.queue.get()
+            # Check for sentinel value to exit gracefully
+            if job is None:
+                logger.debug(
+                    "/%s 'Consumer-%s' received sentinel, exiting ...",
+                    self.name,
+                    index,
+                )
+                self.queue.task_done()
+                break
             logger.debug("/%s 'Consumer-%s' submitting %s", self.name, index, job)
             await self.scheduler.submit_job_and_update_status(job)
             self.queue.task_done()
