@@ -129,6 +129,7 @@ class Xqute:
     def __del__(self) -> None:
         """Destructor to warn if stop_feeding was not called"""
         if (
+            # in case __init__ was not completed and failed
             hasattr(self, '_keep_feeding')
             and self._keep_feeding
             and hasattr(self, '_completion_task')
