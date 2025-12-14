@@ -225,9 +225,35 @@ class Xqute:
                 )
                 self.queue.task_done()
                 break
-            logger.debug("/%s 'Consumer-%s' submitting %s", self.name, index, job)
-            await self.scheduler.submit_job_and_update_status(job)
-            self.queue.task_done()
+
+            try:
+                logger.debug("/%s 'Consumer-%s' submitting %s", self.name, index, job)
+                await self.scheduler.submit_job_and_update_status(job)
+            except asyncio.CancelledError:
+                # Re-queue the job if we're cancelled while processing it
+                logger.debug(
+                    "/%s 'Consumer-%s' cancelled while processing %s, re-queueing ...",
+                    self.name,
+                    index,
+                    job,
+                )
+                # Put the job back in the buffer for potential retry
+                self.buffer_queue.appendleft(job)
+                self.queue.task_done()
+                raise
+            except Exception as e:
+                # Log unexpected errors but continue consuming
+                logger.error(
+                    "/%s 'Consumer-%s' error processing %s: %s",
+                    self.name,
+                    index,
+                    job,
+                    e,
+                )
+                self.queue.task_done()
+                raise
+            else:
+                self.queue.task_done()
 
     async def put(self, cmd: CommandType | Job, envs: dict[str, Any] = None) -> None:
         """Put a command into the buffer
