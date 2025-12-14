@@ -391,6 +391,8 @@ class Scheduler(ABC):
             # FileNotFoundError, google.api_core.exceptions.NotFound
             pass
 
+        await self.transition_job_status(job, JobStatus.FINISHED, is_killed=True)
+
     async def count_running_jobs(self, jobs: List[Job]) -> int:
         """Count currently running/active jobs (lightweight check)
 
