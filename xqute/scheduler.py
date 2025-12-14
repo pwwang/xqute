@@ -186,34 +186,22 @@ class Scheduler(ABC):
                 exception = RuntimeError(f"Failed to submit job: {exc}")
                 exception.__traceback__ = exc.__traceback__
             else:
-                logger.info(
-                    "/Scheduler-%s Job %s submitted (jid: %s, wrapped: %s)",
-                    self.name,
-                    job.index,
-                    job.jid,
-                    self.wrapped_job_script(job),
-                )
-
-                job.status = JobStatus.SUBMITTED
-                await plugin.hooks.on_job_submitted(self, job)
+                await self.transition_job_status(job, JobStatus.SUBMITTED)
         except Exception as exc:  # pragma: no cover
             exception = exc
 
         if exception is not None:
             from traceback import format_exception
 
-            job.stderr_file.write_text(
-                "".join(
-                    format_exception(
-                        type(exception),
-                        exception,
-                        exception.__traceback__,
-                    )
-                ),
+            error_msg = "".join(
+                format_exception(
+                    type(exception),
+                    exception,
+                    exception.__traceback__,
+                )
             )
-            job.rc_file.write_text("-2")
-            job.status = JobStatus.FAILED
-            await plugin.hooks.on_job_failed(self, job)
+            job.stderr_file.write_text(error_msg)
+            await self.transition_job_status(job, JobStatus.FAILED, rc="-2")
 
     async def retry_job(self, job: Job):
         """Retry a job
@@ -231,6 +219,146 @@ class Scheduler(ABC):
             job,
         )
         await self.submit_job_and_update_status(job)
+
+    async def transition_job_status(
+        self,
+        job: Job,
+        new_status: int,
+        rc: str | None = None,
+        error_msg: str | None = None,
+        is_killed: bool = False,
+    ):
+        """Centralized status transition handler
+
+        Handles all aspects of job status transitions:
+        - Status change logging
+        - Hook lifecycle management (ensuring on_job_started is called)
+        - Appropriate hook calls based on new status
+        - RC file updates
+        - Error message appending to stderr
+        - JID file cleanup for terminal states
+        - Pipeline halt on errors if configured
+
+        Args:
+            job: The job to transition
+            new_status: The new status to transition to
+            rc: Optional return code to write to rc_file
+            error_msg: Optional error message to append to stderr_file
+            is_killed: Whether this is a killed job (uses on_job_killed hook)
+        """
+        # Log the status transition
+        if job.prev_status != new_status:
+            logger.debug(
+                "/Scheduler-%s Job %s changed status: %s -> %s",
+                self.name,
+                job.index,
+                JobStatus.get_name(job.prev_status),
+                JobStatus.get_name(new_status),
+            )
+
+        # Update status
+        job.status = new_status
+
+        # Handle killed jobs specially
+        if is_killed:
+            logger.info(
+                "/Scheduler-%s Job %s killed, calling hook ...",
+                self.name,
+                job.index,
+            )
+            await plugin.hooks.on_job_killed(self, job)
+            return
+
+        # Handle status-specific logic
+        if new_status in (JobStatus.FAILED, JobStatus.RETRYING):
+            # Ensure lifecycle hook was called
+            if job.prev_status != JobStatus.RUNNING:
+                logger.debug(
+                    "/Scheduler-%s Job %s was not running before failure, "
+                    "running on_job_started hook to ensure lifecycle ...",
+                    self.name,
+                    job.index,
+                )
+                await plugin.hooks.on_job_started(self, job)
+
+            # Write rc file if provided
+            if rc is not None:
+                job.rc_file.write_text(rc)
+
+            # Append error message if provided
+            if error_msg is not None:
+                with job.stderr_file.open("a") as f:
+                    f.write(f"\n{error_msg}\n")
+
+            # Call failure hook
+            logger.debug(
+                "/Scheduler-%s Job %s calling on_job_failed hook ...",
+                self.name,
+                job.index,
+            )
+            await plugin.hooks.on_job_failed(self, job)
+
+            # Clean up jid file
+            try:
+                job.jid_file.unlink(missing_ok=True)
+            except Exception:  # pragma: no cover
+                # missing_ok is not working for some cloud paths
+                pass
+
+            # Handle halt strategy
+            if self.error_strategy == JobErrorStrategy.HALT:
+                logger.error(
+                    "/Scheduler-%s Pipeline will halt since job failed: %r",
+                    self.name,
+                    job,
+                )
+                os.kill(os.getpid(), signal.SIGTERM)
+
+        elif new_status == JobStatus.FINISHED:
+            # Ensure lifecycle hook was called
+            if job.prev_status != JobStatus.RUNNING:
+                logger.debug(
+                    "/Scheduler-%s Job %s was not running before finishing, "
+                    "running on_job_started hook to ensure lifecycle ...",
+                    self.name,
+                    job.index,
+                )
+                await plugin.hooks.on_job_started(self, job)
+
+            # Call success hook
+            logger.debug(
+                "/Scheduler-%s Job %s calling on_job_succeeded hook ...",
+                self.name,
+                job.index,
+            )
+            await plugin.hooks.on_job_succeeded(self, job)
+
+            # Clean up jid file
+            try:
+                job.jid_file.unlink(missing_ok=True)
+            except Exception:  # pragma: no cover
+                # missing_ok is not working for some cloud paths
+                pass
+
+        elif new_status == JobStatus.RUNNING:
+            # Call started hook
+            logger.debug(
+                "/Scheduler-%s Job %s calling on_job_started hook ...",
+                self.name,
+                job.index,
+            )
+            await plugin.hooks.on_job_started(self, job)
+
+        elif new_status == JobStatus.SUBMITTED:
+            # Call submitted hook
+            logger.info(
+                "/Scheduler-%s Job %s submitted (jid: %s, wrapped: %s)",
+                self.name,
+                job.index,
+                job.jid,
+                self.wrapped_job_script(job),
+            )
+            await plugin.hooks.on_job_submitted(self, job)
 
     async def kill_job_and_update_status(self, job: Job):
         """Kill a job and update its status
@@ -263,13 +391,7 @@ class Scheduler(ABC):
             # FileNotFoundError, google.api_core.exceptions.NotFound
             pass
 
-        job.status = JobStatus.FINISHED
-        logger.info(
-            "/Scheduler-%s Job %s killed, calling hook ...",
-            self.name,
-            job.index,
-        )
-        await plugin.hooks.on_job_killed(self, job)
+        await self.transition_job_status(job, JobStatus.FINISHED, is_killed=True)
 
     async def polling_jobs(
         self,
@@ -547,76 +669,14 @@ class Scheduler(ABC):
 
             if job.prev_status != status:
                 if status in (JobStatus.FAILED, JobStatus.RETRYING):
-                    logger.debug(
-                        "/Scheduler-%s Job %s changed status: %s -> %s",
-                        self.name,
-                        job.index,
-                        JobStatus.get_name(job.prev_status),
-                        JobStatus.get_name(status),
-                    )
-
-                    if job.prev_status != JobStatus.RUNNING:
-                        logger.debug(
-                            "/Scheduler-%s Job %s was not running before failure, "
-                            "running on_job_started hook to ensure lifecycle ...",
-                            self.name,
-                            job.index,
-                        )
-                        await plugin.hooks.on_job_started(self, job)
-
-                    logger.debug(
-                        "/Scheduler-%s Job %s calling on_job_failed hook ...",
-                        self.name,
-                        job.index,
-                    )
-                    await plugin.hooks.on_job_failed(self, job)
-                    try:
-                        job.jid_file.unlink(missing_ok=True)
-                    except Exception:  # pragma: no cover
-                        # missing_ok is not working for some cloud paths
-                        pass
+                    # transition_job_status will handle all the failure logic
+                    await self.transition_job_status(job, status)
                 elif status == JobStatus.FINISHED:
-                    logger.debug(
-                        "/Scheduler-%s Job %s changed status: %s -> %s",
-                        self.name,
-                        job.index,
-                        JobStatus.get_name(job.prev_status),
-                        JobStatus.get_name(status),
-                    )
-                    if job.prev_status != JobStatus.RUNNING:
-                        logger.debug(
-                            "/Scheduler-%s Job %s was not running before finishing, "
-                            "running on_job_started hook to ensure lifecycle ...",
-                            self.name,
-                            job.index,
-                        )
-                        await plugin.hooks.on_job_started(self, job)
-
-                    logger.debug(
-                        "/Scheduler-%s Job %s calling on_job_succeeded hook ...",
-                        self.name,
-                        job.index,
-                    )
-                    await plugin.hooks.on_job_succeeded(self, job)
-                    try:
-                        job.jid_file.unlink(missing_ok=True)
-                    except Exception:  # pragma: no cover
-                        # missing_ok is not working for some cloud paths
-                        pass
+                    # transition_job_status will handle all the success logic
+                    await self.transition_job_status(job, status)
                 elif status == JobStatus.RUNNING:
-                    logger.debug(
-                        "/Scheduler-%s Job %s changed status: %s -> %s",
-                        self.name,
-                        job.index,
-                        JobStatus.get_name(job.prev_status),
-                        JobStatus.get_name(status),
-                    )
-                    logger.debug(
-                        "/Scheduler-%s Job %s calling on_job_started hook ...",
-                        self.name,
-                        job.index,
-                    )
-                    await plugin.hooks.on_job_started(self, job)
+                    # transition_job_status will handle the started hook
+                    await self.transition_job_status(job, status)
             elif status == JobStatus.SUBMITTED:  # pragma: no cover
                 # Check if the job fails before running
                 if await self.job_fails_before_running(job):
@@ -626,22 +686,17 @@ class Scheduler(ABC):
                         self.name,
                         job.index,
                     )
-                    job.status = JobStatus.FAILED
-                    job.rc_file.write_text("-3")
-                    with job.stderr_file.open("a") as f:
-                        f.write(
-                            "\nError: job seems to fail before running.\n"
-                            "Check your scheduler logs if necessary.\n",
-                        )
-
-                    await plugin.hooks.on_job_failed(self, job)
+                    await self.transition_job_status(
+                        job,
+                        JobStatus.FAILED,
+                        rc="-3",
+                        error_msg=(
+                            "Error: job seems to fail before running.\n"
+                            "Check your scheduler logs if necessary."
+                        ),
+                    )
+                    # transition_job_status handles the HALT, but we still need to break
                     if self.error_strategy == JobErrorStrategy.HALT:
-                        logger.error(
-                            "/Scheduler-%s Pipeline will halt since job failed: %r",
-                            self.name,
-                            job,
-                        )
-                        os.kill(os.getpid(), signal.SIGTERM)
                         break
             elif status == JobStatus.RUNNING:
                 logger.debug(
@@ -663,35 +718,26 @@ class Scheduler(ABC):
                         self.name,
                         job.index,
                     )
-                    job.status = JobStatus.FAILED
-                    job.rc_file.write_text("-3")
-                    with job.stderr_file.open("a") as f:
-                        f.write(
-                            "\nError: job is not running in the scheduler, "
+                    await self.transition_job_status(
+                        job,
+                        JobStatus.FAILED,
+                        rc="-3",
+                        error_msg=(
+                            "Error: job is not running in the scheduler, "
                             "but its status is still RUNNING.\n"
-                            "It is likely that the resource is preempted.\n"
-                        )
-
-                    await plugin.hooks.on_job_failed(self, job)
+                            "It is likely that the resource is preempted."
+                        ),
+                    )
+                    # transition_job_status handles the HALT, but we still need to break
                     if self.error_strategy == JobErrorStrategy.HALT:
-                        logger.error(
-                            "/Scheduler-%s Pipeline will halt since job failed: %r",
-                            self.name,
-                            job,
-                        )
-                        os.kill(os.getpid(), signal.SIGTERM)
                         break
 
+            # Check if we need to halt - this catches any FAILED status
+            # transition_job_status already sent SIGTERM, we just need to break the loop
             if (
                 self.error_strategy == JobErrorStrategy.HALT
                 and status == JobStatus.FAILED
             ):
-                logger.error(
-                    "/Scheduler-%s Pipeline will halt since job failed: %r",
-                    self.name,
-                    job,
-                )
-                os.kill(os.getpid(), signal.SIGTERM)
                 break
 
             if status not in (JobStatus.FINISHED, JobStatus.FAILED):
