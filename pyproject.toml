@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xqute"
-version = "1.0.0rc2"
+version = "1.0.0rc3"
 description = "A job management system for python"
 authors = ["pwwang <pwwang@pwwang.com>"]
 license = "MIT"
