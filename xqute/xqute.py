@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import functools
-import random
 import signal
 from collections import deque
 from typing import TYPE_CHECKING, Any, List, Mapping, Type
