@@ -20,9 +20,6 @@ class Job:
         metadir: The metadir of the job
         jid: The jid of the job in scheduler system
         trial_count: The count for re-tries
-        hook_done: Mark whether hooks have already been. Since we don't have
-            a trigger for job finished/failed, so we do a polling on it. This
-            is to avoid calling the hooks repeatedly
         _status: The status of the job
         _rc: The return code of the job
         _error_retry: Whether we should retry if error happened
