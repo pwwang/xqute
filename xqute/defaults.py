@@ -86,6 +86,7 @@ class JobStatus:
 
 
 LOGGER_NAME = "XQUTE"
+LOGGER_LEVEL = "INFO"
 
 DEFAULT_SCHEDULER_FORKS: int = 1
 DEFAULT_WORKDIR = "./.xqute"
