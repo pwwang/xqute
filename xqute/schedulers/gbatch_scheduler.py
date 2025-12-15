@@ -12,7 +12,13 @@ from yunpath import GSPath, AnyPath
 
 from ..job import Job
 from ..scheduler import Scheduler
-from ..defaults import JOBCMD_WRAPPER_LANG
+from ..defaults import (
+    JOBCMD_WRAPPER_LANG,
+    get_jobcmd_wrapper_init,
+    JOBCMD_WRAPPER_TEMPLATE,
+    JobStatus,
+    SLEEP_INTERVAL_GBATCH_STATUS_CHECK,
+)
 from ..utils import logger
 from ..path import SpecPath
 
@@ -388,7 +394,7 @@ class GbatchScheduler(Scheduler):
         )
         status = await self._get_job_status(job)
         while status.endswith("_IN_PROGRESS"):  # pragma: no cover
-            await asyncio.sleep(1)
+            await asyncio.sleep(SLEEP_INTERVAL_GBATCH_STATUS_CHECK)
             status = await self._get_job_status(job)
 
         command = [
@@ -416,7 +422,7 @@ class GbatchScheduler(Scheduler):
 
         status = await self._get_job_status(job)
         while status == "DELETION_IN_PROGRESS":  # pragma: no cover
-            await asyncio.sleep(1)
+            await asyncio.sleep(SLEEP_INTERVAL_GBATCH_STATUS_CHECK)
             status = await self._get_job_status(job)
 
         if status != "UNKNOWN":  # pragma: no cover

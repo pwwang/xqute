@@ -94,6 +94,19 @@ DEFAULT_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
 DEFAULT_NUM_RETRIES: int = 3
 # DEFAULT_SUBMISSION_BATCH: int = 8
 JOBCMD_WRAPPER_LANG: str = "/bin/bash"
+
+# Sleep intervals (in seconds)
+# When producer hits max forks
+SLEEP_INTERVAL_PRODUCER_MAX_FORKS: float = 1.0
+# Polling interval for job status
+SLEEP_INTERVAL_POLLING_JOBS: float = 1.0
+# Polling interval for keep_feeding mode
+SLEEP_INTERVAL_KEEP_FEEDING: float = 0.1
+# Wait after job submission to ensure process is running
+# Wait for cloud file existence check
+SLEEP_INTERVAL_CLOUD_FILE_CHECK: float = 2.0
+# Wait for GBatch status check
+SLEEP_INTERVAL_GBATCH_STATUS_CHECK: float = 1.0
 JOBCMD_WRAPPER_TEMPLATE: str = r"""#!{shebang}
 set -u -E -o pipefail
 

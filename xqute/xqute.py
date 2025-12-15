@@ -15,6 +15,9 @@ from .defaults import (
     DEFAULT_SCHEDULER_FORKS,
     # DEFAULT_SUBMISSION_BATCH,
     JobStatus,
+    SLEEP_INTERVAL_PRODUCER_MAX_FORKS,
+    SLEEP_INTERVAL_POLLING_JOBS,
+    SLEEP_INTERVAL_KEEP_FEEDING,
 )
 from .utils import logger, CommandType
 from .plugin import plugin
@@ -195,7 +198,7 @@ class Xqute:
                     logger.debug("/Producer Hit max forks of scheduler ...")
                     self.buffer_queue.appendleft(job)
                     # Wait longer when hitting max forks to reduce polling overhead
-                    await asyncio.sleep(1.0)
+                    await asyncio.sleep(SLEEP_INTERVAL_PRODUCER_MAX_FORKS)
                     polling_counter += 1
                     continue
 
@@ -307,14 +310,14 @@ class Xqute:
         try:
             # Wait for feeding to stop if in keep_feeding mode
             while self._keep_feeding:
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(SLEEP_INTERVAL_KEEP_FEEDING)
 
             polling_counter = 0
             while (
                 self._cancelling is False
                 and not await self.scheduler.check_all_done(self.jobs, polling_counter)
             ):
-                await asyncio.sleep(1.0)
+                await asyncio.sleep(SLEEP_INTERVAL_POLLING_JOBS)
                 polling_counter += 1
 
             if self._cancelling is False:

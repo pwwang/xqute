@@ -9,6 +9,7 @@ from yunpath import CloudPath
 
 from ...scheduler import Scheduler
 from ...job import Job
+from ...defaults import SLEEP_INTERVAL_CLOUD_FILE_CHECK
 
 from .client import SSHClient
 
@@ -93,7 +94,7 @@ class SshScheduler(Scheduler):
                     )
 
                 if isinstance(job.stdout_file, CloudPath):  # pragma: no cover
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(SLEEP_INTERVAL_CLOUD_FILE_CHECK)
                 else:  # pragma: no cover
                     await asyncio.sleep(0.1)
 
