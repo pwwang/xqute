@@ -303,7 +303,7 @@ class Job:
         ]
 
         if retry:
-            retry_dir = self.retry_dir / str(self.trial_count)
+            retry_dir = self.retry_dir / str(self.trial_count)  # type: ignore
             if retry_dir.exists():
                 retry_dir.rmtree()
             retry_dir.mkdir(parents=True)
