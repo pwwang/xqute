@@ -351,12 +351,6 @@ class Scheduler(ABC):
         logger.warning("/Sched-%s Killing job %s ...", self.name, job.index)
         await self.kill_job(job)
         try:
-            # in case the jid file is removed by the wrapped script
-            logger.debug(
-                "/Sched-%s Removing jid file %s ...",
-                self.name,
-                job.jid_file,
-            )
             job.jid_file.unlink(missing_ok=True)
         except Exception:  # pragma: no cover
             # missing_ok is not working for some cloud paths

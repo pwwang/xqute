@@ -120,10 +120,11 @@ class Xqute:
         for sig in (signal.SIGTERM, signal.SIGINT):
             loop.add_signal_handler(sig, functools.partial(self.cancel, sig))
 
-        self.task = asyncio.gather(
+        self._prodcons_task = asyncio.gather(
             self._producer(),
             *(self._consumer(i) for i in range(self.scheduler.subm_batch)),
         )
+        self._polling_task = asyncio.create_task(self._polling_jobs())
         logger.debug("/%s Calling on_init hook ...", self.name)
         plugin.hooks.on_init(self)
 
@@ -162,46 +163,50 @@ class Xqute:
 
         logger.debug("/%s Calling on_shutdown hook ...", self.name)
         if plugin.hooks.on_shutdown(self, sig) is not False:
-            self.task.cancel()
+            self._prodcons_task.cancel()
+            self._polling_task.cancel()
 
     async def _producer(self) -> None:
         """The producer"""
         polling_counter = 0
 
-        while True:
-            if not self.buffer_queue:
-                # If not in keep_feeding mode and buffer is empty, exit
-                if not self._keep_feeding:
-                    logger.debug(
-                        "/Producer Buffer empty and not in keep_feeding mode, "
-                        "exiting ..."
-                    )
-                    break
-                logger.debug("/Producer Buffer queue is empty, waiting ...")
-                # Wait for buffer event instead of sleep polling
-                await self._buffer_event.wait()
-                self._buffer_event.clear()
-                continue
+        try:
+            while True:
+                if not self.buffer_queue:
+                    # If not in keep_feeding mode and buffer is empty, exit
+                    if not self._keep_feeding:
+                        logger.debug(
+                            "/Producer Buffer empty and not in keep_feeding mode, "
+                            "exiting ..."
+                        )
+                        break
+                    logger.debug("/Producer Buffer queue is empty, waiting ...")
+                    # Wait for buffer event instead of sleep polling
+                    await self._buffer_event.wait()
+                    self._buffer_event.clear()
+                    continue
 
-            job = self.buffer_queue.popleft()
-            # Lightweight check: just count running jobs, no hooks
-            n_running = await self.scheduler.count_running_jobs(self.jobs)
-            if n_running >= self.scheduler.forks:
-                logger.debug("/Producer Hit max forks of scheduler ...")
-                self.buffer_queue.appendleft(job)
-                # Wait longer when hitting max forks to reduce polling overhead
-                await asyncio.sleep(1.0)
-                polling_counter += 1
-                continue
+                job = self.buffer_queue.popleft()
+                # Lightweight check: just count running jobs, no hooks
+                n_running = await self.scheduler.count_running_jobs(self.jobs)
+                if n_running >= self.scheduler.forks:
+                    logger.debug("/Producer Hit max forks of scheduler ...")
+                    self.buffer_queue.appendleft(job)
+                    # Wait longer when hitting max forks to reduce polling overhead
+                    await asyncio.sleep(1.0)
+                    polling_counter += 1
+                    continue
 
-            job.status = JobStatus.QUEUED
-            await self.queue.put(job)
-            polling_counter = 0  # Reset counter after successful queuing
+                job.status = JobStatus.QUEUED
+                await self.queue.put(job)
+                polling_counter = 0  # Reset counter after successful queuing
 
-        # Send sentinel values to stop consumers
-        logger.debug("/Producer Finished, sending sentinels to consumers ...")
-        for _ in range(self.scheduler.subm_batch):
-            await self.queue.put(None)
+            # Send sentinel values to stop consumers
+            logger.debug("/Producer Finished, sending sentinels to consumers ...")
+            for _ in range(self.scheduler.subm_batch):
+                await self.queue.put(None)
+        except asyncio.CancelledError:
+            logger.debug("/Producer Cancelled ...")
 
     async def _consumer(self, index: int) -> None:
         """The consumer
@@ -209,38 +214,20 @@ class Xqute:
         Args:
             index: The index of the consumer
         """
-        # Stagger the consumers a bit
-        await asyncio.sleep(random.uniform(0.0, 1.0))
-        while True:
-            job = await self.queue.get()
-            # Check for sentinel value to exit gracefully
-            if job is None:
-                logger.debug("/Consumer-%s Received sentinel, exiting ...", index)
-                self.queue.task_done()
-                break
+        try:
+            while True:
+                job = await self.queue.get()
+                # Check for sentinel value to exit gracefully
+                if job is None:
+                    logger.debug("/Consumer-%s Received sentinel, exiting ...", index)
+                    self.queue.task_done()
+                    break
 
-            try:
                 logger.debug("/Consumer-%s submitting %s", index, job)
                 await self.scheduler.submit_job_and_update_status(job)
-            except asyncio.CancelledError:
-                # Re-queue the job if we're cancelled while processing it
-                logger.debug(
-                    "/%s 'Consumer-%s' cancelled while processing %s, re-queueing ...",
-                    self.name,
-                    index,
-                    job,
-                )
-                # Put the job back in the buffer for potential retry
-                self.buffer_queue.appendleft(job)
                 self.queue.task_done()
-                raise
-            except Exception as e:
-                # Log unexpected errors but continue consuming
-                logger.error("/Consumer-%s' error processing %s: %s", index, job, e)
-                self.queue.task_done()
-                raise
-            else:
-                self.queue.task_done()
+        except asyncio.CancelledError:
+            logger.warning("/Consumer-%s Cancelled while submitting ...", index)
 
     async def put(self, cmd: CommandType | Job, envs: dict[str, Any] = None) -> None:
         """Put a command into the buffer
@@ -290,18 +277,24 @@ class Xqute:
             RuntimeError: If called without first calling
                 run_until_complete(keep_feeding=True)
         """
-        if not self._completion_task:
-            raise RuntimeError(
-                "stop_feeding() called but keep_feeding mode was not started. "
-                "Did you forget to call "
-                "'await xqute.run_until_complete(keep_feeding=True)'?"
+        if not self._completion_task or not self._keep_feeding:
+            logger.error(
+                "/%s stop_feeding() called but keep_feeding mode was not started. "
+                "Ignoring ...",
+                self.name,
             )
+            return
 
         logger.debug("/%s Stopping feeding mode", self.name)
         self._keep_feeding = False
 
         # Wait for completion if we started in keep_feeding mode
-        await self._completion_task
+        try:
+            await self._completion_task
+        except asyncio.CancelledError:
+            self._prodcons_task.cancel()
+            self._polling_task.cancel()
+
         self._completion_task = None
 
     async def _polling_jobs(self) -> None:
@@ -309,27 +302,23 @@ class Xqute:
 
         If yes, cancel the producer-consumer task naturally.
         """
-        # Wait for feeding to stop if in keep_feeding mode
-        while self._keep_feeding:
-            await asyncio.sleep(0.1)
-
-        polling_counter = 0
-        while self._cancelling is False and not await self.scheduler.check_all_done(
-            self.jobs,
-            polling_counter,
-        ):
-            await asyncio.sleep(1.0)
-            polling_counter += 1
-
-        if self._cancelling is False:
-            self.cancel()
-
-    async def _await_task(self) -> None:
-        """Await the producer-consumer task and catch the CancelledError"""
         try:
-            await self.task
+            # Wait for feeding to stop if in keep_feeding mode
+            while self._keep_feeding:
+                await asyncio.sleep(0.1)
+
+            polling_counter = 0
+            while (
+                self._cancelling is False
+                and not await self.scheduler.check_all_done(self.jobs, polling_counter)
+            ):
+                await asyncio.sleep(1.0)
+                polling_counter += 1
+
+            if self._cancelling is False:
+                self.cancel()
         except asyncio.CancelledError:
-            logger.debug("/%s Stoping producer and consumer ...", self.name)
+            logger.debug("/%s Polling cancelled ...", self.name)
             if self._cancelling not in (True, False):  # signaled
                 await self.scheduler.kill_running_jobs(self.jobs)
 
@@ -381,7 +370,9 @@ class Xqute:
     async def _run_completion_tasks(self) -> None:
         """Run the completion tasks (polling and await)"""
         try:
-            await asyncio.gather(self._polling_jobs(), self._await_task())
+            await asyncio.gather(self._polling_task, self._prodcons_task)
+        except asyncio.CancelledError:
+            logger.debug("/%s Completion tasks cancelled ...", self.name)
         finally:
             logger.info("/%s Done!", self.name)
             if self.plugin_context:
