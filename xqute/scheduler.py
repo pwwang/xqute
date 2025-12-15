@@ -259,12 +259,6 @@ class Scheduler(ABC):
         if new_status in (JobStatus.FAILED, JobStatus.RETRYING):
             # Ensure lifecycle hook was called
             if old_status != JobStatus.RUNNING:
-                logger.debug(
-                    "/Sched-%s Job %s was not running before failure, "
-                    "running on_job_started hook to ensure lifecycle ...",
-                    self.name,
-                    job.index,
-                )
                 logger.debug("/Job-%s Calling on_job_started hook ...", job.index)
                 await plugin.hooks.on_job_started(self, job)
 

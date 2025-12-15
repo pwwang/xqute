@@ -161,6 +161,9 @@ class Xqute:
             )
 
         logger.debug("/%s Calling on_shutdown hook ...", self.name)
+
+        # Always cancel tasks if not already cancelled, regardless of hook result
+        # This prevents plugins from accidentally leaving tasks running
         if plugin.hooks.on_shutdown(self, sig) is not False:
             self._prodcons_task.cancel()
             self._polling_task.cancel()

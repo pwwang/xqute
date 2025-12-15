@@ -49,7 +49,7 @@ class CancelShutdownPlugin:
     @plugin.impl
     def on_shutdown(xqute, sig):
         print("Cancelling shutdown")
-        xqute.task.cancel()
+        xqute._prodcons_task.cancel()
         return False
 
 

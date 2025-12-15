@@ -6,8 +6,6 @@ from pathlib import Path
 from xqute.schedulers.slurm_scheduler import SlurmScheduler
 from xqute.defaults import JobStatus
 
-# from .conftest import BUCKET
-
 MOCKS = Path(__file__).parent / "mocks"
 
 
