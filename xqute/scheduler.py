@@ -149,37 +149,28 @@ class Scheduler(ABC):
         """
         if await self.job_is_submitted_or_running(job):
             logger.warning(
-                "/Scheduler-%s Skip submitting, "
-                "job %r is already submitted or running.",
-                self.name,
-                job,
+                "/Job-%s Skip submitting, already submitted or running.",
+                job.index,
             )
             return
 
         exception: Exception | None = None
         try:
+            logger.debug("/Job-%s Calling on_job_submitting hook ...", job.index)
             if await plugin.hooks.on_job_submitting(self, job) is False:
-                logger.info(
-                    "/Scheduler-%s Job %s submission cancelled by hook.",
-                    self.name,
-                    job.index,
-                )
+                logger.info("/Job-%s submission cancelled by hook.", job.index)
                 return
 
-            logger.debug(
-                "/Scheduler-%s Cleaning job %s before submission",
-                self.name,
-                job.index,
-            )
+            logger.debug("/Job-%s Cleaning up before submission", job.index)
             job.clean()
 
             try:
                 # raise the exception immediately
                 # it somehow cannot be catched immediately
                 logger.debug(
-                    "/Scheduler-%s Submitting job %s ...",
-                    self.name,
+                    "/Job-%s Submitting to scheduler '%s' ...",
                     job.index,
+                    self.name,
                 )
                 job.jid = await self.submit_job(job)
             except Exception as exc:
@@ -213,7 +204,7 @@ class Scheduler(ABC):
         job.clean(retry=True)
         job.trial_count += 1
         logger.warning(
-            "/Scheduler-%s Retrying (#%s) job: %r",
+            "/Sched-%s Retrying (#%s) job: %r",
             self.name,
             job.trial_count,
             job,
@@ -246,39 +237,35 @@ class Scheduler(ABC):
             error_msg: Optional error message to append to stderr_file
             is_killed: Whether this is a killed job (uses on_job_killed hook)
         """
-        # Log the status transition
-        if job.prev_status != new_status:
-            logger.debug(
-                "/Scheduler-%s Job %s changed status: %s -> %s",
-                self.name,
-                job.index,
-                JobStatus.get_name(job.prev_status),
-                JobStatus.get_name(new_status),
-            )
+        # Save the previous status before updating
+        # (setter will update prev_status, so we need to save it first)
+        old_status = job.prev_status
 
         # Update status
         job.status = new_status
 
         # Handle killed jobs specially
         if is_killed:
-            logger.info(
-                "/Scheduler-%s Job %s killed, calling hook ...",
-                self.name,
-                job.index,
-            )
+            # logger.info(
+            #     "/Sched-%s Job %s killed, calling hook ...",
+            #     self.name,
+            #     job.index,
+            # )
+            logger.debug("/Job-%s Calling on_job_killed hook ...", job.index)
             await plugin.hooks.on_job_killed(self, job)
             return
 
         # Handle status-specific logic
         if new_status in (JobStatus.FAILED, JobStatus.RETRYING):
             # Ensure lifecycle hook was called
-            if job.prev_status != JobStatus.RUNNING:
+            if old_status != JobStatus.RUNNING:
                 logger.debug(
-                    "/Scheduler-%s Job %s was not running before failure, "
+                    "/Sched-%s Job %s was not running before failure, "
                     "running on_job_started hook to ensure lifecycle ...",
                     self.name,
                     job.index,
                 )
+                logger.debug("/Job-%s Calling on_job_started hook ...", job.index)
                 await plugin.hooks.on_job_started(self, job)
 
             # Write rc file if provided
@@ -291,11 +278,7 @@ class Scheduler(ABC):
                     f.write(f"\n{error_msg}\n")
 
             # Call failure hook
-            logger.debug(
-                "/Scheduler-%s Job %s calling on_job_failed hook ...",
-                self.name,
-                job.index,
-            )
+            logger.debug("/Job-%s Calling on_job_failed hook ...", job.index)
             await plugin.hooks.on_job_failed(self, job)
 
             # Clean up jid file
@@ -308,7 +291,7 @@ class Scheduler(ABC):
             # Handle halt strategy
             if self.error_strategy == JobErrorStrategy.HALT:
                 logger.error(
-                    "/Scheduler-%s Pipeline will halt since job failed: %r",
+                    "/Sched-%s Pipeline will halt since job failed: %r",
                     self.name,
                     job,
                 )
@@ -316,21 +299,12 @@ class Scheduler(ABC):
 
         elif new_status == JobStatus.FINISHED:
             # Ensure lifecycle hook was called
-            if job.prev_status != JobStatus.RUNNING:
-                logger.debug(
-                    "/Scheduler-%s Job %s was not running before finishing, "
-                    "running on_job_started hook to ensure lifecycle ...",
-                    self.name,
-                    job.index,
-                )
+            if old_status != JobStatus.RUNNING:
+                logger.debug("/Job-%s Calling on_job_started hook ...", job.index)
                 await plugin.hooks.on_job_started(self, job)
 
             # Call success hook
-            logger.debug(
-                "/Scheduler-%s Job %s calling on_job_succeeded hook ...",
-                self.name,
-                job.index,
-            )
+            logger.debug("/Job-%s Calling on_job_succeeded hook ...", job.index)
             await plugin.hooks.on_job_succeeded(self, job)
 
             # Clean up jid file
@@ -342,22 +316,19 @@ class Scheduler(ABC):
 
         elif new_status == JobStatus.RUNNING:
             # Call started hook
-            logger.debug(
-                "/Scheduler-%s Job %s calling on_job_started hook ...",
-                self.name,
-                job.index,
-            )
+            logger.debug("/Job-%s Calling on_job_started hook ...", job.index)
             await plugin.hooks.on_job_started(self, job)
 
         elif new_status == JobStatus.SUBMITTED:
             # Call submitted hook
             logger.info(
-                "/Scheduler-%s Job %s submitted (jid: %s, wrapped: %s)",
+                "/Sched-%s Job %s submitted (jid: %s, wrapped: %s)",
                 self.name,
                 job.index,
                 job.jid,
                 self.wrapped_job_script(job),
             )
+            logger.debug("/Job-%s Calling on_job_submitted hook ...", job.index)
             await plugin.hooks.on_job_submitted(self, job)
 
     async def kill_job_and_update_status(self, job: Job):
@@ -367,21 +338,22 @@ class Scheduler(ABC):
             job: The job
         """
         job.status = JobStatus.KILLING
+        logger.debug("/Job-%s Calling on_job_killing hook ...", job.index)
         ret = await plugin.hooks.on_job_killing(self, job)
         if ret is False:  # pragma: no cover
             logger.info(
-                "/Scheduler-%s Job %s killing cancelled by hook.",
+                "/Sched-%s Job %s killing cancelled by hook.",
                 self.name,
                 job.index,
             )
             return
 
-        logger.warning("/Scheduler-%s Killing job %s ...", self.name, job.index)
+        logger.warning("/Sched-%s Killing job %s ...", self.name, job.index)
         await self.kill_job(job)
         try:
             # in case the jid file is removed by the wrapped script
             logger.debug(
-                "/Scheduler-%s Removing jid file %s ...",
+                "/Sched-%s Removing jid file %s ...",
                 self.name,
                 job.jid_file,
             )
@@ -436,7 +408,7 @@ class Scheduler(ABC):
         """
         ret = True
         logger.debug(
-            "/Scheduler-%s Checking all jobs done (%s) ...",
+            "/Sched-%s Checking if all jobs done (#%s) ...",
             self.name,
             polling_counter,
         )
@@ -459,7 +431,7 @@ class Scheduler(ABC):
                 # Check if the job fails before running
                 if await self.job_fails_before_running(job):
                     logger.warning(
-                        "/Scheduler-%s Job %s seems to fail before running, "
+                        "/Sched-%s Job %s seems to fail before running, "
                         "check your scheduler logs if necessary.",
                         self.name,
                         job.index,
@@ -478,11 +450,12 @@ class Scheduler(ABC):
                         break
             elif status == JobStatus.RUNNING:
                 logger.debug(
-                    "/Scheduler-%s Job %s is running, calling polling hook ...",
+                    "/Sched-%s Job %s is running, calling polling hook ...",
                     self.name,
                     job.index,
                 )
                 # Call the polling hook
+                logger.debug("/Job-%s Calling on_job_polling hook ...", job.index)
                 await plugin.hooks.on_job_polling(self, job, polling_counter)
                 # Let's make sure the job is really running
                 if (
@@ -491,7 +464,7 @@ class Scheduler(ABC):
                     and not await self.job_is_running(job)
                 ):  # pragma: no cover
                     logger.warning(
-                        "/Scheduler-%s Job %s is not running in the scheduler, "
+                        "/Sched-%s Job %s is not running in the scheduler, "
                         "but its status is still RUNNING, setting it to FAILED",
                         self.name,
                         job.index,
@@ -520,7 +493,7 @@ class Scheduler(ABC):
 
             if status not in (JobStatus.FINISHED, JobStatus.FAILED):
                 logger.debug(
-                    "/Scheduler-%s Not all jobs are done yet, job %s is %s",
+                    "/Sched-%s Not all jobs are done yet, job %s is %s",
                     self.name,
                     job.index,
                     JobStatus.get_name(status),
@@ -528,7 +501,7 @@ class Scheduler(ABC):
                 # Try to resubmit the job for retrying
                 if status == JobStatus.RETRYING:
                     logger.debug(
-                        "/Scheduler-%s Job %s is retrying ...",
+                        "/Sched-%s Job %s is retrying ...",
                         self.name,
                         job.index,
                     )
@@ -543,7 +516,7 @@ class Scheduler(ABC):
         Args:
             jobs: The list of jobs
         """
-        logger.warning("/Scheduler-%s Killing running jobs ...", self.name)
+        logger.warning("/Sched-%s Killing running jobs ...", self.name)
         for job in jobs:
             status = job.status
             if status in (JobStatus.SUBMITTED, JobStatus.RUNNING):

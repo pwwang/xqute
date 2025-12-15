@@ -382,7 +382,7 @@ class GbatchScheduler(Scheduler):
             job: The job to delete
         """
         logger.debug(
-            "/Scheduler-%s Try deleting job %r on GCP.",
+            "/Sched-%s Try deleting job %r on GCP.",
             self.name,
             job,
         )
@@ -421,7 +421,7 @@ class GbatchScheduler(Scheduler):
 
         if status != "UNKNOWN":  # pragma: no cover
             logger.warning(
-                "/Scheduler-%s Failed to delete job %r on GCP, submision may fail.",
+                "/Sched-%s Failed to delete job %r on GCP, submision may fail.",
                 self.name,
                 job,
             )

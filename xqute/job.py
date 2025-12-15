@@ -156,9 +156,8 @@ class Job:
         Uses caching to avoid excessive file I/O. Cache is invalidated
         when status is explicitly set.
         """
-        self.prev_status = self._status
-
         # Only read from file if cache is invalid and job is in pollable state
+        status_changed_from_file = False
         if (
             not self._status_cache_valid
             and self.status_file.is_file()
@@ -169,7 +168,14 @@ class Job:
             )
         ):
             try:
-                self._status = int(self.status_file.read_text())
+                new_status_from_file = int(self.status_file.read_text())
+                # Update prev_status before changing _status if status changed
+                if new_status_from_file != self._status:
+                    self.prev_status = self._status
+                    self._status = new_status_from_file
+                    status_changed_from_file = True
+                else:
+                    self._status = new_status_from_file
                 self._status_cache_valid = True
             except (
                 FileNotFoundError,
@@ -185,8 +191,8 @@ class Job:
         ):
             self._status = JobStatus.RETRYING
 
-        if self.prev_status != self._status and (
-            self._status == JobStatus.RETRYING or self._status >= JobStatus.KILLING
+        if status_changed_from_file and (
+            self._status == JobStatus.RETRYING or self._status >= JobStatus.RUNNING
         ):
             logger.info(
                 "/Job-%s Status changed: %r -> %r",
@@ -203,14 +209,20 @@ class Job:
         Args:
             stat: The status to set
         """
-        logger.debug(
-            "/Job-%s Status changed: %r -> %r",
-            self.index,
-            *JobStatus.get_name(self._status, stat),
-        )
-        self.prev_status = self._status
-        self._status = stat
-        # Invalidate cache when status is explicitly set
+        # Only log if status is actually changing
+        if self._status != stat:
+            logger.debug(
+                "/Job-%s Status changed: %r -> %r",
+                self.index,
+                *JobStatus.get_name(self._status, stat),
+            )
+            self.prev_status = self._status
+            self._status = stat
+        else:
+            # Even if status doesn't change, update prev_status to acknowledge
+            # this status and prevent duplicate hook calls in the scheduler
+            self.prev_status = stat
+        # Always invalidate cache when status is explicitly set
         self._status_cache_valid = False
 
     def refresh_status(self) -> int:

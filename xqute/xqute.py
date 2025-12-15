@@ -124,6 +124,7 @@ class Xqute:
             self._producer(),
             *(self._consumer(i) for i in range(self.scheduler.subm_batch)),
         )
+        logger.debug("/%s Calling on_init hook ...", self.name)
         plugin.hooks.on_init(self)
 
     def __del__(self) -> None:
@@ -136,7 +137,7 @@ class Xqute:
             and self._completion_task
         ):
             logger.warning(
-                "/%s Xqute instance destroyed while still in keep_feeding mode. "
+                "/%s Instance destroyed while still in keep_feeding mode. "
                 "Did you forget to call 'await xqute.stop_feeding()'?",
                 self.name,
             )
@@ -159,6 +160,7 @@ class Xqute:
                 sig.name,
             )
 
+        logger.debug("/%s Calling on_shutdown hook ...", self.name)
         if plugin.hooks.on_shutdown(self, sig) is not False:
             self.task.cancel()
 
@@ -171,12 +173,11 @@ class Xqute:
                 # If not in keep_feeding mode and buffer is empty, exit
                 if not self._keep_feeding:
                     logger.debug(
-                        "/%s Buffer empty and not in keep_feeding mode, "
-                        "producer exiting ...",
-                        self.name,
+                        "/Producer Buffer empty and not in keep_feeding mode, "
+                        "exiting ..."
                     )
                     break
-                logger.debug("/%s Buffer queue is empty, waiting ...", self.name)
+                logger.debug("/Producer Buffer queue is empty, waiting ...")
                 # Wait for buffer event instead of sleep polling
                 await self._buffer_event.wait()
                 self._buffer_event.clear()
@@ -186,7 +187,7 @@ class Xqute:
             # Lightweight check: just count running jobs, no hooks
             n_running = await self.scheduler.count_running_jobs(self.jobs)
             if n_running >= self.scheduler.forks:
-                logger.debug("/%s Hit max forks of scheduler ...", self.name)
+                logger.debug("/Producer Hit max forks of scheduler ...")
                 self.buffer_queue.appendleft(job)
                 # Wait longer when hitting max forks to reduce polling overhead
                 await asyncio.sleep(1.0)
@@ -198,10 +199,7 @@ class Xqute:
             polling_counter = 0  # Reset counter after successful queuing
 
         # Send sentinel values to stop consumers
-        logger.debug(
-            "/%s Producer finished, sending sentinels to consumers ...",
-            self.name,
-        )
+        logger.debug("/Producer Finished, sending sentinels to consumers ...")
         for _ in range(self.scheduler.subm_batch):
             await self.queue.put(None)
 
@@ -217,16 +215,12 @@ class Xqute:
             job = await self.queue.get()
             # Check for sentinel value to exit gracefully
             if job is None:
-                logger.debug(
-                    "/%s 'Consumer-%s' received sentinel, exiting ...",
-                    self.name,
-                    index,
-                )
+                logger.debug("/Consumer-%s Received sentinel, exiting ...", index)
                 self.queue.task_done()
                 break
 
             try:
-                logger.debug("/%s 'Consumer-%s' submitting %s", self.name, index, job)
+                logger.debug("/Consumer-%s submitting %s", index, job)
                 await self.scheduler.submit_job_and_update_status(job)
             except asyncio.CancelledError:
                 # Re-queue the job if we're cancelled while processing it
@@ -242,13 +236,7 @@ class Xqute:
                 raise
             except Exception as e:
                 # Log unexpected errors but continue consuming
-                logger.error(
-                    "/%s 'Consumer-%s' error processing %s: %s",
-                    self.name,
-                    index,
-                    job,
-                    e,
-                )
+                logger.error("/Consumer-%s' error processing %s: %s", index, job, e)
                 self.queue.task_done()
                 raise
             else:
@@ -271,6 +259,7 @@ class Xqute:
         else:
             job = self.scheduler.create_job(len(self.jobs), cmd, envs)
 
+        logger.debug("/Job-%s Calling on_job_init hook ...", job.index)
         await plugin.hooks.on_job_init(self.scheduler, job)
         self.jobs.append(job)
         logger.info("/%s Pushing job: %r", self.name, job)
@@ -278,6 +267,7 @@ class Xqute:
         self.buffer_queue.append(job)
         # Signal producer that buffer has new jobs
         self._buffer_event.set()
+        logger.debug("/Job-%s Calling on_job_queued hook ...", job.index)
         await plugin.hooks.on_job_queued(self.scheduler, job)
 
     def is_feeding(self) -> bool:
