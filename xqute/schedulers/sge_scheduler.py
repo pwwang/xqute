@@ -24,7 +24,6 @@ class SgeScheduler(Scheduler):
     """
 
     name: str = "sge"
-    submission_batch: int = 2
 
     __slots__ = Scheduler.__slots__ + ("qsub", "qdel", "qstat")
 

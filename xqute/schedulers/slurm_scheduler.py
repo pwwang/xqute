@@ -22,7 +22,6 @@ class SlurmScheduler(Scheduler):
     """
 
     name: str = "slurm"
-    submission_batch: int = 2
 
     __slots__ = Scheduler.__slots__ + ("sbatch", "squeue", "scancel")
 

@@ -352,6 +352,7 @@ def test_job():
         location="us-central1",
         jobname_prefix="jobprefix",
         workdir=WORKDIR,
+        submission_batch=1,
     )
     assert scheduler.subm_batch == 1
     job = scheduler.create_job(0, ["echo", 1])

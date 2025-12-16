@@ -19,6 +19,7 @@ from .defaults import (
     JOBCMD_WRAPPER_TEMPLATE,
     DEFAULT_ERROR_STRATEGY,
     DEFAULT_NUM_RETRIES,
+    DEFAULT_SUBMISSION_BATCH,
     get_jobcmd_wrapper_init,
 )
 from .utils import logger, CommandType
@@ -77,7 +78,7 @@ class Scheduler(ABC):
     # The name of the scheduler
     name: str
     # The number of consumers to submit jobs in parallel
-    submission_batch: int = 1
+    submission_batch: int = DEFAULT_SUBMISSION_BATCH
     job_class: Type[Job] = Job
 
     def __init__(

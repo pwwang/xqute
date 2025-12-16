@@ -46,7 +46,6 @@ class ContainerScheduler(LocalScheduler):
     """
 
     name = "container"
-    submission_batch = 4
 
     __slots__ = (
         "image",
