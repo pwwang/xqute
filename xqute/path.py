@@ -64,6 +64,17 @@ class MountedPath(ABC):
         >>> gs_path = MountedPath("gs://bucket/file.txt", spec="/local/file.txt")
         >>> type(gs_path)
         <class 'xqute.path.MountedGSPath'>
+
+        >>> # Serialize and deserialize a mounted path
+        >>> import pickle
+        >>> mounted_path = MountedPath("/container/data/file.txt",
+        ...                            spec="/local/data/file.txt")
+        >>> serialized = pickle.dumps(mounted_path)
+        >>> restored = pickle.loads(serialized)
+        >>> str(restored) == str(mounted_path)
+        True
+        >>> str(restored.spec) == str(mounted_path.spec)
+        True
     """
 
     def __new__(  # type: ignore
@@ -163,6 +174,34 @@ class MountedPath(ABC):
             int: A hash value based on the path string and spec path string.
         """
         return hash((str(self), str(self.spec)))
+
+    def __reduce__(self):
+        """Support for pickling and serialization.
+
+        Returns:
+            tuple: A tuple containing the callable and arguments needed to
+            reconstruct the MountedPath instance. The tuple contains:
+            - The MountedPath class constructor
+            - A tuple with (path_string, spec_path_string) arguments
+
+        Examples:
+            >>> import pickle
+            >>> mounted_path = MountedPath("/container/data/file.txt",
+            ...                           spec="/local/data/file.txt")
+            >>> serialized = pickle.dumps(mounted_path)
+            >>> deserialized = pickle.loads(serialized)
+            >>> str(deserialized) == str(mounted_path)
+            True
+            >>> str(deserialized.spec) == str(mounted_path.spec)
+            True
+        """
+        # Return the constructor and the arguments needed to recreate the object
+        # We use string representations to ensure compatibility across different
+        # path types and to avoid issues with complex path objects
+        if self.is_mounted():
+            return (MountedPath, (str(self), str(self._spec)))
+        else:
+            return (MountedPath, (str(self),))
 
 
 class MountedLocalPath(MountedPath, LocalPath):  # type: ignore

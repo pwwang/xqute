@@ -892,3 +892,44 @@ def test_mountedpath_mixed_path_types2():
     assert m7.spec == Path("/path/to")
 
     assert m7.spec.mounted.spec.mounted.spec.mounted.spec.mounted == m7
+
+
+def test_mountedpath_serialization():
+    """Test that MountedPath instances can be serialized with pickle."""
+    import pickle
+
+    # Test MountedLocalPath without spec
+    p1 = MountedPath("/path/to/file")
+    serialized1 = pickle.dumps(p1)
+    deserialized1 = pickle.loads(serialized1)
+    assert str(deserialized1) == str(p1)
+    assert str(deserialized1.spec) == str(p1.spec)
+    assert isinstance(deserialized1, MountedLocalPath)
+    assert not deserialized1.is_mounted()
+
+    # Test MountedLocalPath with spec
+    p2 = MountedPath("/path/to/file", spec="/path/to/spec")
+    serialized2 = pickle.dumps(p2)
+    deserialized2 = pickle.loads(serialized2)
+    assert str(deserialized2) == str(p2)
+    assert str(deserialized2.spec) == str(p2.spec)
+    assert isinstance(deserialized2, MountedLocalPath)
+    assert deserialized2.is_mounted()
+
+    # Test MountedGSPath without spec
+    p3 = MountedPath("gs://bucket/path/to/file")
+    serialized3 = pickle.dumps(p3)
+    deserialized3 = pickle.loads(serialized3)
+    assert str(deserialized3) == str(p3)
+    assert str(deserialized3.spec) == str(p3.spec)
+    assert isinstance(deserialized3, MountedGSPath)
+    assert not deserialized3.is_mounted()
+
+    # Test MountedGSPath with spec
+    p4 = MountedPath("gs://bucket/path/to/file", spec="/path/to/spec")
+    serialized4 = pickle.dumps(p4)
+    deserialized4 = pickle.loads(serialized4)
+    assert str(deserialized4) == str(p4)
+    assert str(deserialized4.spec) == str(p4.spec)
+    assert isinstance(deserialized4, MountedGSPath)
+    assert deserialized4.is_mounted()
