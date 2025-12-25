@@ -26,19 +26,15 @@ contexts.
 
 from __future__ import annotations
 
-import sys
-from abc import ABC
-from pathlib import Path
 from typing import Any
 
-from yunpath import AnyPath, CloudPath, GSPath, AzureBlobPath, S3Path
-
-LocalPath = type(Path())
+from pathlib import Path
+from panpath import PanPath, LocalPath, CloudPath, GSPath, AzurePath, S3Path
 
 __all__ = ["SpecPath", "MountedPath"]
 
 
-class MountedPath(ABC):
+class MountedPath(PanPath):
     """A router class to instantiate the correct path based on the path type
     for the mounted path.
 
@@ -79,11 +75,11 @@ class MountedPath(ABC):
 
     def __new__(  # type: ignore
         cls,
-        path: str | Path | CloudPath,
-        spec: str | Path | CloudPath | None = None,
+        path: str | Path,
+        spec: str | Path | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> MountedLocalPath | MountedCloudPath:
+    ) -> MountedPath:
         """Factory method to create the appropriate MountedPath subclass instance.
 
         Args:
@@ -96,25 +92,31 @@ class MountedPath(ABC):
         Returns:
             An instance of the appropriate MountedPath subclass based on the path type:
             - MountedGSPath for Google Cloud Storage paths
-            - MountedAzureBlobPath for Azure Blob Storage paths
+            - MountedAzurePath for Azure Blob Storage paths
             - MountedS3Path for Amazon S3 paths
             - MountedLocalPath for local filesystem paths
         """
 
         if cls is MountedPath:
-            path = AnyPath(path)  # type: ignore
+            path = PanPath(path)  # type: ignore
             if isinstance(path, GSPath):
                 mounted_class = MountedGSPath
-            elif isinstance(path, AzureBlobPath):  # pragma: no cover
-                mounted_class = MountedAzureBlobPath  # type: ignore
+            elif isinstance(path, AzurePath):  # pragma: no cover
+                mounted_class = MountedAzurePath  # type: ignore
             elif isinstance(path, S3Path):  # pragma: no cover
                 mounted_class = MountedS3Path  # type: ignore
             else:
                 mounted_class = MountedLocalPath  # type: ignore
 
-            return mounted_class.__new__(mounted_class, path, spec, *args, **kwargs)
+            obj = mounted_class(path, *args, **kwargs)
+            obj._spec = PanPath(spec) if spec is not None else obj
+            return obj
 
-        return super().__new__(cls)  # type: ignore # pragma: no cover
+        # Ensure the underlying Path initialization receives the path so
+        # internal parts like `_parts` are populated on older Python versions.
+        return super().__new__(
+            cls, path, *args, **kwargs
+        )  # type: ignore # pragma: no cover
 
     @property
     def spec(self) -> SpecPath:
@@ -159,7 +161,7 @@ class MountedPath(ABC):
         Returns:
             bool: True if the paths are equal, False otherwise.
         """
-        if not isinstance(other, (Path, CloudPath)):
+        if not isinstance(other, Path):
             return False
 
         if isinstance(other, MountedPath):
@@ -178,127 +180,16 @@ class MountedPath(ABC):
     def __reduce__(self):
         """Support for pickling and serialization.
 
-        Returns:
-            tuple: A tuple containing the callable and arguments needed to
-            reconstruct the MountedPath instance. The tuple contains:
-            - The MountedPath class constructor
-            - A tuple with (path_string, spec_path_string) arguments
-
-        Examples:
-            >>> import pickle
-            >>> mounted_path = MountedPath("/container/data/file.txt",
-            ...                           spec="/local/data/file.txt")
-            >>> serialized = pickle.dumps(mounted_path)
-            >>> deserialized = pickle.loads(serialized)
-            >>> str(deserialized) == str(mounted_path)
-            True
-            >>> str(deserialized.spec) == str(mounted_path.spec)
-            True
+        Returns a tuple of (callable, args, state) so that the
+        underlying path is reconstructed from its string, and the
+        spec relationship is restored via state.
         """
-        # Return the constructor and the arguments needed to recreate the object
-        # We use string representations to ensure compatibility across different
-        # path types and to avoid issues with complex path objects
-        if self.is_mounted():
-            return (MountedPath, (str(self), str(self._spec)))
-        else:
-            return (MountedPath, (str(self),))
+        return (type(self), (str(self),), {"_spec": str(self._spec)})
 
-
-class MountedLocalPath(MountedPath, LocalPath):  # type: ignore
-    """A class to represent a mounted local path
-
-    This class represents a path in a local filesystem as it appears in a remote
-    execution environment, while maintaining a reference to its corresponding
-    path in the framework's environment.
-
-    Attributes:
-        _spec: The corresponding path in the local environment.
-
-    Examples:
-        >>> mounted_path = MountedLocalPath("/container/data/file.txt",
-        ...                               spec="/local/data/file.txt")
-        >>> str(mounted_path)
-        '/container/data/file.txt'
-        >>> str(mounted_path.spec)
-        '/local/data/file.txt'
-        >>> mounted_path.name
-        'file.txt'
-    """
-
-    def __new__(
-        cls,
-        path: str | Path,
-        spec: str | Path | None = None,
-        *args: Any,
-        **kwargs: Any,
-    ):
-        """Create a new MountedLocalPath instance.
-
-        Args:
-            path: The path string or object representing the mounted local path.
-            spec: The path string or object representing the corresponding spec path.
-                If None, the mounted path itself will be used as the spec path.
-            *args: Additional positional arguments passed to the path constructor.
-            **kwargs: Additional keyword arguments passed to the path constructor.
-
-        Returns:
-            A new MountedLocalPath instance.
-        """
-        if sys.version_info >= (3, 12):
-            obj = object.__new__(cls)
-        else:  # pragma: no cover
-            obj = cls._from_parts((path, *args))
-
-        spec = spec or obj
-        if isinstance(spec, (Path, CloudPath)):
-            obj._spec = spec
-        else:
-            obj._spec = AnyPath(spec)
-
-        return obj
-
-    def __init__(
-        self,
-        path: str | Path,
-        spec: str | Path | None = None,
-        *args: Any,
-        **kwargs: Any,
-    ):
-        """Initialize a MountedLocalPath instance.
-
-        Args:
-            path: The path string or object representing the mounted local path.
-            spec: The path string or object representing the corresponding spec path.
-                If None, the mounted path itself will be used as the spec path.
-            *args: Additional positional arguments passed to the path constructor.
-            **kwargs: Additional keyword arguments passed to the path constructor.
-        """
-        if sys.version_info >= (3, 12):
-            # For python 3.9, object initalized by ._from_parts()
-            LocalPath.__init__(self, path, *args, **kwargs)
-
-    def with_segments(self, *pathsegments) -> MountedPath:
-        """Create a new path by replacing all segments with the given segments.
-
-        Args:
-            *pathsegments: The path segments to use in the new path.
-
-        Returns:
-            MountedPath: A new mounted path with the specified segments.
-
-        Raises:
-            NotImplementedError: If Python version is lower than 3.10.
-        """
-        if sys.version_info >= (3, 12):
-            new_path = LocalPath(*pathsegments)
-            pathsegments = tuple(str(p) for p in pathsegments)
-            new_spec = AnyPath(self._spec).with_segments(*pathsegments)
-
-            return MountedPath(new_path, spec=new_spec)
-
-        raise NotImplementedError(  # pragma: no cover
-            "'with_segments' needs Python 3.10 or higher"
-        )
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore internal state after unpickling."""
+        spec_str = state.get("_spec")
+        self._spec = PanPath(spec_str) if spec_str is not None else self
 
     def with_name(self, name):
         """Return a new path with the name changed.
@@ -311,7 +202,7 @@ class MountedLocalPath(MountedPath, LocalPath):  # type: ignore
                 the mounted path and spec path.
         """
         new_path = LocalPath.with_name(self, name)
-        new_spec = AnyPath(self._spec).with_name(name)
+        new_spec = PanPath(str(self._spec)).with_name(name)
 
         return MountedPath(new_path, spec=new_spec)
 
@@ -326,7 +217,7 @@ class MountedLocalPath(MountedPath, LocalPath):  # type: ignore
                 the mounted path and spec path.
         """
         new_path = LocalPath.with_suffix(self, suffix)
-        new_spec = AnyPath(self._spec).with_suffix(suffix)
+        new_spec = PanPath(str(self._spec)).with_suffix(suffix)
 
         return MountedPath(new_path, spec=new_spec)
 
@@ -341,7 +232,7 @@ class MountedLocalPath(MountedPath, LocalPath):  # type: ignore
                 the mounted path and spec path.
         """
         new_path = LocalPath.joinpath(self, *pathsegments)
-        new_spec = AnyPath(self._spec).joinpath(*pathsegments)
+        new_spec = PanPath(str(self._spec)).joinpath(*pathsegments)
 
         return MountedPath(new_path, spec=new_spec)
 
@@ -366,9 +257,31 @@ class MountedLocalPath(MountedPath, LocalPath):  # type: ignore
                 of both the mounted path and spec path.
         """
         new_path = LocalPath.parent.fget(self)
-        new_spec = AnyPath(self._spec).parent
+        new_spec = PanPath(str(self._spec)).parent
 
         return MountedPath(new_path, spec=new_spec)
+
+
+class MountedLocalPath(MountedPath, LocalPath):  # type: ignore
+    """A class to represent a mounted local path
+
+    This class represents a path in a local filesystem as it appears in a remote
+    execution environment, while maintaining a reference to its corresponding
+    path in the framework's environment.
+
+    Attributes:
+        _spec: The corresponding path in the local environment.
+
+    Examples:
+        >>> mounted_path = MountedLocalPath("/container/data/file.txt",
+        ...                               spec="/local/data/file.txt")
+        >>> str(mounted_path)
+        '/container/data/file.txt'
+        >>> str(mounted_path.spec)
+        '/local/data/file.txt'
+        >>> mounted_path.name
+        'file.txt'
+    """
 
 
 class MountedCloudPath(MountedPath, CloudPath):
@@ -383,7 +296,7 @@ class MountedCloudPath(MountedPath, CloudPath):
 
     Examples:
         >>> mounted_path = MountedPath("gs://bucket/file.txt",
-        ...                          spec="gs://local-bucket/file.txt")
+        ...    spec="gs://local-bucket/file.txt")
         >>> str(mounted_path)
         'gs://bucket/file.txt'
         >>> str(mounted_path.spec)
@@ -392,9 +305,9 @@ class MountedCloudPath(MountedPath, CloudPath):
 
     def __new__(
         cls,
-        path: str | Path | CloudPath,
-        spec: str | Path | CloudPath | None = None,
+        path: str | Path,
         *args: Any,
+        spec: str | Path | None = None,
         **kwargs: Any,
     ):
         """Create a new MountedCloudPath instance.
@@ -409,32 +322,11 @@ class MountedCloudPath(MountedPath, CloudPath):
         Returns:
             A new MountedCloudPath instance.
         """
-        obj = object.__new__(cls)
-        spec = spec or obj
-        if isinstance(spec, (Path, CloudPath)):
-            obj._spec = spec
-        else:
-            obj._spec = AnyPath(spec)
+        # Let the Path hierarchy initialize internal structures (e.g. `_parts`).
+        obj = super().__new__(cls, path, *args, **kwargs)
+        obj._spec = PanPath(spec) if spec is not None else obj
 
         return obj
-
-    def __init__(
-        self,
-        path: str | Path | CloudPath,
-        spec: str | Path | CloudPath | None = None,
-        *args: Any,
-        **kwargs: Any,
-    ):
-        """Initialize a MountedCloudPath instance.
-
-        Args:
-            path: The path string or object representing the mounted cloud path.
-            spec: The path string or object representing the corresponding spec path.
-                If None, the mounted path itself will be used as the spec path.
-            *args: Additional positional arguments passed to the path constructor.
-            **kwargs: Additional keyword arguments passed to the path constructor.
-        """
-        super().__init__(path, *args, **kwargs)  # type: ignore
 
     def __truediv__(self, other):
         """Implement the / operator for cloud paths.
@@ -446,8 +338,8 @@ class MountedCloudPath(MountedPath, CloudPath):
             MountedPath: A new mounted cloud path with the segment appended.
         """
         # it was not implemented with .with_segments()
-        out = CloudPath.joinpath(self, other)
-        spec = AnyPath(self._spec).joinpath(other)
+        out = self.joinpath(other)
+        spec = PanPath(str(self._spec)).joinpath(other)
         return MountedPath(out, spec=spec)
 
     def with_name(self, name):
@@ -461,7 +353,7 @@ class MountedCloudPath(MountedPath, CloudPath):
                 the mounted path and spec path.
         """
         out = CloudPath.with_name(self, name)
-        spec = AnyPath(self._spec).with_name(name)
+        spec = PanPath(str(self._spec)).with_name(name)
         return MountedPath(out, spec=spec)
 
     def with_suffix(self, suffix):
@@ -475,20 +367,7 @@ class MountedCloudPath(MountedPath, CloudPath):
                 the mounted path and spec path.
         """
         out = CloudPath.with_suffix(self, suffix)
-        spec = AnyPath(self._spec).with_suffix(suffix)
-        return MountedPath(out, spec=spec)
-
-    def with_segments(self, *pathsegments):
-        """Create a new path by replacing all segments with the given segments.
-
-        Args:
-            *pathsegments: The path segments to use in the new path.
-
-        Returns:
-            MountedPath: A new mounted path with the specified segments.
-        """
-        out = CloudPath.with_segments(self, *pathsegments)
-        spec = AnyPath(self._spec).with_segments(*pathsegments)
+        spec = PanPath(str(self._spec)).with_suffix(suffix)
         return MountedPath(out, spec=spec)
 
     def with_stem(self, stem):
@@ -504,7 +383,7 @@ class MountedCloudPath(MountedPath, CloudPath):
                 the mounted path and spec path.
         """
         out = CloudPath.with_stem(self, stem)
-        spec = AnyPath(self._spec).with_stem(stem)
+        spec = PanPath(str(self._spec)).with_stem(stem)
         return MountedPath(out, spec=spec)
 
     def joinpath(self, *pathsegments):
@@ -518,7 +397,7 @@ class MountedCloudPath(MountedPath, CloudPath):
                 the mounted path and spec path.
         """
         out = CloudPath.joinpath(self, *pathsegments)
-        spec = AnyPath(self._spec).joinpath(*pathsegments)
+        spec = PanPath(str(self._spec)).joinpath(*pathsegments)
         return MountedPath(out, spec=spec)
 
     @property
@@ -530,7 +409,7 @@ class MountedCloudPath(MountedPath, CloudPath):
                 of both the mounted path and spec path.
         """
         out = CloudPath.parent.fget(self)
-        spec = AnyPath(self._spec).parent
+        spec = PanPath(str(self._spec)).parent
         return MountedPath(out, spec=spec)
 
 
@@ -549,7 +428,7 @@ class MountedGSPath(MountedCloudPath, GSPath):
     """
 
 
-class MountedAzureBlobPath(MountedCloudPath, AzureBlobPath):
+class MountedAzurePath(MountedCloudPath, AzurePath):
     """A class to represent a mounted Azure Blob Storage path
 
     This class represents an Azure Blob Storage path as it appears in a remote
@@ -559,7 +438,7 @@ class MountedAzureBlobPath(MountedCloudPath, AzureBlobPath):
     Examples:
         >>> mounted_path = MountedPath("az://container/blob",
         ...                          spec="az://local-container/blob")
-        >>> isinstance(mounted_path, MountedAzureBlobPath)
+        >>> isinstance(mounted_path, MountedAzurePath)
         True
     """
 
@@ -579,7 +458,7 @@ class MountedS3Path(MountedCloudPath, S3Path):
     """
 
 
-class SpecPath(ABC):
+class SpecPath(PanPath):
     """A router class to instantiate the correct path based on the path type
     for the spec path.
 
@@ -611,9 +490,9 @@ class SpecPath(ABC):
 
     def __new__(  # type: ignore
         cls,
-        path: str | Path | CloudPath,
-        mounted: str | Path | CloudPath | None = None,
+        path: str | Path,
         *args: Any,
+        mounted: str | Path | None = None,
         **kwargs: Any,
     ) -> SpecLocalPath | SpecCloudPath:
         """Factory method to create the appropriate SpecPath subclass instance.
@@ -633,21 +512,24 @@ class SpecPath(ABC):
             - SpecLocalPath for local filesystem paths
         """
         if cls is SpecPath:
-            path = AnyPath(path)  # type: ignore
+            path = PanPath(path)  # type: ignore
             if isinstance(path, GSPath):
                 spec_class = SpecGSPath
-            elif isinstance(path, AzureBlobPath):  # pragma: no cover
+            elif isinstance(path, AzurePath):  # pragma: no cover
                 spec_class = SpecAzureBlobPath  # type: ignore
             elif isinstance(path, S3Path):  # pragma: no cover
                 spec_class = SpecS3Path  # type: ignore
             else:
                 spec_class = SpecLocalPath
 
-            return spec_class.__new__(
-                spec_class, path, mounted, *args, **kwargs  # type: ignore
-            )
+            obj = spec_class(path, *args, **kwargs)  # type: ignore
+            obj._mounted = PanPath(mounted) if mounted is not None else obj
+            return obj
 
-        return super().__new__(cls)  # type: ignore # pragma: no cover
+        # Ensure Path internals are initialized with the provided path
+        return super().__new__(
+            cls, path, *args, **kwargs
+        )  # type: ignore # pragma: no cover
 
     @property
     def mounted(self) -> MountedPath:
@@ -682,7 +564,7 @@ class SpecPath(ABC):
         Returns:
             bool: True if the paths are equal, False otherwise.
         """
-        if not isinstance(other, (Path, CloudPath)):
+        if not isinstance(other, Path):
             return False
 
         if isinstance(other, SpecPath):
@@ -698,95 +580,6 @@ class SpecPath(ABC):
         """
         return hash((str(self), str(self.mounted)))
 
-
-class SpecLocalPath(SpecPath, LocalPath):  # type: ignore
-    """A class to represent a spec local path
-
-    This class represents a path in the local filesystem as it appears in the
-    framework's environment, while maintaining a reference to its corresponding
-    path in the remote execution environment.
-
-    Attributes:
-        _mounted: The corresponding path in the remote execution environment.
-
-    Examples:
-        >>> spec_path = SpecLocalPath("/local/data/file.txt",
-        ...                         mounted="/container/data/file.txt")
-        >>> str(spec_path)
-        '/local/data/file.txt'
-        >>> str(spec_path.mounted)
-        '/container/data/file.txt'
-        >>> spec_path.name
-        'file.txt'
-    """
-
-    def __new__(
-        cls,
-        path: str | Path,
-        mounted: str | Path | None = None,
-        *args: Any,
-        **kwargs: Any,
-    ):
-        """Create a new SpecLocalPath instance.
-
-        Args:
-            path: The path string or object representing the spec local path.
-            mounted: The path string or object representing the corresponding mounted
-                path. If None, the spec path itself will be used as the mounted path.
-            *args: Additional positional arguments passed to the path constructor.
-            **kwargs: Additional keyword arguments passed to the path constructor.
-
-        Returns:
-            A new SpecLocalPath instance.
-        """
-        if sys.version_info >= (3, 12):
-            obj = object.__new__(cls)
-        else:  # pragma: no cover
-            obj = cls._from_parts((path, *args))
-
-        mounted = mounted or obj
-        if isinstance(mounted, (Path, CloudPath)):
-            obj._mounted = mounted
-        else:
-            obj._mounted = AnyPath(mounted)
-
-        return obj
-
-    def __init__(
-        self,
-        path: str | Path,
-        mounted: str | Path | None = None,
-        *args: Any,
-        **kwargs: Any,
-    ):
-        """Initialize a SpecLocalPath instance.
-
-        Args:
-            path: The path string or object representing the spec local path.
-            mounted: The path string or object representing the corresponding mounted
-                path. If None, the spec path itself will be used as the mounted path.
-            *args: Additional positional arguments passed to the path constructor.
-            **kwargs: Additional keyword arguments passed to the path constructor.
-        """
-        if sys.version_info >= (3, 12):
-            # For python 3.9, object initalized by ._from_parts()
-            LocalPath.__init__(self, path, *args, **kwargs)
-
-    def with_segments(self, *pathsegments) -> SpecPath:
-        """Create a new path by replacing all segments with the given segments.
-
-        Args:
-            *pathsegments: The path segments to use in the new path.
-
-        Returns:
-            SpecPath: A new spec path with the specified segments.
-        """
-        new_path = LocalPath(*pathsegments)
-        pathsegments = [str(p) for p in pathsegments]
-        new_mounted = AnyPath(self._mounted).with_segments(*pathsegments)
-
-        return SpecPath(new_path, mounted=new_mounted)
-
     def with_name(self, name) -> SpecPath:
         """Return a new path with the name changed.
 
@@ -798,7 +591,7 @@ class SpecLocalPath(SpecPath, LocalPath):  # type: ignore
                 the spec path and mounted path.
         """
         new_path = LocalPath.with_name(self, name)
-        new_mounted = AnyPath(self._mounted).with_name(name)
+        new_mounted = PanPath(str(self._mounted)).with_name(name)
 
         return SpecPath(new_path, mounted=new_mounted)
 
@@ -813,7 +606,7 @@ class SpecLocalPath(SpecPath, LocalPath):  # type: ignore
                 the spec path and mounted path.
         """
         new_path = LocalPath.with_suffix(self, suffix)
-        new_mounted = AnyPath(self._mounted).with_suffix(suffix)
+        new_mounted = PanPath(str(self._mounted)).with_suffix(suffix)
 
         return SpecPath(new_path, mounted=new_mounted)
 
@@ -830,7 +623,7 @@ class SpecLocalPath(SpecPath, LocalPath):  # type: ignore
                 the spec path and mounted path.
         """
         new_path = LocalPath.with_stem(self, stem)
-        new_mounted = AnyPath(self._mounted).with_stem(stem)
+        new_mounted = PanPath(str(self._mounted)).with_stem(stem)
 
         return SpecPath(new_path, mounted=new_mounted)
 
@@ -845,7 +638,7 @@ class SpecLocalPath(SpecPath, LocalPath):  # type: ignore
                 the spec path and mounted path.
         """
         new_path = LocalPath.joinpath(self, *pathsegments)
-        new_mounted = AnyPath(self._mounted).joinpath(*pathsegments)
+        new_mounted = PanPath(str(self._mounted)).joinpath(*pathsegments)
 
         return SpecPath(new_path, mounted=new_mounted)
 
@@ -870,9 +663,31 @@ class SpecLocalPath(SpecPath, LocalPath):  # type: ignore
                 of both the spec path and mounted path.
         """
         new_path = LocalPath.parent.fget(self)
-        new_mounted = AnyPath(self._mounted).parent
+        new_mounted = PanPath(str(self._mounted)).parent
 
         return SpecPath(new_path, mounted=new_mounted)
+
+
+class SpecLocalPath(SpecPath, LocalPath):  # type: ignore
+    """A class to represent a spec local path
+
+    This class represents a path in the local filesystem as it appears in the
+    framework's environment, while maintaining a reference to its corresponding
+    path in the remote execution environment.
+
+    Attributes:
+        _mounted: The corresponding path in the remote execution environment.
+
+    Examples:
+        >>> spec_path = SpecLocalPath("/local/data/file.txt",
+        ...                         mounted="/container/data/file.txt")
+        >>> str(spec_path)
+        '/local/data/file.txt'
+        >>> str(spec_path.mounted)
+        '/container/data/file.txt'
+        >>> spec_path.name
+        'file.txt'
+    """
 
 
 class SpecCloudPath(SpecPath, CloudPath):
@@ -894,150 +709,6 @@ class SpecCloudPath(SpecPath, CloudPath):
         'gs://container-bucket/file.txt'
     """
 
-    def __new__(
-        cls,
-        path: str | Path,
-        mounted: str | Path | None = None,
-        *args: Any,
-        **kwargs: Any,
-    ):
-        """Create a new SpecCloudPath instance.
-
-        Args:
-            path: The path string or object representing the spec cloud path.
-            mounted: The path string or object representing the corresponding mounted
-                path. If None, the spec path itself will be used as the mounted path.
-            *args: Additional positional arguments passed to the path constructor.
-            **kwargs: Additional keyword arguments passed to the path constructor.
-
-        Returns:
-            A new SpecCloudPath instance.
-        """
-        # Fix the debugging print statements which could cause confusion
-        obj = object.__new__(cls)
-        mounted = mounted or obj
-        if isinstance(mounted, (Path, CloudPath)):
-            obj._mounted = mounted
-        else:
-            obj._mounted = AnyPath(mounted)
-        return obj
-
-    def __init__(
-        self,
-        path: str | Path,
-        mounted: str | Path | None = None,
-        *args: Any,
-        **kwargs: Any,
-    ):
-        """Initialize a SpecCloudPath instance.
-
-        Args:
-            path: The path string or object representing the spec cloud path.
-            mounted: The path string or object representing the corresponding mounted
-                path. If None, the spec path itself will be used as the mounted path.
-            *args: Additional positional arguments passed to the path constructor.
-            **kwargs: Additional keyword arguments passed to the path constructor.
-        """
-        super().__init__(path, *args, **kwargs)  # type: ignore[arg-type]
-
-    def __truediv__(self, other):
-        """Implement the / operator for cloud paths.
-
-        Args:
-            other: The path segment to append to this path.
-
-        Returns:
-            SpecPath: A new spec cloud path with the segment appended.
-        """
-        # Get the new path and mounted path
-        out = CloudPath.joinpath(self, other)
-        mounted = AnyPath(self._mounted).joinpath(other)
-
-        return SpecPath(out, mounted=mounted)
-
-    def with_name(self, name):
-        """Return a new path with the name changed.
-
-        Args:
-            name: The new name for the path.
-
-        Returns:
-            SpecPath: A new spec path with the name changed in both
-                the spec path and mounted path.
-        """
-        out = CloudPath.with_name(self, name)
-        mounted = AnyPath(self._mounted).with_name(name)
-        return SpecPath(out, mounted=mounted)
-
-    def with_suffix(self, suffix):
-        """Return a new path with the suffix changed.
-
-        Args:
-            suffix: The new suffix for the path.
-
-        Returns:
-            SpecPath: A new spec path with the suffix changed in both
-                the spec path and mounted path.
-        """
-        out = CloudPath.with_suffix(self, suffix)
-        mounted = AnyPath(self._mounted).with_suffix(suffix)
-        return SpecPath(out, mounted=mounted)
-
-    def with_segments(self, *pathsegments):
-        """Create a new path by replacing all segments with the given segments.
-
-        Args:
-            *pathsegments: The path segments to use in the new path.
-
-        Returns:
-            SpecPath: A new spec path with the specified segments.
-        """
-        out = CloudPath.with_segments(self, *pathsegments)
-        mounted = AnyPath(self._mounted).with_segments(*pathsegments)
-        return SpecPath(out, mounted=mounted)
-
-    def with_stem(self, stem):
-        """Return a new path with the stem changed.
-
-        The stem is the filename without the suffix.
-
-        Args:
-            stem: The new stem for the path.
-
-        Returns:
-            SpecPath: A new spec path with the stem changed in both
-                the spec path and mounted path.
-        """
-        out = CloudPath.with_stem(self, stem)
-        mounted = AnyPath(self._mounted).with_stem(stem)
-        return SpecPath(out, mounted=mounted)
-
-    def joinpath(self, *pathsegments):
-        """Join path components to this path.
-
-        Args:
-            *pathsegments: The path segments to append to this path.
-
-        Returns:
-            SpecPath: A new spec path with the segments appended to both
-                the spec path and mounted path.
-        """
-        out = CloudPath.joinpath(self, *pathsegments)
-        mounted = AnyPath(self._mounted).joinpath(*pathsegments)
-        return SpecPath(out, mounted=mounted)
-
-    @property
-    def parent(self):
-        """Get the parent directory of this path.
-
-        Returns:
-            SpecPath: A new spec path representing the parent directory
-                of both the spec path and mounted path.
-        """
-        out = CloudPath.parent.fget(self)
-        mounted = AnyPath(self._mounted).parent
-        return SpecPath(out, mounted=mounted)
-
 
 class SpecGSPath(SpecCloudPath, GSPath):
     """A class to represent a spec Google Cloud Storage path
@@ -1054,7 +725,7 @@ class SpecGSPath(SpecCloudPath, GSPath):
     """
 
 
-class SpecAzureBlobPath(SpecCloudPath, AzureBlobPath):
+class SpecAzureBlobPath(SpecCloudPath, AzurePath):
     """A class to represent a spec Azure Blob Storage path
 
     This class represents an Azure Blob Storage path as it appears in the

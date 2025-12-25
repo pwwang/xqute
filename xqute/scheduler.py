@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, List, Type
 
-from yunpath import CloudPath
+from panpath import CloudPath
 from diot import Diot  # type: ignore
 
 from .defaults import (
@@ -83,7 +83,7 @@ class Scheduler(ABC):
 
     def __init__(
         self,
-        workdir: str | Path | CloudPath,
+        workdir: str | Path,
         forks: int = 1,
         error_strategy: str = DEFAULT_ERROR_STRATEGY,
         num_retries: int = DEFAULT_NUM_RETRIES,

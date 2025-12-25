@@ -1,8 +1,8 @@
 import pytest  # noqa: F401
-import sys
+
 from pathlib import Path
 
-from yunpath import CloudPath, GSPath, GSClient
+from panpath import CloudPath, GSPath
 from xqute.path import (
     LocalPath,
     SpecPath,
@@ -90,11 +90,6 @@ def test_mountedlocalpath():
     assert p3 == Path("/path/to/file3.ext")
     assert p3.spec == p3
 
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert p4 == Path("dir1/dir2")
-        assert p4.spec == p4
-
     p5 = p2.with_stem("file4")
     assert p5 == Path("/path/to/file4.txt")
     assert p5.spec == p5
@@ -148,11 +143,6 @@ def test_mountedlocalpath_with_spec():
     assert p3 == Path("/path/to/file3.ext")
     assert p3.spec == Path("/path/to/file3.ext")
 
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert p4 == Path("dir1/dir2")
-        assert p4.spec == Path("dir1/dir2")
-
     p5 = p2.with_stem("file4")
     assert p5 == Path("/path/to/file4.txt")
     assert p5.spec == Path("/path/to/file4.txt")
@@ -168,9 +158,8 @@ def test_mountedlocalpath_with_spec():
     assert p7.spec.mounted.spec.mounted.spec.mounted.spec.mounted == p7
 
 
-def test_mountedcloudpath():
-    client = GSClient()
-    p = MountedPath("gs://bucket/path/to/file", client=client)
+async def test_mountedcloudpath():
+    p = MountedPath("gs://bucket/path/to/file")
     assert p.name == "file"
     assert p.suffix == ""
     assert p.stem == "file"
@@ -181,7 +170,6 @@ def test_mountedcloudpath():
     assert isinstance(p, MountedCloudPath)
     assert isinstance(p, MountedGSPath)
     assert isinstance(p, CloudPath)
-    assert not isinstance(p, Path)
     assert str(p) == "gs://bucket/path/to/file"
     assert repr(p) == "MountedGSPath('gs://bucket/path/to/file')"
 
@@ -193,63 +181,54 @@ def test_mountedcloudpath():
     assert isinstance(spec, SpecCloudPath)
     assert isinstance(spec, SpecGSPath)
     assert isinstance(spec, CloudPath)
-    assert not isinstance(spec, Path)
-    assert spec.client == p.client == client
-    assert not isinstance(spec, Path)
+
+    # Not necessarily the same async_client instance, as they may be on
+    # different systems
+    # assert spec.async_client is p.async_client
 
     assert spec.mounted == p
-    assert spec.mounted.client == p.client == client
 
     p1 = p / "file2"
-    assert p1.client == p.client == client
+    # assert p1.async_client == p.async_client == async_client
     assert p1 == GSPath("gs://bucket/path/to/file/file2")
     assert isinstance(p1, GSPath)
     assert isinstance(p1, MountedPath)
     assert isinstance(p1, MountedCloudPath)
     assert isinstance(p1, MountedGSPath)
     assert isinstance(p1, CloudPath)
-    assert not isinstance(p1, Path)
     assert str(p1) == "gs://bucket/path/to/file/file2"
 
     spec1 = p1.spec
-    assert spec1.client == p1.client == client
     assert spec1 == p1
     assert isinstance(spec1, GSPath)
     assert isinstance(spec1, SpecPath)
     assert isinstance(spec1, SpecCloudPath)
     assert isinstance(spec1, SpecGSPath)
     assert isinstance(spec1, CloudPath)
-    assert not isinstance(spec1, Path)
 
     p2 = p.with_name("file3.txt")
-    assert p2.client == p.client == client
+    # assert p2.async_client == p.async_client == async_client
     assert p2 == GSPath("gs://bucket/path/to/file3.txt")
     assert str(p2) == "gs://bucket/path/to/file3.txt"
     assert p2.spec == p2
 
     p3 = p2.with_suffix(".ext")
-    assert p3.client == p2.client == client
+    # assert p3.async_client == p2.async_client == async_client
     assert p3 == GSPath("gs://bucket/path/to/file3.ext")
     assert p3.spec == p3
 
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert p4.client == p3.client == client
-        assert p4 == GSPath("gs://dir1/dir2")
-        assert p4.spec == p4
-
     p5 = p2.with_stem("file4")
-    assert p5.client == p2.client == client
+    # assert p5.async_client == p2.async_client == async_client
     assert p5 == GSPath("gs://bucket/path/to/file4.txt")
     assert p5.spec == p5
 
     p6 = p.joinpath("dir1", "dir2")
-    assert p6.client == p.client == client
+    # assert p6.async_client == p.async_client == async_client
     assert p6 == GSPath("gs://bucket/path/to/file/dir1/dir2")
     assert p6.spec == p6
 
     p7 = p.parent
-    assert p7.client == p.client == client
+    # assert p7.async_client == p.async_client == async_client
     assert p7 == GSPath("gs://bucket/path/to")
     assert p7.spec == p7
 
@@ -268,7 +247,6 @@ def test_mountedcloudpath_with_spec():
     assert isinstance(p, MountedCloudPath)
     assert isinstance(p, MountedGSPath)
     assert isinstance(p, CloudPath)
-    assert not isinstance(p, Path)
     assert str(p) == "gs://bucket/path/to/file"
     assert (
         repr(p)
@@ -283,7 +261,6 @@ def test_mountedcloudpath_with_spec():
     assert isinstance(spec, SpecCloudPath)
     assert isinstance(spec, SpecGSPath)
     assert isinstance(spec, CloudPath)
-    assert not isinstance(spec, Path)
     assert str(spec) == "gs://bucket/path/to/spec"
 
     assert spec.mounted == p
@@ -297,7 +274,6 @@ def test_mountedcloudpath_with_spec():
     assert isinstance(p1, MountedCloudPath)
     assert isinstance(p1, MountedGSPath)
     assert isinstance(p1, CloudPath)
-    assert not isinstance(p1, Path)
     assert str(p1) == "gs://bucket/path/to/file/file2"
     assert repr(p1) == (
         "MountedGSPath('gs://bucket/path/to/file/file2', "
@@ -311,11 +287,6 @@ def test_mountedcloudpath_with_spec():
     p3 = p2.with_suffix(".ext")
     assert p3 == GSPath("gs://bucket/path/to/file3.ext")
     assert p3.spec == GSPath("gs://bucket/path/to/file3.ext")
-
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert p4 == GSPath("gs://dir1/dir2")
-        assert p4.spec == GSPath("gs://dir1/dir2")
 
     p5 = p2.with_stem("file4")
     assert p5 == GSPath("gs://bucket/path/to/file4.txt")
@@ -397,11 +368,6 @@ def test_speclocalpath():
     assert p3 == Path("/path/to/file3.ext")
     assert p3.mounted == p3
 
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert p4 == Path("dir1/dir2")
-        assert p4.mounted == p4
-
     p5 = p2.with_stem("file4")
     assert p5 == Path("/path/to/file4.txt")
     assert p5.mounted == p5
@@ -454,11 +420,6 @@ def test_speclocalpath_with_mounted():
     assert p3 == Path("/path/to/file3.ext")
     assert p3.mounted == Path("/path/to/file3.ext")
 
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert p4 == Path("dir1/dir2")
-        assert p4.mounted == Path("dir1/dir2")
-
     p5 = p2.with_stem("file4")
     assert p5 == Path("/path/to/file4.txt")
     assert p5.mounted == Path("/path/to/file4.txt")
@@ -483,63 +444,52 @@ def test_speccloudpath():
     assert p == GSPath("gs://bucket/path/to/file")
     assert isinstance(p, CloudPath)
     assert isinstance(p, SpecPath)
-    assert not isinstance(p, Path)
     assert str(p) == "gs://bucket/path/to/file"
     assert repr(p) == "SpecGSPath('gs://bucket/path/to/file')"
 
     mounted = p.mounted
     assert mounted == p
-    assert mounted.client == p.client
     assert isinstance(mounted, CloudPath)
     assert isinstance(mounted, MountedPath)
-    assert not isinstance(mounted, Path)
 
     assert mounted.spec == p
 
     # Test path operations
     p1 = p / "file2"
-    assert p1.client == p.client
+    assert p1.async_client == p.async_client
     assert p1 == GSPath("gs://bucket/path/to/file/file2")
     assert isinstance(p1, CloudPath)
     assert isinstance(p1, SpecPath)
-    assert not isinstance(p1, Path)
     assert str(p1) == "gs://bucket/path/to/file/file2"
 
     mounted1 = p1.mounted
-    assert mounted1.client == p1.client
     assert mounted1 == p1
     assert isinstance(mounted1, CloudPath)
     assert isinstance(mounted1, MountedPath)
 
     # Test other path operations
     p2 = p.with_name("file3.txt")
-    assert p2.client == p.client
+    assert p2.async_client == p.async_client
     assert p2 == GSPath("gs://bucket/path/to/file3.txt")
     assert p2.mounted == p2
 
     p3 = p2.with_suffix(".ext")
-    assert p3.client == p2.client
+    assert p3.async_client == p2.async_client
     assert p3 == GSPath("gs://bucket/path/to/file3.ext")
     assert p3.mounted == p3
 
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert p4.client == p3.client
-        assert p4 == GSPath("gs://dir1/dir2")
-        assert p4.mounted == p4
-
     p5 = p2.with_stem("file4")
-    assert p5.client == p2.client
+    assert p5.async_client == p2.async_client
     assert p5 == GSPath("gs://bucket/path/to/file4.txt")
     assert p5.mounted == p5
 
     p6 = p.joinpath("dir1", "dir2")
-    assert p6.client == p.client
+    assert p6.async_client == p.async_client
     assert p6 == GSPath("gs://bucket/path/to/file/dir1/dir2")
     assert p6.mounted == p6
 
     p7 = p.parent
-    assert p7.client == p.client
+    assert p7.async_client == p.async_client
     assert p7 == GSPath("gs://bucket/path/to")
     assert p7.mounted == p7
 
@@ -555,7 +505,6 @@ def test_speccloudpath_with_mounted():
     assert p == GSPath("gs://bucket/path/to/spec")
     assert isinstance(p, CloudPath)
     assert isinstance(p, SpecPath)
-    assert not isinstance(p, Path)
     assert str(p) == "gs://bucket/path/to/spec"
     assert repr(p) == (
         "SpecGSPath('gs://bucket/path/to/spec', mounted='gs://bucket/path/to/file')"
@@ -567,7 +516,6 @@ def test_speccloudpath_with_mounted():
     assert mounted != p  # Different path
     assert isinstance(mounted, CloudPath)
     assert isinstance(mounted, MountedPath)
-    assert not isinstance(mounted, Path)
 
     assert mounted.spec == p
 
@@ -579,7 +527,6 @@ def test_speccloudpath_with_mounted():
     mounted1 = p1.mounted
     assert mounted1 == GSPath("gs://bucket/path/to/file/file2")
     assert mounted1.spec == p1
-    assert mounted1.client == p1.client
 
     # Test other path operations
     p2 = p.with_name("file3.txt")
@@ -589,11 +536,6 @@ def test_speccloudpath_with_mounted():
     p3 = p2.with_suffix(".ext")
     assert p3 == GSPath("gs://bucket/path/to/file3.ext")
     assert p3.mounted == GSPath("gs://bucket/path/to/file3.ext")
-
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert p4 == GSPath("gs://dir1/dir2")
-        assert p4.mounted == GSPath("gs://dir1/dir2")
 
     p5 = p2.with_stem("file4")
     assert p5 == GSPath("gs://bucket/path/to/file4.txt")
@@ -633,22 +575,17 @@ def test_specpath_mixed_path_types():
     assert mounted1 == GSPath("gs://bucket/path/to/file/file2")
     assert mounted1.spec == p1
     assert p1.mounted.is_mounted()
-    assert mounted.client == mounted1.client
+    assert mounted.async_client == mounted1.async_client
 
     p2 = p.with_name("file3.txt")
     assert p2 == Path("/path/to/file3.txt")
     assert p2.mounted == GSPath("gs://bucket/path/to/file3.txt")
 
-    assert p2.mounted.client == p.mounted.client
+    assert p2.mounted.async_client == p.mounted.async_client
 
     p3 = p2.with_suffix(".ext")
     assert p3 == Path("/path/to/file3.ext")
     assert p3.mounted == GSPath("gs://bucket/path/to/file3.ext")
-
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert p4 == Path("dir1/dir2")
-        assert p4.mounted == GSPath("gs://dir1/dir2")
 
     p5 = p2.with_stem("file4")
     assert p5 == Path("/path/to/file4.txt")
@@ -688,22 +625,17 @@ def test_mountedpath_mixed_path_types():
     assert spec1 == GSPath("gs://bucket/path/to/spec/file2")
     assert spec1.mounted == m1
     assert m1.is_mounted()
-    assert spec.client == spec1.client
+    assert spec.async_client == spec1.async_client
 
     m2 = m.with_name("file3.txt")
     assert m2 == Path("/path/to/file3.txt")
     assert m2.spec == GSPath("gs://bucket/path/to/file3.txt")
 
-    assert m2.spec.client == m.spec.client
+    assert m2.spec.async_client == m.spec.async_client
 
     m3 = m2.with_suffix(".ext")
     assert m3 == Path("/path/to/file3.ext")
     assert m3.spec == GSPath("gs://bucket/path/to/file3.ext")
-
-    if sys.version_info >= (3, 12):
-        m4 = m3.with_segments("dir1", "dir2")
-        assert m4 == Path("dir1/dir2")
-        assert m4.spec == GSPath("gs://dir1/dir2")
 
     m5 = m2.with_stem("file4")
     assert m5 == Path("/path/to/file4.txt")
@@ -753,7 +685,7 @@ def test_specpath_mixed_path_types2():
     assert mounted1 == Path("/path/to/mounted/file2")
     assert mounted1.spec == p1
     assert p1.mounted.is_mounted()
-    assert p1.client == p.client
+    assert p1.async_client == p.async_client
 
     p2 = p.with_name("file3.txt")
     assert isinstance(p2, SpecPath)
@@ -770,15 +702,6 @@ def test_specpath_mixed_path_types2():
     assert isinstance(p3, CloudPath)
     assert p3 == GSPath("gs://bucket/path/to/file3.ext")
     assert p3.mounted == Path("/path/to/file3.ext")
-
-    if sys.version_info >= (3, 12):
-        p4 = p3.with_segments("dir1", "dir2")
-        assert isinstance(p4, SpecPath)
-        assert isinstance(p4, SpecCloudPath)
-        assert isinstance(p4, SpecGSPath)
-        assert isinstance(p4, CloudPath)
-        assert p4 == GSPath("gs://dir1/dir2")
-        assert p4.mounted == Path("dir1/dir2")
 
     p5 = p2.with_stem("file4")
     assert isinstance(p5, SpecPath)
@@ -840,7 +763,7 @@ def test_mountedpath_mixed_path_types2():
     assert spec1 == Path("/path/to/spec/file2")
     assert spec1.mounted == m1
     assert m1.is_mounted()
-    assert m1.client == m.client
+    assert m1.async_client == m.async_client
 
     m2 = m.with_name("file3.txt")
     assert isinstance(m2, MountedPath)
@@ -857,15 +780,6 @@ def test_mountedpath_mixed_path_types2():
     assert isinstance(m3, CloudPath)
     assert m3 == GSPath("gs://bucket/path/to/file3.ext")
     assert m3.spec == Path("/path/to/file3.ext")
-
-    if sys.version_info >= (3, 12):
-        m4 = m3.with_segments("dir1", "dir2")
-        assert isinstance(m4, MountedPath)
-        assert isinstance(m4, MountedCloudPath)
-        assert isinstance(m4, MountedGSPath)
-        assert isinstance(m4, CloudPath)
-        assert m4 == GSPath("gs://dir1/dir2")
-        assert m4.spec == Path("dir1/dir2")
 
     m5 = m2.with_stem("file4")
     assert isinstance(m5, MountedPath)

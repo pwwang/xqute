@@ -16,14 +16,15 @@ python = "^3.9"
 simplug = "^0.5"
 rich = "^14"
 uvloop = "^0"
-yunpath = "^0.1"
+panpath = "^0.3"
 argx = "^0.3"
-google-cloud-storage = {version = "^3", optional = true}
-cloudsh = {version = "^0.2", optional = true}
+aiofiles = {version = ">=23.0.0"}
+gcloud-aio-storage = {version = ">=8.0.0", optional = true}
+cloudsh = {version = "^0.3", optional = true}
 
 [tool.poetry.extras]
-gcs = ["google-cloud-storage"]
-gs = ["google-cloud-storage"]
+gcs = ["gcloud-aio-storage"]
+gs = ["gcloud-aio-storage"]
 cloudsh = ["cloudsh"]
 
 [tool.poetry.group.dev.dependencies]
