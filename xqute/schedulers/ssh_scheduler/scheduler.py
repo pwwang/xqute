@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import shlex
 
-from yunpath import CloudPath
+from panpath import CloudPath
 
 from ...scheduler import Scheduler
 from ...job import Job
@@ -46,10 +46,12 @@ class SshScheduler(Scheduler):
                 "please define at least one server",
             )
 
-    def __del__(self):
+        loop = asyncio.get_running_loop()
+        loop.shutdown_asyncgens = self._disconnect_all
+
+    async def _disconnect_all(self):
         for server in self.servers.values():
-            if server.is_connected:
-                server.disconnect()
+            await server.disconnect()
 
     async def submit_job(self, job: Job) -> str:
         """Submit a job to SSH
@@ -63,9 +65,10 @@ class SshScheduler(Scheduler):
         server = list(self.servers.values())[job.index % len(self.servers)]
         await server.connect()
 
+        job_script = await self.wrapped_job_script(job)
         rc, stdout, stderr = await server.submit(
             *shlex.split(self.jobcmd_shebang(job)),
-            self.wrapped_job_script(job).fspath,
+            job_script,
         )
         if rc != 0:
             # job.stdout_file.write_bytes(stdout)
@@ -83,7 +86,10 @@ class SshScheduler(Scheduler):
             # this is to avoid the real command is not run when proc is recycled
             # too early
             # this happens for python < 3.12
-            while not job.stdout_file.exists() and not job.stderr_file.exists():
+            while (
+                not await job.stdout_file.a_exists()
+                and not await job.stderr_file.a_exists()
+            ):
                 if not await self.servers[srvname].is_running(pid):  # pragma: no cover
                     # job.stdout_file.write_bytes(stdout)
                     # job.stderr_file.write_bytes(stderr)
@@ -106,7 +112,7 @@ class SshScheduler(Scheduler):
             job: The job
         """
         try:
-            pid, server = str(job.jid).split("@", 1)
+            pid, server = str(await job.jid).split("@", 1)
             await self.servers[server].kill(pid)
         except Exception:  # pragma: no cover
             pass
@@ -123,7 +129,7 @@ class SshScheduler(Scheduler):
             True if it is, otherwise False
         """
         try:
-            jid = job.jid_file.read_text().strip()
+            jid = (await job.jid_file.a_read_text()).strip()
         except FileNotFoundError:
             return False
 

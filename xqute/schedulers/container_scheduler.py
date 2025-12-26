@@ -131,7 +131,7 @@ class ContainerScheduler(LocalScheduler):
             # Convert docker://image to image name
             self.image = self.image[9:]
 
-    def wrapped_job_script(self, job: Job) -> SpecPath:
+    async def wrapped_job_script(self, job: Job, _mounted: bool = False) -> SpecPath:
         """Get the wrapped job script
 
         Args:
@@ -142,7 +142,7 @@ class ContainerScheduler(LocalScheduler):
         """
         base = f"job.wrapped.{self._container_type}"
         wrapt_script = job.metadir / base
-        wrapt_script.write_text(self.wrap_job_script(job))
+        await wrapt_script.a_write_text(self.wrap_job_script(job))
 
         return wrapt_script
 

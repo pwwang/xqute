@@ -65,9 +65,10 @@ class SgeScheduler(Scheduler):
         Returns:
             The job id
         """
+        job_script = await self.wrapped_job_script(job)
         proc = await asyncio.create_subprocess_exec(
             self.qsub,
-            self.wrapped_job_script(job).fspath,
+            job_script.mounted,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -91,7 +92,7 @@ class SgeScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.qdel,
-            str(job.jid),
+            str(await job.jid),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -109,7 +110,7 @@ class SgeScheduler(Scheduler):
             True if it is, otherwise False
         """
         try:
-            jid = job.jid_file.read_text().strip()
+            jid = (await job.jid_file.a_read_text()).strip()
         except FileNotFoundError:  # pragma: no cover
             return False
 

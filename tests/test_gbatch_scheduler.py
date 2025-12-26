@@ -2,7 +2,7 @@ import os
 import json
 import stat
 import pytest
-from cloudpathlib import AnyPath
+from panpath import PanPath
 from pathlib import Path
 from uuid import uuid4
 from unittest.mock import patch
@@ -14,12 +14,13 @@ from .conftest import BUCKET
 
 MOCKS = Path(__file__).parent / "mocks"
 # Make a fixture to get a unique workdir directory each time
-WORKDIR = AnyPath(f"{BUCKET}/xqute_gbatch_test")
+WORKDIR = PanPath(f"{BUCKET}/xqute_gbatch_test")
 WORKDIR = WORKDIR / str(uuid4())
 
 
 def teardown_module():
-    WORKDIR.rmtree()
+    import asyncio
+    asyncio.run(WORKDIR.a_rmtree())
 
 
 @pytest.fixture(scope="module")
@@ -67,7 +68,7 @@ def test_cwd():
     assert "cd /custom/cwd" in scheduler.jobcmd_wrapper_init
 
 
-def test_labels():
+async def test_labels():
     """Test that the job script includes labels"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -76,16 +77,16 @@ def test_labels():
         labels={"key1": "value1", "key2": "value2"},
         allocationPolicy={"serviceAccount": {"email": "test-account"}},
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
     assert conf["labels"]["key1"] == "value1"
     assert conf["labels"]["key2"] == "value2"
     assert conf["labels"]["xqute"] == "true"
     assert conf["labels"]["sacct"] == "test-account"
 
 
-def test_config_shortcuts():
+async def test_config_shortcuts():
     """Test that the job script includes config shortcuts"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -103,9 +104,9 @@ def test_config_shortcuts():
         commands=["-c"],
         labels={"key1": "value1"},
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
     assert conf["taskGroups"][0]["taskSpec"]["volumes"][-1] == {
         "gcs": {"remotePath": "my-bucket"},
         "mountPath": "/mnt/my-bucket",
@@ -153,7 +154,7 @@ def test_config_shortcuts():
     assert conf["labels"]["xqute"] == "true"
 
 
-def test_shortcuts_not_overwrite_config():
+async def test_shortcuts_not_overwrite_config():
     """Test that the job script includes config shortcuts"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -212,9 +213,9 @@ def test_shortcuts_not_overwrite_config():
             }
         ],
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
     assert conf["taskGroups"][0]["taskSpec"]["volumes"][-2] == {
         "gcs": {"remotePath": "other-bucket"},
         "mountPath": "/mnt/other-bucket",
@@ -265,16 +266,16 @@ def test_shortcuts_not_overwrite_config():
     assert conf["labels"]["xqute"] == "true"
 
 
-def test_named_mount_handling_in_gbatch():
+async def test_named_mount_handling_in_gbatch():
     """Test handling of named mounts in GbatchScheduler"""
 
-    # patch gbatch_scheduler.AnyPath to avoid actual GCS access
-    # AnyPath.is_file should return True for bucket_file and False for bucket_dir
-    # AnyPath.parent should return the parent path correctly, which is also an AnyPath
-    # AnyPath._no_prefix should return the path without the "gs://" prefix
-    # AnyPath.name should return the name of the path
-    # AnyPath.__str__ should return the full path
-    # Create a simple mock class that behaves like AnyPath
+    # patch gbatch_scheduler.PanPath to avoid actual GCS access
+    # PanPath.is_file should return True for bucket_file and False for bucket_dir
+    # PanPath.parent should return the parent path correctly, which is also an PanPath
+    # PanPath._no_prefix should return the path without the "gs://" prefix
+    # PanPath.name should return the name of the path
+    # PanPath.__str__ should return the full path
+    # Create a simple mock class that behaves like PanPath
     class MockAnyPath:
         def __init__(self, path_str):
             self.path_str = str(path_str)
@@ -304,7 +305,7 @@ def test_named_mount_handling_in_gbatch():
         def name(self):
             return self._path_obj.name
 
-    with patch("xqute.schedulers.gbatch_scheduler.AnyPath", MockAnyPath):
+    with patch("xqute.schedulers.gbatch_scheduler.PanPath", MockAnyPath):
         bucket = "gs://my-bucket"
         bucket_dir = f"{bucket}/dir1"
         bucket_file = f"{bucket}/dir2/file.txt"
@@ -328,7 +329,7 @@ def test_named_mount_handling_in_gbatch():
         assert scheduler._path_envs["DIR"] == "/mnt/disks/DIR"
         assert scheduler._path_envs["FILE"] == "/mnt/disks/FILE/dir2/file.txt"
 
-        job = scheduler.create_job(0, ["echo", 1])
+        job = await scheduler.create_job(0, ["echo", 1])
         init_cmd = scheduler.jobcmd_init(job)
         assert 'export DIR=/mnt/disks/DIR' in init_cmd
         assert 'export FILE=/mnt/disks/FILE/dir2/file.txt' in init_cmd
@@ -346,7 +347,7 @@ def test_named_mount_is_not_gs_path():
         )
 
 
-def test_job():
+async def test_job():
     scheduler = GbatchScheduler(
         project="test-project",
         location="us-central1",
@@ -355,9 +356,9 @@ def test_job():
         submission_batch=1,
     )
     assert scheduler.subm_batch == 1
-    job = scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", 1])
     assert (
-        scheduler.wrapped_job_script(job)
+        await scheduler.wrapped_job_script(job, _mounted=True)
         == scheduler.workdir / "0" / "job.wrapped.gbatch"
     )
     assert job.metadir.mounted == Path("/mnt/disks/xqute_workdir/0")
@@ -366,7 +367,7 @@ def test_job():
     assert "/mnt/disks/xqute_workdir/0/job.status" in script
 
 
-def test_sched_with_container():
+async def test_sched_with_container():
     scheduler = GbatchScheduler(
         project="test-project",
         location="us-central1",
@@ -376,17 +377,17 @@ def test_sched_with_container():
             {"taskSpec": {"runnables": [{"container": {"image_uri": "ubuntu"}}]}}
         ],
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
     assert conf_file.name == "job.wrapped.gbatch.json"
-    conf = json.loads(conf_file.read_text())
+    conf = json.loads(await conf_file.a_read_text())
     container = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]
     assert container["image_uri"] == "ubuntu"
     assert container["commands"] == ["/mnt/disks/xqute_workdir/0/job.wrapped.gbatch"]
     assert container["entrypoint"] == "/bin/bash"
 
 
-def test_sched_with_container_entrypoint():
+async def test_sched_with_container_entrypoint():
     scheduler = GbatchScheduler(
         project="test-project",
         location="us-central1",
@@ -408,10 +409,10 @@ def test_sched_with_container_entrypoint():
             }
         ],
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
     assert conf_file.name == "job.wrapped.gbatch.json"
-    conf = json.loads(conf_file.read_text())
+    conf = json.loads(await conf_file.a_read_text())
     container = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]
     assert container["image_uri"] == "ubuntu"
     assert container["commands"] == [
@@ -421,7 +422,7 @@ def test_sched_with_container_entrypoint():
     assert container["entrypoint"] == "/bin/bash2"
 
 
-def test_sched_with_container_command_template():
+async def test_sched_with_container_command_template():
     scheduler = GbatchScheduler(
         project="test-project",
         location="us-central1",
@@ -443,10 +444,10 @@ def test_sched_with_container_command_template():
             }
         ],
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
     assert conf_file.name == "job.wrapped.gbatch.json"
-    conf = json.loads(conf_file.read_text())
+    conf = json.loads(await conf_file.a_read_text())
     container = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]
     assert container["image_uri"] == "ubuntu"
     assert container["commands"] == [
@@ -456,7 +457,7 @@ def test_sched_with_container_command_template():
     assert container["entrypoint"] == "/bin/bash2"
 
 
-def test_sched_with_script_runnable():
+async def test_sched_with_script_runnable():
     """Test scheduler with script runnable (no container)"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -464,9 +465,9 @@ def test_sched_with_script_runnable():
         jobname_prefix="jobprefix",
         workdir=WORKDIR,
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
 
     script_runnable = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]
     expected_text = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
@@ -475,7 +476,7 @@ def test_sched_with_script_runnable():
     assert "_commands" not in script_runnable
 
 
-def test_sched_with_script_commands():
+async def test_sched_with_script_commands():
     """Test scheduler with script runnable and custom commands"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -484,9 +485,9 @@ def test_sched_with_script_commands():
         workdir=WORKDIR,
         commands=["-c", "echo starting"],
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
 
     script_runnable = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]
     expected_text = (
@@ -497,7 +498,7 @@ def test_sched_with_script_commands():
     assert "_commands" not in script_runnable
 
 
-def test_sched_with_script_commands_template():
+async def test_sched_with_script_commands_template():
     """Test scheduler with script runnable using command templates"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -506,9 +507,9 @@ def test_sched_with_script_commands_template():
         workdir=WORKDIR,
         commands=["{lang}", "-u {script}"],
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
 
     script_runnable = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]
     expected_text = "'/bin/bash' '-u /mnt/disks/xqute_workdir/0/job.wrapped.gbatch'"
@@ -516,7 +517,7 @@ def test_sched_with_script_commands_template():
     assert "_commands" not in script_runnable
 
 
-def test_additional_runnables_basic():
+async def test_additional_runnables_basic():
     """Test basic additional runnables functionality"""
     runnables = [
         {"script": {"text": "echo setup"}},
@@ -530,9 +531,9 @@ def test_additional_runnables_basic():
         workdir=WORKDIR,
         runnables=runnables,
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
 
     task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
     assert len(task_runnables) == 3  # 2 additional + 1 main job
@@ -543,7 +544,7 @@ def test_additional_runnables_basic():
     assert task_runnables[scheduler.runnable_index]["script"]["text"] == expected_script
 
 
-def test_additional_runnables_with_ordering():
+async def test_additional_runnables_with_ordering():
     """Test additional runnables with ordering"""
     runnables = [
         {"script": {"text": "echo after"}, "order": 1},
@@ -558,9 +559,9 @@ def test_additional_runnables_with_ordering():
         workdir=WORKDIR,
         runnables=runnables,
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
 
     task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
     assert len(task_runnables) == 4  # 3 additional + 1 main job
@@ -576,7 +577,7 @@ def test_additional_runnables_with_ordering():
     assert scheduler.runnable_index == 1
 
 
-def test_additional_runnables_with_container():
+async def test_additional_runnables_with_container():
     """Test additional runnables work with container-based main job"""
     runnables = [
         {"script": {"text": "echo setup"}, "order": -1},
@@ -593,9 +594,9 @@ def test_additional_runnables_with_container():
         commands=["-c"],
         runnables=runnables,
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
 
     task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
     assert len(task_runnables) == 3
@@ -617,7 +618,7 @@ def test_additional_runnables_with_container():
     assert task_runnables[2]["script"]["text"] == "echo cleanup"
 
 
-def test_additional_runnables_complex_ordering():
+async def test_additional_runnables_complex_ordering():
     """Test complex ordering scenarios"""
     runnables = [
         {"script": {"text": "echo step3"}, "order": 3},
@@ -634,9 +635,9 @@ def test_additional_runnables_complex_ordering():
         workdir=WORKDIR,
         runnables=runnables,
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
 
     task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
     assert len(task_runnables) == 6  # 5 additional + 1 main job
@@ -654,7 +655,7 @@ def test_additional_runnables_complex_ordering():
     assert scheduler.runnable_index == 2
 
 
-def test_additional_runnables_no_order_key():
+async def test_additional_runnables_no_order_key():
     """Test additional runnables without order key (defaults to 0)"""
     runnables = [
         {"script": {"text": "echo no-order-1"}},
@@ -669,9 +670,9 @@ def test_additional_runnables_no_order_key():
         workdir=WORKDIR,
         runnables=runnables,
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
 
     task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
     assert len(task_runnables) == 4
@@ -684,7 +685,7 @@ def test_additional_runnables_no_order_key():
     assert task_runnables[3]["script"]["text"] == "echo no-order-2"
 
 
-def test_existing_runnable_with_additional():
+async def test_existing_runnable_with_additional():
     """Test that existing runnable configuration is preserved with
     additional runnables"""
     scheduler = GbatchScheduler(
@@ -706,9 +707,9 @@ def test_existing_runnable_with_additional():
             {"script": {"text": "echo cleanup"}, "order": 1},
         ],
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    conf_file = scheduler.job_config_file(job)
-    conf = json.loads(conf_file.read_text())
+    job = await scheduler.create_job(0, ["echo", 1])
+    conf_file = await scheduler.job_config_file(job)
+    conf = json.loads(await conf_file.a_read_text())
 
     task_runnables = conf["taskGroups"][0]["taskSpec"]["runnables"]
     assert len(task_runnables) == 3
@@ -720,7 +721,6 @@ def test_existing_runnable_with_additional():
     assert container["commands"] == ["/mnt/disks/xqute_workdir/0/job.wrapped.gbatch"]
 
 
-@pytest.mark.asyncio
 async def test_scheduler(gcloud):
 
     scheduler = GbatchScheduler(
@@ -729,25 +729,24 @@ async def test_scheduler(gcloud):
         gcloud=gcloud,
         workdir=WORKDIR,
     )
-    job = scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", 1])
     assert (await scheduler.submit_job(job)).startswith("gbatch-")
-    job.jid = "gbatch-36760976-0"
+    await job.set_jid("gbatch-36760976-0")
     await scheduler.kill_job(job)
-    if job.jid_file.is_file():
-        job.jid_file.unlink()
+    if await job.jid_file.a_is_file():
+        await job.jid_file.a_unlink()
     job._jid = None
-    assert not job.jid_file.is_file()
+    assert not await job.jid_file.a_is_file()
     assert await scheduler.job_is_running(job) is False
 
-    job.jid_file.write_text("gbatch-36760976-0")
+    await job.jid_file.a_write_text("gbatch-36760976-0")
     assert await scheduler.job_is_running(job) is True
 
-    job.jid_file.write_text("wrongjobid")
+    await job.jid_file.a_write_text("wrongjobid")
     assert await scheduler.job_is_running(job) is False
-    job.jid_file.unlink()
+    await job.jid_file.a_unlink()
 
 
-@pytest.mark.asyncio
 async def test_submission_failure():
     gcloud = str(MOCKS / "no_such_gcloud")
 
@@ -757,9 +756,9 @@ async def test_submission_failure():
         gcloud=gcloud,
         workdir=WORKDIR,
     )
-    job = scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", 1])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False
-    assert job.status == JobStatus.FAILED
-    assert "Failed to submit job" in job.stderr_file.read_text()
+    assert await job.status == JobStatus.FAILED
+    assert "Failed to submit job" in await job.stderr_file.a_read_text()

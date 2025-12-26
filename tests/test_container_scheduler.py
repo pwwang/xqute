@@ -5,7 +5,7 @@ import stat
 import pytest  # type: ignore
 import shlex
 import tempfile
-from pathlib import Path
+from panpath import PanPath
 from unittest.mock import patch, MagicMock
 from xqute.defaults import JobStatus
 
@@ -18,7 +18,7 @@ from xqute.schedulers.container_scheduler import (
 @pytest.fixture(scope="module")
 def mock_bin_path():
     """Fixture to provide path to mock binaries"""
-    p = Path(__file__).parent / "mocks"
+    p = PanPath(__file__).parent / "mocks"
     docker_bin = p / "docker"
     docker_bin.chmod(docker_bin.stat().st_mode | stat.S_IEXEC)
     apptainer_bin = p / "apptainer"
@@ -67,13 +67,13 @@ def test_init_scheduler_using_mount_instead_of_volumes():
         )
 
 
-def test_named_volume_handling(temp_workdir):
+async def test_named_volume_handling(temp_workdir):
     """Test handling of named volumes"""
     host_dir = temp_workdir / "dir1"
-    host_dir.mkdir(parents=True, exist_ok=True)
+    await host_dir.a_mkdir(parents=True, exist_ok=True)
     host_file = temp_workdir / "dir2" / "file.txt"
-    host_file.parent.mkdir(parents=True, exist_ok=True)
-    host_file.write_text("test content")
+    await host_file.parent.a_mkdir(parents=True, exist_ok=True)
+    await host_file.a_write_text("test content")
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
         workdir=temp_workdir,
@@ -88,7 +88,7 @@ def test_named_volume_handling(temp_workdir):
     assert scheduler._path_envs["DIR"] == f"{DEFAULT_MOUNTED_ROOT}/DIR"
     assert scheduler._path_envs["FILE"] == f"{DEFAULT_MOUNTED_ROOT}/FILE/dir2/file.txt"
 
-    job = scheduler.create_job(0, ["echo", "Hello"])
+    job = await scheduler.create_job(0, ["echo", "Hello"])
     init_cmd = scheduler.jobcmd_init(job)
     assert f"export DIR={shlex.quote(scheduler._path_envs['DIR'])}" in init_cmd
     assert f"export FILE={shlex.quote(scheduler._path_envs['FILE'])}" in init_cmd
@@ -133,7 +133,7 @@ def test_jobcmd_shebang_docker(temp_workdir):
 
 def test_jobcmd_shebang_apptainer(mock_bin_path, temp_workdir):
     """Test job command shebang generation for apptainer"""
-    apptainer_bin = Path(mock_bin_path) / "apptainer"
+    apptainer_bin = PanPath(mock_bin_path) / "apptainer"
 
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
@@ -172,7 +172,7 @@ def test_jobcmd_shebang_with_entrypoint_list(mock_bin_path, temp_workdir):
 
 def test_docker_cwd(mock_bin_path, temp_workdir):
     """Test that Apptainer uses the correct working directory"""
-    docker_bin = Path(mock_bin_path) / "docker"
+    docker_bin = PanPath(mock_bin_path) / "docker"
 
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
@@ -193,13 +193,12 @@ def test_docker_cwd(mock_bin_path, temp_workdir):
 def temp_workdir():
     """Fixture to provide temporary working directory"""
     with tempfile.TemporaryDirectory() as tmpdir:
-        yield Path(tmpdir)
+        yield PanPath(tmpdir)
 
 
-@pytest.mark.asyncio
 async def test_scheduler(mock_bin_path, temp_workdir):
 
-    docker_bin = Path(mock_bin_path) / "docker"
+    docker_bin = PanPath(mock_bin_path) / "docker"
 
     host_dir = temp_workdir / "host"
     mounted_dir = temp_workdir / "mounted"
@@ -212,15 +211,14 @@ async def test_scheduler(mock_bin_path, temp_workdir):
         workdir=host_dir,
         mounted_workdir=mounted_dir,
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    wrapt_script = str(scheduler.wrapped_job_script(job).mounted)
+    job = await scheduler.create_job(0, ["echo", 1])
+    wrapt_script = str((await scheduler.wrapped_job_script(job)).mounted)
     assert wrapt_script == str(mounted_dir / "0" / "job.wrapped.docker")
 
     pid = await scheduler.submit_job(job)
     assert isinstance(pid, int)
 
 
-@pytest.mark.asyncio
 async def test_submission_failure(temp_workdir):
 
     host_dir = temp_workdir / "host"
@@ -234,9 +232,9 @@ async def test_submission_failure(temp_workdir):
         workdir=host_dir,
         mounted_workdir=mounted_dir,
     )
-    job = scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", 1])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False
-    assert job.status == JobStatus.FAILED
-    assert "Failed to submit job" in job.stderr_file.read_text()
+    assert await job.status == JobStatus.FAILED
+    assert "Failed to submit job" in await job.stderr_file.a_read_text()

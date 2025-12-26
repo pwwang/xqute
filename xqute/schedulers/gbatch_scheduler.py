@@ -8,7 +8,7 @@ import getpass
 from typing import Sequence
 from copy import deepcopy
 from hashlib import sha256
-from yunpath import GSPath, AnyPath
+from panpath import GSPath, PanPath
 
 from ..job import Job
 from ..scheduler import Scheduler
@@ -216,7 +216,7 @@ class GbatchScheduler(Scheduler):
         volumes.insert(
             0,
             {
-                "gcs": {"remotePath": self.workdir._no_prefix},
+                "gcs": {"remotePath": str(self.workdir).split("://", 1)[1]},
                 "mountPath": str(self.workdir.mounted),
             },
         )
@@ -236,7 +236,7 @@ class GbatchScheduler(Scheduler):
                             "'NAME=gs://bucket/dir', where NAME matches "
                             "^[A-Za-z][A-Za-z0-9_]*$"
                         )
-                    gcs_path = AnyPath(gcs)
+                    gcs_path = PanPath(gcs)
                     # Check if it is a file path
                     if gcs_path.is_file():
                         # Mount the parent directory
@@ -313,11 +313,11 @@ class GbatchScheduler(Scheduler):
             # labels.setdefault("email", email[:63])
             labels.setdefault("sacct", email.split("@", 1)[0][:63])
 
-    def job_config_file(self, job: Job) -> SpecPath:
+    async def job_config_file(self, job: Job) -> SpecPath:
         base = f"job.wrapped.{self.name}.json"
         conf_file = job.metadir / base
 
-        wrapt_script = self.wrapped_job_script(job)
+        wrapt_script = await self.wrapped_job_script(job, _mounted=True)
         config = deepcopy(self.config)
         runnable = config["taskGroups"][0]["taskSpec"]["runnables"][self.runnable_index]
         if "container" in runnable:
@@ -374,8 +374,9 @@ class GbatchScheduler(Scheduler):
 
             runnable["script"]["text"] = " ".join(command_parts)
 
-        with conf_file.open("w") as f:
-            json.dump(config, f, indent=2)
+        async with conf_file.a_open("w") as f:
+            jsons = json.dumps(config, indent=2)
+            await f.write(jsons)
 
         return conf_file
 
@@ -402,7 +403,7 @@ class GbatchScheduler(Scheduler):
             "batch",
             "jobs",
             "delete",
-            job.jid,
+            await job.jid,
             "--project",
             self.project,
             "--location",
@@ -435,18 +436,18 @@ class GbatchScheduler(Scheduler):
     async def submit_job(self, job: Job) -> str:
 
         sha = sha256(str(self.workdir).encode()).hexdigest()[:8]
-        job.jid = f"{self.jobname_prefix}-{sha}-{job.index}".lower()
+        await job.set_jid(f"{self.jobname_prefix}-{sha}-{job.index}".lower())
         await self._delete_job(job)
 
-        conf_file = self.job_config_file(job)
+        conf_file = await self.job_config_file(job)
         proc = await asyncio.create_subprocess_exec(
             self.gcloud,
             "batch",
             "jobs",
             "submit",
-            job.jid,
+            await job.jid,
             "--config",
-            conf_file.fspath,
+            conf_file.mounted,
             "--project",
             self.project,
             "--location",
@@ -464,7 +465,7 @@ class GbatchScheduler(Scheduler):
                 f"{conf_file}"
             )
 
-        return job.jid
+        return await job.jid
 
     async def kill_job(self, job: Job):
         command = [
@@ -473,7 +474,7 @@ class GbatchScheduler(Scheduler):
             "batch",
             "jobs",
             "cancel",
-            job.jid,
+            await job.jid,
             "--project",
             self.project,
             "--location",
@@ -488,11 +489,11 @@ class GbatchScheduler(Scheduler):
         await proc.wait()
 
     async def _get_job_status(self, job: Job) -> str:
-        if not job.jid_file.is_file():
+        if not await job.jid_file.a_is_file():
             return "UNKNOWN"
 
         # Do not rely on _jid, as it can be a obolete job.
-        jid = job.jid_file.read_text().strip()
+        jid = (await job.jid_file.a_read_text()).strip()
 
         command = [
             self.gcloud,

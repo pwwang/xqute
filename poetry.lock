@@ -414,22 +414,22 @@ files = [
 
 [[package]]
 name = "cloudsh"
-version = "0.3.0"
+version = "0.3.1"
 description = "A Python CLI wrapping common Linux commands for local/cloud files."
 optional = true
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 markers = "extra == \"cloudsh\""
 files = [
-    {file = "cloudsh-0.3.0-py3-none-any.whl", hash = "sha256:db08774c8d649097ecf6a20ddcce5d84d6fdc335f4be14575d141e6bba7de60a"},
-    {file = "cloudsh-0.3.0.tar.gz", hash = "sha256:91bae98fd600035caa93b5d6ee25cdaa8631d36c6921cabbbdc0699c551fa612"},
+    {file = "cloudsh-0.3.1-py3-none-any.whl", hash = "sha256:2043fd55bd38b265032e73663cd251b1c9ca8c7d2deb7dcf87739b93cd5f1d3a"},
+    {file = "cloudsh-0.3.1.tar.gz", hash = "sha256:a641cbcac745a4a95f31e3c9780ab011bbe6695e8d4077481922e2ceffebb7fe"},
 ]
 
 [package.dependencies]
 aiofiles = ">=23.0.0,<24.0.0"
 argcomplete = ">=3.5.3,<4.0.0"
 argx = ">=0.3,<0.4"
-panpath = ">=0.3,<0.4"
+panpath = ">=0.4,<0.5"
 python-dateutil = ">=2.9.0.post0,<3.0.0"
 python-simpleconf = {version = ">=0.7,<0.8", extras = ["toml"]}
 
@@ -1691,14 +1691,14 @@ files = [
 
 [[package]]
 name = "panpath"
-version = "0.3.0"
+version = "0.4.0"
 description = "Universal sync/async local/cloud path library with pathlib-compatible interface"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "panpath-0.3.0-py3-none-any.whl", hash = "sha256:3c10c7cfcff682bf8eba759806d4f8208ddf882cb65302457e097318b3c180b0"},
-    {file = "panpath-0.3.0.tar.gz", hash = "sha256:9c6eb53ee3101e91c83f3ac85cd67faad30403ad8bb474d1055c87b9ec4231ef"},
+    {file = "panpath-0.4.0-py3-none-any.whl", hash = "sha256:ec91ab808d51468de0a64ab87fa3ddb0482a2053f268cafcf2d3e0fcdca2f644"},
+    {file = "panpath-0.4.0.tar.gz", hash = "sha256:365d0e4b0f89ea9fd0c642c858e965fa0397d29f1365d0b0dc2e4ab213897321"},
 ]
 
 [package.dependencies]
@@ -2877,4 +2877,4 @@ gs = ["gcloud-aio-storage"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "35ed37bb1b7ddef6b567ea18a4e61b1bef7003009954ea6ecb993f97438ec260"
+content-hash = "3ecd7da38faae25a5695fbcd7815d1192600ddf271d28c8b2961a64323e3e286"

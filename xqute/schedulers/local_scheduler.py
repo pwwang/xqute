@@ -38,14 +38,11 @@ class LocalScheduler(Scheduler):
         Returns:
             The process id
         """
-        wrapt_script_path = (
-            self.wrapped_job_script(job).mounted
-            if _mounted
-            else self.wrapped_job_script(job).fspath
-        )
+        job_script = await self.wrapped_job_script(job, _mounted=_mounted)
+        wrapt_script_path = job_script.mounted
         # In case the process exits very quickly
-        if not job.jid_file.exists():
-            job.jid_file.write_text("0")
+        if not await job.jid_file.a_exists():
+            await job.jid_file.a_write_text("0")
 
         proc = await asyncio.create_subprocess_exec(
             *shlex.split(self.jobcmd_shebang(job)),
@@ -64,7 +61,7 @@ class LocalScheduler(Scheduler):
         # this happens for python < 3.12
         await asyncio.sleep(0.1)
 
-        if job.stdout_file.exists():
+        if await job.stdout_file.a_exists():
             # job submitted successfully and already started very soon
             return proc.pid
 
@@ -90,7 +87,7 @@ class LocalScheduler(Scheduler):
             job: The job
         """
         try:
-            os.killpg(int(job.jid), 9)
+            os.killpg(int(await job.jid), 9)
         except Exception:  # pragma: no cover
             pass
 
@@ -106,7 +103,7 @@ class LocalScheduler(Scheduler):
             True if it is, otherwise False
         """
         try:
-            jid = int(job.jid_file.read_text().strip())
+            jid = int((await job.jid_file.a_read_text()).strip())
         except (ValueError, TypeError, FileNotFoundError):
             return False
 

@@ -60,9 +60,10 @@ class SlurmScheduler(Scheduler):
         Returns:
             The job id
         """
+        job_script = await self.wrapped_job_script(job)
         proc = await asyncio.create_subprocess_exec(
             self.sbatch,
-            self.wrapped_job_script(job).fspath,
+            job_script.mounted,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
         )
@@ -84,7 +85,7 @@ class SlurmScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.scancel,
-            str(job.jid),
+            str(await job.jid),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -100,7 +101,7 @@ class SlurmScheduler(Scheduler):
             The status string
         """
         try:
-            jid = job.jid_file.read_text().strip()
+            jid = (await job.jid_file.a_read_text()).strip()
         except FileNotFoundError:
             return "UNKNOWN"
 

@@ -78,7 +78,9 @@ class Job:
         self.envs["XQUTE_METADIR"] = str(workdir)
         self.metadir = workdir / str(self.index)  # type: ignore
         self.envs["XQUTE_JOB_METADIR"] = str(self.metadir)
-        self.metadir.mkdir(exist_ok=True, parents=True)
+        # For cloud paths, this requires cloud client
+        # self.metadir.mkdir(exist_ok=True, parents=True)
+        # Let Scheduler.create_job handle metadir creation
 
         # The name of the job, should be the unique id from the scheduler
         self.trial_count = 0
@@ -94,24 +96,23 @@ class Job:
     def __repr__(self) -> str:
         """repr of the job"""
         prefix = f"{self.__class__.__name__}-{self.index}"
-        if not self.jid:
+        if not self._jid:
             return f"<{prefix}: ({self.cmd})>"
-        return f"<{prefix}({self.jid}): ({self.cmd})>"
+        return f"<{prefix}({self._jid}): ({self.cmd})>"
 
     @property
-    def jid(self) -> int | str | None:
+    async def jid(self) -> int | str | None:
         """Get the jid of the job in scheduler system"""
-        if self._jid is None and not self.jid_file.is_file():
+        if self._jid is None and not await self.jid_file.a_is_file():
             return None
         if self._jid is not None:
             return self._jid
-        self._jid = self.jid_file.read_text()
+        self._jid = await self.jid_file.a_read_text()
         return self._jid
 
-    @jid.setter
-    def jid(self, uniqid: int | str):
+    async def set_jid(self, uniqid: int | str):
         self._jid = uniqid
-        self.jid_file.write_text(str(uniqid))
+        await self.jid_file.a_write_text(str(uniqid))
 
     @property
     def stdout_file(self) -> SpecPath:
@@ -144,7 +145,7 @@ class Job:
         return self.metadir / "job.retry"
 
     @property
-    def status(self) -> int:
+    async def status(self) -> int:
         """Query the status of the job
 
         If the job is submitted, try to query it from the status file
@@ -157,7 +158,7 @@ class Job:
         status_changed_from_file = False
         if (
             not self._status_cache_valid
-            and self.status_file.is_file()
+            and await self.status_file.a_is_file()
             and self._status in (
                 JobStatus.SUBMITTED,
                 JobStatus.RUNNING,
@@ -165,7 +166,7 @@ class Job:
             )
         ):
             try:
-                new_status_from_file = int(self.status_file.read_text())
+                new_status_from_file = int(await self.status_file.a_read_text())
                 # Update prev_status before changing _status if status changed
                 if new_status_from_file != self._status:
                     self.prev_status = self._status
@@ -222,7 +223,7 @@ class Job:
         # Always invalidate cache when status is explicitly set
         self._status_cache_valid = False
 
-    def refresh_status(self) -> int:
+    async def refresh_status(self) -> int:
         """Force refresh status from file system
 
         This invalidates the cache and reads the current status.
@@ -232,7 +233,7 @@ class Job:
             The current job status
         """
         self._status_cache_valid = False
-        return self.status
+        return await self.status
 
     async def refresh_status_async(self) -> int:
         """Async version of refresh_status for batch operations
@@ -243,15 +244,12 @@ class Job:
         Returns:
             The current job status
         """
-        import asyncio
-
         self._status_cache_valid = False
         # Read status file asynchronously using run_in_executor
-        loop = asyncio.get_running_loop()
 
         # Don't update prev_status here - let the polling logic handle transitions
         if (
-            self.status_file.is_file()
+            await self.status_file.a_is_file()
             and self._status in (
                 JobStatus.SUBMITTED,
                 JobStatus.RUNNING,
@@ -260,9 +258,7 @@ class Job:
         ):
             try:
                 # Run blocking I/O in executor for true async operation
-                status_text = await loop.run_in_executor(
-                    None, self.status_file.read_text
-                )
+                status_text = await self.status_file.a_read_text()
                 self._status = int(status_text)
                 self._status_cache_valid = True
             except (
@@ -283,13 +279,13 @@ class Job:
         return self._status
 
     @property
-    def rc(self) -> int:
+    async def rc(self) -> int:
         """The return code of the job"""
-        if not self.rc_file.is_file():
+        if not await self.rc_file.a_is_file():
             return self._rc  # pragma: no cover
-        return int(self.rc_file.read_text())
+        return int(await self.rc_file.a_read_text())
 
-    def clean(self, retry: bool = False) -> None:
+    async def clean(self, retry: bool = False) -> None:
         """Clean up the meta files
 
         Args:
@@ -304,14 +300,14 @@ class Job:
 
         if retry:
             retry_dir = self.retry_dir / str(self.trial_count)  # type: ignore
-            if retry_dir.exists():
-                retry_dir.rmtree()
-            retry_dir.mkdir(parents=True)
+            if await retry_dir.a_exists():
+                await retry_dir.a_rmtree()
+            await retry_dir.a_mkdir(parents=True)
 
             for file in files_to_clean:
-                if file.is_file():
-                    file.rename(retry_dir / file.name)
+                if await file.a_is_file():
+                    await file.a_rename(retry_dir / file.name)
         else:
             for file in files_to_clean:
-                if file.is_file():
-                    file.unlink()
+                if await file.a_is_file():
+                    await file.a_unlink()

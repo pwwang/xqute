@@ -41,8 +41,8 @@ async def test_job(tmp_path):
         m="abe",
         workdir=tmp_path,
     )
-    job = scheduler.create_job(0, ["echo", 1])
-    assert scheduler.wrapped_job_script(job) == tmp_path / "0" / "job.wrapped.sge"
+    job = await scheduler.create_job(0, ["echo", 1])
+    assert await scheduler.wrapped_job_script(job) == tmp_path / "0" / "job.wrapped.sge"
 
     script = scheduler.wrap_job_script(job)
     assert "#$ -notify" in script
@@ -60,7 +60,7 @@ async def test_cwd(tmp_path):
         workdir=tmp_path,
         cwd="/tmp/cwd",
     )
-    job = scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", 1])
 
     script = scheduler.wrap_job_script(job)
     assert "#$ -notify" in script
@@ -71,35 +71,33 @@ async def test_cwd(tmp_path):
     assert "#$ -wd /tmp/cwd" in script
 
 
-@pytest.mark.asyncio
 async def test_scheduler(tmpdir, qsub, qdel, qstat):
 
     scheduler = SgeScheduler(qsub=qsub, qdel=qdel, qstat=qstat, workdir=tmpdir)
-    job = scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", 1])
     assert await scheduler.submit_job(job) == "613815"
-    job.jid = "613815"
+    await job.set_jid("613815")
     await scheduler.kill_job(job)
-    if job.jid_file.is_file():
-        job.jid_file.unlink()
+    if await job.jid_file.a_is_file():
+        await job.jid_file.a_unlink()
     assert await scheduler.job_is_running(job) is False
 
-    job.jid_file.write_text("0")
+    await job.jid_file.a_write_text("0")
     assert await scheduler.job_is_running(job) is True
-    job.jid_file.write_text("1")
+    await job.jid_file.a_write_text("1")
     assert await scheduler.job_is_running(job) is False
-    job.jid_file.write_text("")
+    await job.jid_file.a_write_text("")
     assert await scheduler.job_is_running(job) is False
 
 
-@pytest.mark.asyncio
 async def test_submission_failure(tmp_path, qdel, qstat):
 
     scheduler = SgeScheduler(
         qsub="no_such_qsub", qdel=qdel, qstat=qstat, workdir=tmp_path
     )
-    job = scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", 1])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False
-    assert job.status == JobStatus.FAILED
-    assert "Failed to submit job" in job.stderr_file.read_text()
+    assert await job.status == JobStatus.FAILED
+    assert "Failed to submit job" in await job.stderr_file.a_read_text()

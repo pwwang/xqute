@@ -4,6 +4,7 @@ import os
 import sys
 import asyncio
 from pathlib import Path
+from panpath import PanPath
 from tempfile import gettempdir
 from typing import Any
 
@@ -30,16 +31,16 @@ class SSHClient:
             self.name = f"{user}@{server}:{port}"
         else:
             self.name = f"{server}:{port}"
-        self.ctrl_file = Path(ctrl_dir) / f"ssh-{self.name}.sock"
+        self.ctrl_file = PanPath(ctrl_dir) / f"ssh-{self.name}.sock"
         self._conn_lock = asyncio.Lock()
 
     @property
-    def is_connected(self):
-        return self.ctrl_file.exists()
+    async def is_connected(self):
+        return await self.ctrl_file.a_exists()
 
     async def connect(self):
         """Make sure the server is alive"""
-        if self.is_connected:
+        if await self.is_connected:
             return
 
         async with self._conn_lock:
@@ -64,12 +65,12 @@ class SSHClient:
             proc = await asyncio.create_subprocess_exec(*command)
             await proc.wait()
 
-            if proc.returncode != 0 or not self.is_connected:
+            if proc.returncode != 0 or not await self.is_connected:
                 raise RuntimeError(f"Failed to connect to SSH server: {self.server}")
 
-    def disconnect(self):
-        if self.is_connected:
-            self.ctrl_file.unlink()
+    async def disconnect(self):
+        if await self.is_connected:
+            await self.ctrl_file.a_unlink()
 
     async def create_proc(self, *cmds: Any):
         cmds = map(str, cmds)

@@ -5,11 +5,12 @@ from __future__ import annotations
 import os
 import shlex
 import signal
+from tempfile import gettempdir
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, List, Type
 
-from panpath import CloudPath
+from panpath import PanPath, CloudPath
 from diot import Diot  # type: ignore
 
 from .defaults import (
@@ -110,7 +111,7 @@ class Scheduler(ABC):
 
         self.config = Diot(**kwargs)
 
-    def create_job(
+    async def create_job(
         self,
         index: int,
         cmd: CommandType,
@@ -125,7 +126,7 @@ class Scheduler(ABC):
         Returns:
             The job
         """
-        return self.job_class(
+        job = self.job_class(
             index=index,
             cmd=cmd,
             workdir=self.workdir,
@@ -133,6 +134,9 @@ class Scheduler(ABC):
             num_retries=self.num_retries,
             envs=envs,
         )
+        logger.debug("/Job-%s Creating metadir: %s", job.index, job.metadir)
+        await job.metadir.a_mkdir(parents=True, exist_ok=True)
+        return job
 
     async def submit_job_and_update_status(self, job: Job):
         """Submit and update the status
@@ -163,7 +167,7 @@ class Scheduler(ABC):
                 return
 
             logger.debug("/Job-%s Cleaning up before submission", job.index)
-            job.clean()
+            await job.clean()
 
             try:
                 # raise the exception immediately
@@ -173,7 +177,7 @@ class Scheduler(ABC):
                     job.index,
                     self.name,
                 )
-                job.jid = await self.submit_job(job)
+                await job.set_jid(await self.submit_job(job))
             except Exception as exc:
                 exception = RuntimeError(f"Failed to submit job: {exc}")
                 exception.__traceback__ = exc.__traceback__
@@ -192,7 +196,7 @@ class Scheduler(ABC):
                     exception.__traceback__,
                 )
             )
-            job.stderr_file.write_text(error_msg)
+            await job.stderr_file.a_write_text(error_msg)
             await self.transition_job_status(job, JobStatus.FAILED, rc="-2")
 
     async def retry_job(self, job: Job):
@@ -201,8 +205,8 @@ class Scheduler(ABC):
         Args:
             job: The job
         """
-        job.jid = ""
-        job.clean(retry=True)
+        await job.set_jid("")
+        await job.clean(retry=True)
         job.trial_count += 1
         logger.warning(
             "/Sched-%s Retrying (#%s) job: %r",
@@ -265,11 +269,11 @@ class Scheduler(ABC):
 
             # Write rc file if provided
             if rc is not None:
-                job.rc_file.write_text(rc)
+                await job.rc_file.a_write_text(rc)
 
             # Append error message if provided
             if error_msg is not None:
-                with job.stderr_file.open("a") as f:
+                async with job.stderr_file.a_open("a") as f:
                     f.write(f"\n{error_msg}\n")
 
             # Call failure hook
@@ -278,7 +282,7 @@ class Scheduler(ABC):
 
             # Clean up jid file
             try:
-                job.jid_file.unlink(missing_ok=True)
+                await job.jid_file.a_unlink(missing_ok=True)
             except Exception:  # pragma: no cover
                 # missing_ok is not working for some cloud paths
                 pass
@@ -304,7 +308,7 @@ class Scheduler(ABC):
 
             # Clean up jid file
             try:
-                job.jid_file.unlink(missing_ok=True)
+                await job.jid_file.a_unlink(missing_ok=True)
             except Exception:  # pragma: no cover
                 # missing_ok is not working for some cloud paths
                 pass
@@ -320,8 +324,8 @@ class Scheduler(ABC):
                 "/Sched-%s Job %s submitted (jid: %s, wrapped: %s)",
                 self.name,
                 job.index,
-                job.jid,
-                self.wrapped_job_script(job),
+                await job.jid,
+                await self.wrapped_job_script(job),
             )
             logger.debug("/Job-%s Calling on_job_submitted hook ...", job.index)
             await plugin.hooks.on_job_submitted(self, job)
@@ -346,7 +350,7 @@ class Scheduler(ABC):
         logger.warning("/Sched-%s Killing job %s ...", self.name, job.index)
         await self.kill_job(job)
         try:
-            job.jid_file.unlink(missing_ok=True)
+            await job.jid_file.a_unlink(missing_ok=True)
         except Exception:  # pragma: no cover
             # missing_ok is not working for some cloud paths
             # FileNotFoundError, google.api_core.exceptions.NotFound
@@ -369,7 +373,7 @@ class Scheduler(ABC):
         n_running = 0
         for job in jobs:
             # Use cached status, don't refresh from disk
-            if job.status in (
+            if await job.status in (
                 JobStatus.QUEUED,
                 JobStatus.SUBMITTED,
                 JobStatus.RUNNING,
@@ -404,7 +408,7 @@ class Scheduler(ABC):
 
         for job in jobs:
             # Refresh status from filesystem to get latest state
-            status = job.refresh_status()
+            status = await job.refresh_status()
 
             if job.prev_status != status:
                 if status in (JobStatus.FAILED, JobStatus.RETRYING):
@@ -448,7 +452,7 @@ class Scheduler(ABC):
                 await plugin.hooks.on_job_polling(self, job, polling_counter)
                 # Let's make sure the job is really running
                 if (
-                    not job.rc_file.is_file()
+                    not await job.rc_file.a_is_file()
                     and (polling_counter + 1) % self.recheck_interval == 0
                     and not await self.job_is_running(job)
                 ):  # pragma: no cover
@@ -507,7 +511,7 @@ class Scheduler(ABC):
         """
         logger.warning("/Sched-%s Killing running jobs ...", self.name)
         for job in jobs:
-            status = job.status
+            status = await job.status
             if status in (JobStatus.SUBMITTED, JobStatus.RUNNING):
                 await self.kill_job_and_update_status(job)
 
@@ -520,7 +524,7 @@ class Scheduler(ABC):
         Returns:
             True if yes otherwise False.
         """
-        if job.jid_file.is_file():
+        if await job.jid_file.a_is_file():
             if await self.job_is_running(job):
                 job.status = JobStatus.SUBMITTED
                 return True
@@ -619,20 +623,35 @@ class Scheduler(ABC):
             jobcmd_end=self.jobcmd_end(job),
         )
 
-    def wrapped_job_script(self, job: Job) -> SpecPath:
+    async def wrapped_job_script(self, job: Job, _mounted: bool = False) -> SpecPath:
         """Get the wrapped job script
 
         Args:
             job: The job
+            _mounted: Whether to use the mounted system path
+                if True, that means the returned SpecPath will have
+                the mounted path set to the actual file path on the
+                local filesystem.
 
         Returns:
             The path of the wrapped job script
         """
         base = f"job.wrapped.{self.name}"
         wrapt_script = job.metadir / base
-        wrapt_script.write_text(self.wrap_job_script(job))
-
-        return wrapt_script
+        script = self.wrap_job_script(job)
+        await wrapt_script.a_write_text(script)
+        if _mounted:
+            return wrapt_script
+        elif isinstance(job.metadir, CloudPath):
+            fspath = PanPath(gettempdir()).joinpath(
+                str(job.metadir).replace(":", "").replace("/", "-"),
+                base,
+            )
+            await fspath.parent.a_mkdir(parents=True, exist_ok=True)
+            await fspath.a_write_text(script)
+            return SpecPath(wrapt_script, mounted=fspath)
+        else:
+            return SpecPath(wrapt_script)
 
     @abstractmethod
     async def submit_job(self, job: Job) -> int | str:

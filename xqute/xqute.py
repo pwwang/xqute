@@ -122,11 +122,8 @@ class Xqute:
         for sig in (signal.SIGTERM, signal.SIGINT):
             loop.add_signal_handler(sig, functools.partial(self.cancel, sig))
 
-        self._prodcons_task = asyncio.gather(
-            self._producer(),
-            *(self._consumer(i) for i in range(self.scheduler.subm_batch)),
-        )
-        self._polling_task = asyncio.create_task(self._polling_jobs())
+        self._tasks: asyncio.Task | None = None
+
         logger.debug("/%s Calling on_init hook ...", self.name)
         plugin.hooks.on_init(self)
 
@@ -168,8 +165,8 @@ class Xqute:
         # Always cancel tasks if not already cancelled, regardless of hook result
         # This prevents plugins from accidentally leaving tasks running
         if plugin.hooks.on_shutdown(self, sig) is not False:
-            self._prodcons_task.cancel()
-            self._polling_task.cancel()
+            if self._tasks:
+                self._tasks.cancel()
 
     async def _producer(self) -> None:
         """The producer"""
@@ -249,7 +246,7 @@ class Xqute:
             job = cmd
             job.envs.update(envs)
         else:
-            job = self.scheduler.create_job(len(self.jobs), cmd, envs)
+            job = await self.scheduler.create_job(len(self.jobs), cmd, envs)
 
         logger.debug("/Job-%s Calling on_job_init hook ...", job.index)
         await plugin.hooks.on_job_init(self.scheduler, job)
@@ -297,8 +294,8 @@ class Xqute:
         try:
             await self._completion_task
         except asyncio.CancelledError:
-            self._prodcons_task.cancel()
-            self._polling_task.cancel()
+            if self._tasks:
+                self._tasks.cancel()
 
         self._completion_task = None
 
@@ -360,9 +357,7 @@ class Xqute:
         if keep_feeding:
             # Start completion tasks in background
             logger.debug("/%s Starting in keep_feeding mode ...", self.name)
-            self._completion_task = asyncio.create_task(
-                self._run_completion_tasks()
-            )
+            self._completion_task = asyncio.create_task(self._run_completion_tasks())
             # Return immediately to allow more jobs to be added
             return
 
@@ -374,8 +369,13 @@ class Xqute:
 
     async def _run_completion_tasks(self) -> None:
         """Run the completion tasks (polling and await)"""
+        self._tasks = asyncio.gather(
+            self._producer(),
+            *(self._consumer(i) for i in range(self.scheduler.subm_batch)),
+            self._polling_jobs(),
+        )
         try:
-            await asyncio.gather(self._polling_task, self._prodcons_task)
+            await self._tasks
         except asyncio.CancelledError:
             logger.debug("/%s Completion tasks cancelled ...", self.name)
         finally:
