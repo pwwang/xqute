@@ -122,14 +122,16 @@ async def test_xqute_cloud_workdir(request):
         hash((request.node.name, sys.executable, sys.version_info)) & 0xFFFFFFFF
     )
     workdir = f"{BUCKET}/xqute_local_test.{requestid}"
-    xqute = Xqute(LocalScheduler, workdir=workdir)
-    await xqute.feed(["echo", 1])
-    job = await xqute.scheduler.create_job(1, ["echo", 1])
-    await xqute.feed(job)
-    await xqute.run_until_complete()
-    assert await xqute.jobs[0].get_rc() == 0
-    assert await xqute.jobs[1].get_rc() == 0
-    await PanPath(workdir).a_rmtree()
+    try:
+        xqute = Xqute(LocalScheduler, workdir=workdir)
+        await xqute.feed(["echo", 1])
+        job = await xqute.scheduler.create_job(1, ["echo", 1])
+        await xqute.feed(job)
+        await xqute.run_until_complete()
+        assert await xqute.jobs[0].get_rc() == 0
+        assert await xqute.jobs[1].get_rc() == 0
+    finally:
+        await PanPath(workdir).a_rmtree()
 
 
 async def test_plugin(tmp_path, capsys):
