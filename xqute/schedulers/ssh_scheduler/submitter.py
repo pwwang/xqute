@@ -15,7 +15,7 @@ import sys
 import time
 import subprocess
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":
     server, cwd, *cmds = sys.argv[1:]
 
     proc = subprocess.Popen(
@@ -34,6 +34,6 @@ if __name__ == "__main__":  # pragma: no cover
     if rc is None or rc == 0:
         # still running or already finished
         sys.exit(0)
-    else:  # pragma: no cover
+    else:
         sys.stderr.write(f"STDOUT: {stdout}\nSTDERR: {stderr}")
         sys.exit(rc)

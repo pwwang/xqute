@@ -59,7 +59,7 @@ class SSHClient:
                 command.extend(["-i", str(self.keyfile)])
             if self.user:
                 command.extend([f"{self.user}@{self.server}", "true"])
-            else:  # pragma: no cover
+            else:
                 command.extend([self.server, "true"])
 
             proc = await asyncio.create_subprocess_exec(*command)
@@ -85,7 +85,7 @@ class SSHClient:
             command.extend(["-i", str(self.keyfile)])
         if self.user:
             command.extend([f"{self.user}@{self.server}", *cmds])
-        else:  # pragma: no cover
+        else:
             command.extend([self.server, *cmds])
 
         return await asyncio.create_subprocess_exec(

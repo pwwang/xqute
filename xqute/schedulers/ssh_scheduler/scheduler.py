@@ -7,14 +7,14 @@ import shlex
 
 from panpath import CloudPath
 
-from ...scheduler import Scheduler
+from ...schedulers.local_scheduler import LocalScheduler
 from ...job import Job
 from ...defaults import SLEEP_INTERVAL_CLOUD_FILE_CHECK
 
 from .client import SSHClient
 
 
-class SshScheduler(Scheduler):
+class SshScheduler(LocalScheduler):
     """The ssh scheduler
 
     Attributes:
@@ -27,7 +27,7 @@ class SshScheduler(Scheduler):
 
     name: str = "ssh"
 
-    __slots__ = Scheduler.__slots__ + ("ssh", "servers")
+    __slots__ = LocalScheduler.__slots__ + ("ssh", "servers")
 
     def __init__(self, *args, **kwargs):
         self.ssh = kwargs.pop("ssh", "ssh")
@@ -70,10 +70,12 @@ class SshScheduler(Scheduler):
             *shlex.split(self.jobcmd_shebang(job)),
             job_script,
         )
+        print(f"SSH submit rc: {rc}, stdout: {stdout}, stderr: {stderr}")
         if rc != 0:
             # job.stdout_file.write_bytes(stdout)
             # job.stderr_file.write_bytes(stderr)
             raise RuntimeError(f"Failed to submit job #{job.index}: {stderr.decode()}")
+
         try:
             pid, srvname = stdout.decode().split("@", 1)
         except (ValueError, TypeError):  # pragma: no cover
@@ -90,7 +92,8 @@ class SshScheduler(Scheduler):
                 not await job.stdout_file.a_exists()
                 and not await job.stderr_file.a_exists()
             ):
-                if not await self.servers[srvname].is_running(pid):  # pragma: no cover
+                print(f"Checking if SSH job #{job.index} is running...")
+                if not await self.servers[srvname].is_running(pid):
                     # job.stdout_file.write_bytes(stdout)
                     # job.stderr_file.write_bytes(stderr)
 
@@ -100,9 +103,9 @@ class SshScheduler(Scheduler):
 
                 if isinstance(job.stdout_file, CloudPath):  # pragma: no cover
                     await asyncio.sleep(SLEEP_INTERVAL_CLOUD_FILE_CHECK)
-                else:  # pragma: no cover
+                else:
                     await asyncio.sleep(0.1)
-
+        print(f"SSH job #{job.index} submitted with pid {pid} on {srvname}")
         return stdout.decode()
 
     async def kill_job(self, job: Job):
@@ -112,7 +115,7 @@ class SshScheduler(Scheduler):
             job: The job
         """
         try:
-            pid, server = str(await job.jid).split("@", 1)
+            pid, server = str(await job.get_jid()).split("@", 1)
             await self.servers[server].kill(pid)
         except Exception:  # pragma: no cover
             pass

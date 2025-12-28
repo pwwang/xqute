@@ -61,7 +61,7 @@ class LocalScheduler(Scheduler):
         # this happens for python < 3.12
         await asyncio.sleep(0.1)
 
-        if await job.stdout_file.a_exists():
+        if await job.stdout_file.a_exists():  # pragma: no cover
             # job submitted successfully and already started very soon
             return proc.pid
 
@@ -87,7 +87,7 @@ class LocalScheduler(Scheduler):
             job: The job
         """
         try:
-            os.killpg(int(await job.jid), 9)
+            os.killpg(int(await job.get_jid()), 9)
         except Exception:  # pragma: no cover
             pass
 
@@ -111,3 +111,20 @@ class LocalScheduler(Scheduler):
             return False
 
         return _pid_exists(jid)
+
+    @property
+    def jobcmd_wrapper_init(self) -> str:
+        """The init script for the job command wrapper"""
+        wrapper_init = super().jobcmd_wrapper_init
+        wrapper_init += "\n"
+        # give some time for xqute to update job status to submitted first
+        wrapper_init += "sleep 1\n"
+        return wrapper_init
+
+    def jobcmd_prep(self, job) -> str:
+        """The job command preparation"""
+        codes = super().jobcmd_prep(job)
+        codes += "\n"
+        # give some time for xqute to update job status to running
+        codes += "sleep 1\n"
+        return codes
