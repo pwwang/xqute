@@ -27,7 +27,7 @@ async def main():
     # Initialize Xqute with 3 jobs allowed to run concurrently
     xqute = Xqute(forks=3)
     for _ in range(10):
-        await xqute.put(['sleep', '1'])
+        await xqute.feed(['sleep', '1'])
     await xqute.run_until_complete()
 
 if __name__ == '__main__':
@@ -44,18 +44,18 @@ from xqute import Xqute
 
 async def main():
     xqute = Xqute(forks=3)
-    
+
     # Add initial job
-    await xqute.put(['echo', 'Job 1'])
-    
+    await xqute.feed(['echo', 'Job 1'])
+
     # Start in keep_feeding mode (returns immediately)
     await xqute.run_until_complete(keep_feeding=True)
-    
+
     # Continue adding jobs dynamically
     for i in range(2, 11):
-        await xqute.put(['sleep', '1'])
+        await xqute.feed(['sleep', '1'])
         await asyncio.sleep(0.1)  # Jobs can be added over time
-    
+
     # Signal completion and wait for all jobs to finish
     await xqute.stop_feeding()
 
@@ -99,7 +99,7 @@ Available arguments are:
 To add a job to the queue:
 
 ```python
-await xqute.put(['echo', 'Hello, World!'])
+await xqute.feed(['echo', 'Hello, World!'])
 ```
 
 To run until all jobs complete:

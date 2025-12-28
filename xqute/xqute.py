@@ -231,7 +231,7 @@ class Xqute:
         except asyncio.CancelledError:
             logger.warning("/Consumer-%s Cancelled while submitting ...", index)
 
-    async def put(self, cmd: CommandType | Job, envs: dict[str, Any] = None) -> None:
+    async def feed(self, cmd: CommandType | Job, envs: dict[str, Any] = None) -> None:
         """Put a command into the buffer
 
         Args:
@@ -338,17 +338,17 @@ class Xqute:
             Traditional usage:
             ```python
             xqute = Xqute()
-            await xqute.put(['echo', '1'])
-            await xqute.put(['echo', '2'])
+            await xqute.feed(['echo', '1'])
+            await xqute.feed(['echo', '2'])
             await xqute.run_until_complete()
             ```
 
             Keep feeding mode:
             ```python
             xqute = Xqute()
-            await xqute.put(['echo', '1'])
+            await xqute.feed(['echo', '1'])
             await xqute.run_until_complete(keep_feeding=True)  # Returns immediately
-            await xqute.put(['echo', '2'])  # Can add more jobs
+            await xqute.feed(['echo', '2'])  # Can add more jobs
             await xqute.stop_feeding()  # Waits for completion
             ```
         """

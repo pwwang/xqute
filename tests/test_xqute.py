@@ -88,8 +88,8 @@ class JobCancelPlugin:
 async def test_main(tmp_path):
     with plugin.plugins_context([EchoPlugin]):
         xqute = Xqute(LocalScheduler, forks=2, workdir=tmp_path)
-        await xqute.put(["bash", "-c", "echo 1"])
-        await xqute.put(["echo", 2])
+        await xqute.feed(["bash", "-c", "echo 1"])
+        await xqute.feed(["echo", 2])
         await xqute.run_until_complete()
         assert await xqute.jobs[0].rc == 0
 
@@ -109,9 +109,9 @@ async def test_xqute_cloud_workdir(request):
     )
     workdir = f"{BUCKET}/xqute_local_test.{requestid}"
     xqute = Xqute(LocalScheduler, workdir=workdir)
-    await xqute.put(["echo", 1])
+    await xqute.feed(["echo", 1])
     job = await xqute.scheduler.create_job(1, ["echo", 1])
-    await xqute.put(job)
+    await xqute.feed(job)
     await xqute.run_until_complete()
     assert await xqute.jobs[0].rc == 0
     assert await xqute.jobs[1].rc == 0
@@ -121,8 +121,8 @@ async def test_xqute_cloud_workdir(request):
 async def test_plugin(tmp_path, capsys):
     with plugin.plugins_context([EchoPlugin, JobFailPlugin]):
         xqute = Xqute("local", forks=1, workdir=tmp_path)
-        await xqute.put("echo 2")
-        await xqute.put(["sleep", 5])
+        await xqute.feed("echo 2")
+        await xqute.feed(["sleep", 5])
         await xqute.run_until_complete()
 
         out = capsys.readouterr().out
@@ -140,8 +140,8 @@ def test_not_init_in_loop():
 async def test_shutdown(tmp_path, caplog):
     with plugin.plugins_context([EchoPlugin, JobFailPlugin]):
         xqute = Xqute(forks=2, workdir=tmp_path)
-        await xqute.put(["sleep", 1])
-        await xqute.put(["echo", 2])
+        await xqute.feed(["sleep", 1])
+        await xqute.feed(["echo", 2])
         asyncio.get_event_loop().call_later(0.5, xqute.cancel, signal.SIGTERM)
         await xqute.run_until_complete()
         assert "Got signal 'SIGTERM'" in caplog.text
@@ -150,8 +150,8 @@ async def test_shutdown(tmp_path, caplog):
 async def test_cancel_shutdown(tmp_path, caplog, capsys):
     with plugin.plugins_context([EchoPlugin, CancelShutdownPlugin, JobFailPlugin]):
         xqute = Xqute(workdir=tmp_path)
-        await xqute.put(["sleep", 1])
-        await xqute.put(["echo", 2])
+        await xqute.feed(["sleep", 1])
+        await xqute.feed(["echo", 2])
         asyncio.get_running_loop().call_later(0.5, xqute.cancel, signal.SIGTERM)
         await xqute.run_until_complete()
         assert capsys.readouterr().out.count("Cancelling shutdown") == 1
@@ -165,8 +165,8 @@ async def test_job_failed_hook(tmp_path, caplog, capsys):
             num_retries=1,
             workdir=tmp_path,
         )
-        await xqute.put(["echo1", 1])
-        await xqute.put(["echo", 1])
+        await xqute.feed(["echo1", 1])
+        await xqute.feed(["echo", 1])
         await xqute.run_until_complete()
         assert "Job Failed: <Job-0" in capsys.readouterr().out
         assert "/Job-0 Status changed: 'SUBMITTED' -> 'RETRYING'" in caplog.text
@@ -177,15 +177,15 @@ async def test_job_failed_hook(tmp_path, caplog, capsys):
         xqute = Xqute(
             error_strategy="retry", num_retries=1, workdir=tmp_path
         )
-        await xqute.put(["echo1", 1])
-        await xqute.put(["echo", 1])
+        await xqute.feed(["echo1", 1])
+        await xqute.feed(["echo", 1])
         await xqute.run_until_complete()
 
 
 async def test_job_is_running(tmp_path, caplog):
     with plugin.plugins_context([JobIsRunningPlugin]):
         xqute = Xqute(workdir=tmp_path)
-        await xqute.put(["echo", 1])
+        await xqute.feed(["echo", 1])
         loop = asyncio.get_event_loop()
         loop.call_later(2.0, xqute.cancel)
         await xqute.run_until_complete()
@@ -198,16 +198,16 @@ async def test_halt(tmp_path, caplog):
         xqute = Xqute(
             error_strategy="halt", workdir=tmp_path, forks=3
         )
-        await xqute.put(["sleep", 10])
-        await xqute.put(["echo1", 1])
-        await xqute.put(["sleep", 3])
+        await xqute.feed(["sleep", 10])
+        await xqute.feed(["echo1", 1])
+        await xqute.feed(["sleep", 3])
         await xqute.run_until_complete()
         assert "Pipeline will halt" in caplog.text
 
 
 async def test_cancel_submitting(tmp_path, caplog):
     xqute = Xqute(workdir=tmp_path, plugins=[JobCancelPlugin])
-    await xqute.put("echo 1")
+    await xqute.feed("echo 1")
     await xqute.run_until_complete()
     assert "Job 0 submitted" not in caplog.text
 
@@ -222,10 +222,10 @@ async def test_plugin_context():
 
 async def test_put_job_with_envs(tmp_path):
     xqute = Xqute(workdir=tmp_path)
-    await xqute.put("echo $MYVAR", envs={"MYVAR": "123"})
+    await xqute.feed("echo $MYVAR", envs={"MYVAR": "123"})
 
     job2 = await xqute.scheduler.create_job(1, "echo $MYVAR", envs={"MYVAR": "111"})
-    await xqute.put(job2, envs={"MYVAR": "456"})
+    await xqute.feed(job2, envs={"MYVAR": "456"})
     await xqute.run_until_complete()
     job = xqute.jobs[0]
     assert await job.rc == 0
