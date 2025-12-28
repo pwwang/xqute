@@ -23,7 +23,7 @@ from .utils import logger, CommandType
 from .plugin import plugin
 from .schedulers import get_scheduler
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from .path import PathType
     from .scheduler import Scheduler
     from .job import Job
@@ -129,13 +129,7 @@ class Xqute:
 
     def __del__(self) -> None:
         """Destructor to warn if stop_feeding was not called"""
-        if (
-            # in case __init__ was not completed and failed
-            hasattr(self, '_keep_feeding')
-            and self._keep_feeding
-            and hasattr(self, '_completion_task')
-            and self._completion_task
-        ):
+        if hasattr(self, "is_feeding") and self.is_feeding():
             logger.warning(
                 "/%s Instance destroyed while still in keep_feeding mode. "
                 "Did you forget to call 'await xqute.stop_feeding()'?",
@@ -199,7 +193,7 @@ class Xqute:
                     polling_counter += 1
                     continue
 
-                job.status = JobStatus.QUEUED
+                await job.set_status(JobStatus.QUEUED)
                 await self.queue.put(job)
                 polling_counter = 0  # Reset counter after successful queuing
 
@@ -265,7 +259,12 @@ class Xqute:
         Returns:
             True if in keep_feeding mode and waiting for stop_feeding() to be called.
         """
-        return self._keep_feeding and self._completion_task is not None
+        return (
+            hasattr(self, "_keep_feeding")
+            and self._keep_feeding
+            and hasattr(self, "_completion_task")
+            and self._completion_task
+        )
 
     async def stop_feeding(self) -> None:
         """Stop feeding mode and wait for all jobs to complete.
@@ -279,7 +278,7 @@ class Xqute:
             RuntimeError: If called without first calling
                 run_until_complete(keep_feeding=True)
         """
-        if not self._completion_task or not self._keep_feeding:
+        if not self.is_feeding():
             logger.error(
                 "/%s stop_feeding() called but keep_feeding mode was not started. "
                 "Ignoring ...",
@@ -293,7 +292,7 @@ class Xqute:
         # Wait for completion if we started in keep_feeding mode
         try:
             await self._completion_task
-        except asyncio.CancelledError:
+        except asyncio.CancelledError:  # pragma: no cover
             if self._tasks:
                 self._tasks.cancel()
 
@@ -310,9 +309,8 @@ class Xqute:
                 await asyncio.sleep(SLEEP_INTERVAL_KEEP_FEEDING)
 
             polling_counter = 0
-            while (
-                self._cancelling is False
-                and not await self.scheduler.check_all_done(self.jobs, polling_counter)
+            while self._cancelling is False and not await self.scheduler.check_all_done(
+                self.jobs, polling_counter
             ):
                 await asyncio.sleep(SLEEP_INTERVAL_POLLING_JOBS)
                 polling_counter += 1

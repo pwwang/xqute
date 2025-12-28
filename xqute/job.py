@@ -43,9 +43,7 @@ class Job:
         "_rc",
         "_error_retry",
         "_num_retries",
-        "prev_status",
         "envs",
-        "_status_cache_valid",
     )
 
     def __init__(
@@ -84,14 +82,11 @@ class Job:
 
         # The name of the job, should be the unique id from the scheduler
         self.trial_count = 0
-        self.prev_status = JobStatus.INIT
 
         self._jid: int | str | None = None
         self._status = JobStatus.INIT
-        self._rc = -1
         self._error_retry = error_retry
         self._num_retries = num_retries
-        self._status_cache_valid = True  # Status is valid initially
 
     def __repr__(self) -> str:
         """repr of the job"""
@@ -143,6 +138,7 @@ class Job:
         self._jid = uniqid
         await self.jid_file.a_write_text(str(uniqid))
 
+    async def get_status(self, refresh: bool = False) -> int:
         """Query the status of the job
 
         If the job is submitted, try to query it from the status file
@@ -150,114 +146,21 @@ class Job:
 
         Uses caching to avoid excessive file I/O. Cache is invalidated
         when status is explicitly set.
-        """
-        # Only read from file if cache is invalid and job is in pollable state
-        status_changed_from_file = False
-        if (
-            not self._status_cache_valid
-            and await self.status_file.a_is_file()
-            and self._status in (
-                JobStatus.SUBMITTED,
-                JobStatus.RUNNING,
-                JobStatus.KILLING,
-            )
-        ):
-            try:
-                new_status_from_file = int(await self.status_file.a_read_text())
-                # Update prev_status before changing _status if status changed
-                if new_status_from_file != self._status:
-                    self.prev_status = self._status
-                    self._status = new_status_from_file
-                    status_changed_from_file = True
-                else:
-                    self._status = new_status_from_file
-                self._status_cache_valid = True
-            except (
-                FileNotFoundError,
-                ValueError,
-                TypeError,
-            ):  # pragma: no cover
-                pass
-
-        if (
-            self._status == JobStatus.FAILED
-            and self._error_retry
-            and self.trial_count < self._num_retries  # type: ignore
-        ):
-            self._status = JobStatus.RETRYING
-
-        if status_changed_from_file and (
-            self._status == JobStatus.RETRYING or self._status >= JobStatus.RUNNING
-        ):
-            logger.info(
-                "/Job-%s Status changed: %r -> %r",
-                self.index,
-                *JobStatus.get_name(self.prev_status, self._status),
-            )
-
-        return self._status
-
-    @status.setter
-    def status(self, stat: int):
-        """Set the status manually
 
         Args:
-            stat: The status to set
+            refresh: Whether to refresh the status from file
         """
-        # Only log if status is actually changing
-        if self._status != stat:
-            logger.debug(
-                "/Job-%s Status changed: %r -> %r",
-                self.index,
-                *JobStatus.get_name(self._status, stat),
-            )
-            self.prev_status = self._status
-            self._status = stat
-        else:
-            # Even if status doesn't change, update prev_status to acknowledge
-            # this status and prevent duplicate hook calls in the scheduler
-            self.prev_status = stat
-        # Always invalidate cache when status is explicitly set
-        self._status_cache_valid = False
+        if not refresh:
+            return self._status
 
-    async def refresh_status(self) -> int:
-        """Force refresh status from file system
-
-        This invalidates the cache and reads the current status.
-        Use this in polling loops to get the latest status.
-
-        Returns:
-            The current job status
-        """
-        self._status_cache_valid = False
-        return await self.status
-
-    async def refresh_status_async(self) -> int:
-        """Async version of refresh_status for batch operations
-
-        This invalidates the cache and reads the current status asynchronously.
-        Use this in polling loops with asyncio.gather() for parallel reads.
-
-        Returns:
-            The current job status
-        """
-        self._status_cache_valid = False
-        # Read status file asynchronously using run_in_executor
-
-        # Don't update prev_status here - let the polling logic handle transitions
-        if (
-            await self.status_file.a_is_file()
-            and self._status in (
-                JobStatus.SUBMITTED,
-                JobStatus.RUNNING,
-                JobStatus.KILLING,
-            )
+        if await self.status_file.a_is_file() and self._status in (
+            JobStatus.SUBMITTED,
+            JobStatus.RUNNING,
+            JobStatus.KILLING,
         ):
             try:
-                # Run blocking I/O in executor for true async operation
                 status_text = await self.status_file.a_read_text()
                 self._status = int(status_text)
-                self._status_cache_valid = True
             except (
                 FileNotFoundError,
                 ValueError,
@@ -265,22 +168,49 @@ class Job:
             ):  # pragma: no cover
                 pass
 
-        if (
-            self._status == JobStatus.FAILED
-            and self._error_retry
-            and self.trial_count < self._num_retries  # type: ignore
-        ):
-            self._status = JobStatus.RETRYING
+        # if (
+        #     self._status == JobStatus.FAILED
+        #     and self._error_retry
+        #     and self.trial_count < self._num_retries  # type: ignore
+        # ):
+        #     self._status = JobStatus.RETRYING
 
         # Don't log here - let scheduler handle transition logging
         return self._status
 
-    @property
-    async def rc(self) -> int:
+    async def set_status(self, stat: int, flush: bool = True) -> None:
+        """Set the status manually
+
+        Args:
+            stat: The status to set
+            flush: Whether to flush the status to file
+        """
+        # Only log if status is actually changing
+        prev_status = self._status
+
+        if stat != prev_status:
+            logger.debug(
+                "/Job-%s Status changed: %r -> %r",
+                self.index,
+                *JobStatus.get_name(prev_status, stat),
+            )
+            self._status = stat
+            if flush:
+                await self.status_file.a_write_text(str(stat))
+
+    async def get_rc(self) -> int:
         """The return code of the job"""
         if not await self.rc_file.a_is_file():
-            return self._rc  # pragma: no cover
+            return -9
         return int(await self.rc_file.a_read_text())
+
+    async def set_rc(self, rc: int | str) -> None:
+        """Set the return code of the job
+
+        Args:
+            rc: The return code
+        """
+        await self.rc_file.a_write_text(str(rc))
 
     async def clean(self, retry: bool = False) -> None:
         """Clean up the meta files

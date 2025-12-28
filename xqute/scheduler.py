@@ -183,6 +183,7 @@ class Scheduler(ABC):
                 exception.__traceback__ = exc.__traceback__
             else:
                 await self.transition_job_status(job, JobStatus.SUBMITTED)
+
         except Exception as exc:  # pragma: no cover
             exception = exc
 
@@ -199,27 +200,12 @@ class Scheduler(ABC):
             await job.stderr_file.a_write_text(error_msg)
             await self.transition_job_status(job, JobStatus.FAILED, rc="-2")
 
-    async def retry_job(self, job: Job):
-        """Retry a job
-
-        Args:
-            job: The job
-        """
-        await job.set_jid("")
-        await job.clean(retry=True)
-        job.trial_count += 1
-        logger.warning(
-            "/Sched-%s Retrying (#%s) job: %r",
-            self.name,
-            job.trial_count,
-            job,
-        )
-        await self.submit_job_and_update_status(job)
-
     async def transition_job_status(
         self,
         job: Job,
         new_status: int,
+        old_status: int | None = None,
+        flush: bool = True,
         rc: str | None = None,
         error_msg: str | None = None,
         is_killed: bool = False,
@@ -235,44 +221,55 @@ class Scheduler(ABC):
         - JID file cleanup for terminal states
         - Pipeline halt on errors if configured
 
+        Note that this method will not flush status changes to disk (job.status_file).
+        You need to call job.set_status() separately if needed.
+
         Args:
             job: The job to transition
             new_status: The new status to transition to
+            old_status: The previous status (if known).
+                If None, will use job._status
+            flush: Whether to flush the status to disk
             rc: Optional return code to write to rc_file
             error_msg: Optional error message to append to stderr_file
             is_killed: Whether this is a killed job (uses on_job_killed hook)
         """
         # Save the previous status before updating
         # (setter will update prev_status, so we need to save it first)
-        old_status = job.prev_status
-
-        # Update status
-        job.status = new_status
+        old_status = job._status if old_status is None else old_status
+        await job.set_status(new_status, flush=flush)
 
         # Handle killed jobs specially
         if is_killed:
-            # logger.info(
-            #     "/Sched-%s Job %s killed, calling hook ...",
-            #     self.name,
-            #     job.index,
-            # )
             logger.debug("/Job-%s Calling on_job_killed hook ...", job.index)
             await plugin.hooks.on_job_killed(self, job)
             return
 
         # Handle status-specific logic
-        if new_status in (JobStatus.FAILED, JobStatus.RETRYING):
+        if new_status == JobStatus.FAILED:
             # Ensure lifecycle hook was called
+            # Job may go from SUBMITTED to FAILED directly (finished too soon)
             if old_status != JobStatus.RUNNING:
-                logger.debug("/Job-%s Calling on_job_started hook ...", job.index)
-                await plugin.hooks.on_job_started(self, job)
+                await self.transition_job_status(
+                    job,
+                    JobStatus.RUNNING,
+                    old_status=old_status,
+                    flush=False,
+                )
+                await self.transition_job_status(
+                    job,
+                    new_status,
+                    old_status=JobStatus.RUNNING,
+                    flush=False,
+                )
+                return
 
             # Write rc file if provided
-            if rc is not None:
-                await job.rc_file.a_write_text(rc)
+            if rc is not None:  # pragma: no cover
+                await job.set_rc(rc)
 
             # Append error message if provided
-            if error_msg is not None:
+            if error_msg is not None:  # pragma: no cover
                 async with job.stderr_file.a_open("a") as f:
                     f.write(f"\n{error_msg}\n")
 
@@ -281,11 +278,7 @@ class Scheduler(ABC):
             await plugin.hooks.on_job_failed(self, job)
 
             # Clean up jid file
-            try:
-                await job.jid_file.a_unlink(missing_ok=True)
-            except Exception:  # pragma: no cover
-                # missing_ok is not working for some cloud paths
-                pass
+            await job.jid_file.a_unlink(missing_ok=True)
 
             # Handle halt strategy
             if self.error_strategy == JobErrorStrategy.HALT:
@@ -298,20 +291,27 @@ class Scheduler(ABC):
 
         elif new_status == JobStatus.FINISHED:
             # Ensure lifecycle hook was called
-            if old_status != JobStatus.RUNNING:
-                logger.debug("/Job-%s Calling on_job_started hook ...", job.index)
-                await plugin.hooks.on_job_started(self, job)
+            if old_status != JobStatus.RUNNING:  # pragma: no cover
+                await self.transition_job_status(
+                    job,
+                    JobStatus.RUNNING,
+                    old_status=old_status,
+                    flush=False,
+                )
+                await self.transition_job_status(
+                    job,
+                    new_status,
+                    old_status=JobStatus.RUNNING,
+                    flush=False,
+                )
+                return
 
             # Call success hook
             logger.debug("/Job-%s Calling on_job_succeeded hook ...", job.index)
             await plugin.hooks.on_job_succeeded(self, job)
 
             # Clean up jid file
-            try:
-                await job.jid_file.a_unlink(missing_ok=True)
-            except Exception:  # pragma: no cover
-                # missing_ok is not working for some cloud paths
-                pass
+            await job.jid_file.a_unlink(missing_ok=True)
 
         elif new_status == JobStatus.RUNNING:
             # Call started hook
@@ -324,7 +324,7 @@ class Scheduler(ABC):
                 "/Sched-%s Job %s submitted (jid: %s, wrapped: %s)",
                 self.name,
                 job.index,
-                await job.jid,
+                await job.get_jid(),
                 await self.wrapped_job_script(job),
             )
             logger.debug("/Job-%s Calling on_job_submitted hook ...", job.index)
@@ -336,10 +336,10 @@ class Scheduler(ABC):
         Args:
             job: The job
         """
-        job.status = JobStatus.KILLING
+        await job.set_status(JobStatus.KILLING)
         logger.debug("/Job-%s Calling on_job_killing hook ...", job.index)
         ret = await plugin.hooks.on_job_killing(self, job)
-        if ret is False:  # pragma: no cover
+        if ret is False:
             logger.info(
                 "/Sched-%s Job %s killing cancelled by hook.",
                 self.name,
@@ -349,14 +349,26 @@ class Scheduler(ABC):
 
         logger.warning("/Sched-%s Killing job %s ...", self.name, job.index)
         await self.kill_job(job)
-        try:
-            await job.jid_file.a_unlink(missing_ok=True)
-        except Exception:  # pragma: no cover
-            # missing_ok is not working for some cloud paths
-            # FileNotFoundError, google.api_core.exceptions.NotFound
-            pass
 
         await self.transition_job_status(job, JobStatus.FINISHED, is_killed=True)
+
+    async def retry_job(self, job: Job):
+        """Retry a job
+
+        Args:
+            job: The job
+        """
+        await job.set_jid("")
+        await job.clean(retry=True)
+        job.trial_count += 1
+        logger.warning(
+            "/Sched-%s Retrying (#%s) job: %r",
+            self.name,
+            job.trial_count,
+            job,
+        )
+        await self.transition_job_status(job, JobStatus.RETRYING, flush=False)
+        await self.submit_job_and_update_status(job)
 
     async def count_running_jobs(self, jobs: List[Job]) -> int:
         """Count currently running/active jobs (lightweight check)
@@ -370,17 +382,141 @@ class Scheduler(ABC):
         Returns:
             Number of jobs currently in active states
         """
-        n_running = 0
-        for job in jobs:
-            # Use cached status, don't refresh from disk
-            if await job.status in (
+        # check_job_done() has updated _status already
+        # statuses = await asyncio.gather(*(job.get_status() for job in jobs))
+        return sum(
+            1
+            for job in jobs
+            if job._status
+            in (
                 JobStatus.QUEUED,
                 JobStatus.SUBMITTED,
                 JobStatus.RUNNING,
                 JobStatus.KILLING,
-            ):
-                n_running += 1
-        return n_running
+            )
+        )
+
+    async def _check_job_done(self, job: Job, polling_counter: int) -> bool | str:
+        """Check if a single job is done (lightweight check)
+
+        This is optimized for the producer to check if new jobs can be submitted.
+        It only checks the status without refreshing or calling hooks.
+
+        Args:
+            job: The job
+            polling_counter: The polling counter for hook calls
+
+        Returns:
+            True if the job is done, False if not.
+            If the job failed, return the "failed".
+        """
+        prev_status = job._status
+        status = await job.get_status(refresh=True)
+        # Keep the previous status, which will be updated later
+        # So that later parts can know the previous status
+        job._status = prev_status
+
+        # Status changed
+        if status != prev_status:
+            await self.transition_job_status(
+                job,
+                status,
+                old_status=prev_status,
+                flush=False,
+            )
+
+        elif status == JobStatus.SUBMITTED:
+            # Status keep being SUBMITTED
+            # Check if the job fails before running
+            if await self.job_fails_before_running(job):  # pragma: no cover
+                logger.warning(
+                    "/Sched-%s Job %s seems to fail before running, "
+                    "check your scheduler logs if necessary.",
+                    self.name,
+                    job.index,
+                )
+                await self.transition_job_status(
+                    job,
+                    JobStatus.FAILED,
+                    old_status=prev_status,
+                    flush=False,
+                    rc="-3",
+                    error_msg=(
+                        "Error: job seems to fail before running.\n"
+                        "Check your scheduler logs if necessary."
+                    ),
+                )
+                # transition_job_status handles the HALT, but we still need to break
+                if self.error_strategy == JobErrorStrategy.HALT:
+                    return "failed"
+
+        elif status == JobStatus.RUNNING:
+            # Status keep being RUNNING
+            logger.debug(
+                "/Sched-%s Job %s is running, calling polling hook ...",
+                self.name,
+                job.index,
+            )
+            # Call the polling hook
+            logger.debug("/Job-%s Calling on_job_polling hook ...", job.index)
+            await plugin.hooks.on_job_polling(self, job, polling_counter)
+            # Let's make sure the job is really running
+            if (
+                not await job.rc_file.a_is_file()
+                and (polling_counter + 1) % self.recheck_interval == 0
+                and not await self.job_is_running(job)
+            ):  # pragma: no cover
+                logger.warning(
+                    "/Sched-%s Job %s is not running in the scheduler, "
+                    "but its status is still RUNNING, setting it to FAILED",
+                    self.name,
+                    job.index,
+                )
+                await self.transition_job_status(
+                    job,
+                    JobStatus.FAILED,
+                    old_status=prev_status,
+                    flush=False,
+                    rc="-3",
+                    error_msg=(
+                        "Error: job is not running in the scheduler, "
+                        "but its status is still RUNNING.\n"
+                        "It is likely that the resource is preempted."
+                    ),
+                )
+                # transition_job_status handles the HALT, but we still need to break
+                if self.error_strategy == JobErrorStrategy.HALT:
+                    return "failed"
+
+        # Check if we need to halt - this catches any FAILED status
+        # transition_job_status already sent SIGTERM, we just need to break the loop
+        if self.error_strategy == JobErrorStrategy.HALT and status == JobStatus.FAILED:
+            return "failed"
+
+        if status not in (JobStatus.FINISHED, JobStatus.FAILED):
+            logger.debug(
+                "/Sched-%s Not all jobs are done yet, job %s is %s",
+                self.name,
+                job.index,
+                JobStatus.get_name(status),
+            )
+            return False
+
+        # Try to resubmit the job for retrying
+        if (
+            status == JobStatus.FAILED
+            and job._error_retry
+            and job.trial_count < job._num_retries
+        ):
+            logger.debug(
+                "/Sched-%s Job %s is retrying ...",
+                self.name,
+                job.index,
+            )
+            await self.retry_job(job)
+            return False
+
+        return True
 
     async def check_all_done(
         self,
@@ -401,104 +537,19 @@ class Scheduler(ABC):
         """
         ret = True
         logger.debug(
-            "/Sched-%s Checking if all jobs done (#%s) ...",
+            "/Sched-%s Checking if all jobs are done (#%s) ...",
             self.name,
             polling_counter,
         )
 
         for job in jobs:
-            # Refresh status from filesystem to get latest state
-            status = await job.refresh_status()
-
-            if job.prev_status != status:
-                if status in (JobStatus.FAILED, JobStatus.RETRYING):
-                    # transition_job_status will handle all the failure logic
-                    await self.transition_job_status(job, status)
-                elif status == JobStatus.FINISHED:
-                    # transition_job_status will handle all the success logic
-                    await self.transition_job_status(job, status)
-                elif status == JobStatus.RUNNING:
-                    # transition_job_status will handle the started hook
-                    await self.transition_job_status(job, status)
-            elif status == JobStatus.SUBMITTED:  # pragma: no cover
-                # Check if the job fails before running
-                if await self.job_fails_before_running(job):
-                    logger.warning(
-                        "/Sched-%s Job %s seems to fail before running, "
-                        "check your scheduler logs if necessary.",
-                        self.name,
-                        job.index,
-                    )
-                    await self.transition_job_status(
-                        job,
-                        JobStatus.FAILED,
-                        rc="-3",
-                        error_msg=(
-                            "Error: job seems to fail before running.\n"
-                            "Check your scheduler logs if necessary."
-                        ),
-                    )
-                    # transition_job_status handles the HALT, but we still need to break
-                    if self.error_strategy == JobErrorStrategy.HALT:
-                        break
-            elif status == JobStatus.RUNNING:
-                logger.debug(
-                    "/Sched-%s Job %s is running, calling polling hook ...",
-                    self.name,
-                    job.index,
-                )
-                # Call the polling hook
-                logger.debug("/Job-%s Calling on_job_polling hook ...", job.index)
-                await plugin.hooks.on_job_polling(self, job, polling_counter)
-                # Let's make sure the job is really running
-                if (
-                    not await job.rc_file.a_is_file()
-                    and (polling_counter + 1) % self.recheck_interval == 0
-                    and not await self.job_is_running(job)
-                ):  # pragma: no cover
-                    logger.warning(
-                        "/Sched-%s Job %s is not running in the scheduler, "
-                        "but its status is still RUNNING, setting it to FAILED",
-                        self.name,
-                        job.index,
-                    )
-                    await self.transition_job_status(
-                        job,
-                        JobStatus.FAILED,
-                        rc="-3",
-                        error_msg=(
-                            "Error: job is not running in the scheduler, "
-                            "but its status is still RUNNING.\n"
-                            "It is likely that the resource is preempted."
-                        ),
-                    )
-                    # transition_job_status handles the HALT, but we still need to break
-                    if self.error_strategy == JobErrorStrategy.HALT:
-                        break
-
-            # Check if we need to halt - this catches any FAILED status
-            # transition_job_status already sent SIGTERM, we just need to break the loop
-            if (
-                self.error_strategy == JobErrorStrategy.HALT
-                and status == JobStatus.FAILED
-            ):
+            # We don't use gather here, since we may break the loop early
+            job_done = await self._check_job_done(job, polling_counter)
+            if job_done == "failed":
+                ret = False
                 break
 
-            if status not in (JobStatus.FINISHED, JobStatus.FAILED):
-                logger.debug(
-                    "/Sched-%s Not all jobs are done yet, job %s is %s",
-                    self.name,
-                    job.index,
-                    JobStatus.get_name(status),
-                )
-                # Try to resubmit the job for retrying
-                if status == JobStatus.RETRYING:
-                    logger.debug(
-                        "/Sched-%s Job %s is retrying ...",
-                        self.name,
-                        job.index,
-                    )
-                    await self.retry_job(job)
+            if not job_done:
                 ret = False
 
         return ret
@@ -511,7 +562,7 @@ class Scheduler(ABC):
         """
         logger.warning("/Sched-%s Killing running jobs ...", self.name)
         for job in jobs:
-            status = await job.status
+            status = await job.get_status()
             if status in (JobStatus.SUBMITTED, JobStatus.RUNNING):
                 await self.kill_job_and_update_status(job)
 
@@ -526,7 +577,7 @@ class Scheduler(ABC):
         """
         if await job.jid_file.a_is_file():
             if await self.job_is_running(job):
-                job.status = JobStatus.SUBMITTED
+                await job.set_status(JobStatus.SUBMITTED)
                 return True
         return False
 
