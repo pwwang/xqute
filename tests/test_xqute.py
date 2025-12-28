@@ -95,7 +95,7 @@ async def test_main(tmp_path, capsys):
 
         await xqute.stop_feeding()
         out = capsys.readouterr().out
-        assert "keep_feeding mode was not started" in out
+        assert "stop_feeding() called" in out
 
 
 async def test_keep_feeding(tmp_path):
