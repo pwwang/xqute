@@ -403,7 +403,7 @@ class GbatchScheduler(Scheduler):
             "batch",
             "jobs",
             "delete",
-            await job.jid,
+            await job.get_jid(),
             "--project",
             self.project,
             "--location",
@@ -418,7 +418,7 @@ class GbatchScheduler(Scheduler):
             )
         except Exception:
             pass
-        else:  # pragma: no cover
+        else:
             await proc.wait()
 
         status = await self._get_job_status(job)
@@ -426,7 +426,7 @@ class GbatchScheduler(Scheduler):
             await asyncio.sleep(SLEEP_INTERVAL_GBATCH_STATUS_CHECK)
             status = await self._get_job_status(job)
 
-        if status != "UNKNOWN":  # pragma: no cover
+        if status != "UNKNOWN":
             logger.warning(
                 "/Sched-%s Failed to delete job %r on GCP, submision may fail.",
                 self.name,
@@ -436,7 +436,8 @@ class GbatchScheduler(Scheduler):
     async def submit_job(self, job: Job) -> str:
 
         sha = sha256(str(self.workdir).encode()).hexdigest()[:8]
-        await job.set_jid(f"{self.jobname_prefix}-{sha}-{job.index}".lower())
+        jid = f"{self.jobname_prefix}-{sha}-{job.index}".lower()
+        await job.set_jid(jid)
         await self._delete_job(job)
 
         conf_file = await self.job_config_file(job)
@@ -445,7 +446,7 @@ class GbatchScheduler(Scheduler):
             "batch",
             "jobs",
             "submit",
-            await job.jid,
+            jid,
             "--config",
             conf_file.mounted,
             "--project",
@@ -465,7 +466,7 @@ class GbatchScheduler(Scheduler):
                 f"{conf_file}"
             )
 
-        return await job.jid
+        return jid
 
     async def kill_job(self, job: Job):
         command = [
@@ -474,7 +475,7 @@ class GbatchScheduler(Scheduler):
             "batch",
             "jobs",
             "cancel",
-            await job.jid,
+            await job.get_jid(),
             "--project",
             self.project,
             "--location",
@@ -513,7 +514,7 @@ class GbatchScheduler(Scheduler):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-        except Exception:  # pragma: no cover
+        except Exception:
             return "UNKNOWN"
 
         if await proc.wait() != 0:

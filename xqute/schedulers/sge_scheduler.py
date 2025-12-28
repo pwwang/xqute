@@ -92,7 +92,7 @@ class SgeScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.qdel,
-            str(await job.jid),
+            str(await job.get_jid()),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -111,7 +111,7 @@ class SgeScheduler(Scheduler):
         """
         try:
             jid = (await job.jid_file.a_read_text()).strip()
-        except FileNotFoundError:  # pragma: no cover
+        except FileNotFoundError:
             return False
 
         if not jid:

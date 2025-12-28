@@ -85,7 +85,7 @@ class SlurmScheduler(Scheduler):
         """
         proc = await asyncio.create_subprocess_exec(
             self.scancel,
-            str(await job.jid),
+            str(await job.get_jid()),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -124,7 +124,7 @@ class SlurmScheduler(Scheduler):
         stdout = await proc.stdout.read()
         return stdout.decode().strip().split()[4].upper()  # type: ignore
 
-    async def job_fails_before_running(self, job):  # pragma: no cover
+    async def job_fails_before_running(self, job: Job) -> bool:  # pragma: no cover
         status = await self._get_job_status(job)
         return status in (
             "CA",

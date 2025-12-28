@@ -6,7 +6,7 @@ import signal
 from typing import TYPE_CHECKING
 from simplug import Simplug, SimplugResult  # type: ignore
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from .xqute import Xqute
     from .job import Job
     from .scheduler import Scheduler

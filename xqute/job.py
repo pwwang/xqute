@@ -101,20 +101,6 @@ class Job:
         return f"<{prefix}({self._jid}): ({self.cmd})>"
 
     @property
-    async def jid(self) -> int | str | None:
-        """Get the jid of the job in scheduler system"""
-        if self._jid is None and not await self.jid_file.a_is_file():
-            return None
-        if self._jid is not None:
-            return self._jid
-        self._jid = await self.jid_file.a_read_text()
-        return self._jid
-
-    async def set_jid(self, uniqid: int | str):
-        self._jid = uniqid
-        await self.jid_file.a_write_text(str(uniqid))
-
-    @property
     def stdout_file(self) -> SpecPath:
         """The stdout file of the job"""
         return self.metadir / "job.stdout"
@@ -144,8 +130,19 @@ class Job:
         """The retry directory of the job"""
         return self.metadir / "job.retry"
 
-    @property
-    async def status(self) -> int:
+    async def get_jid(self) -> int | str | None:
+        """Get the jid of the job in scheduler system"""
+        if self._jid is None and not await self.jid_file.a_is_file():
+            return None
+        if self._jid is not None:
+            return self._jid
+        self._jid = await self.jid_file.a_read_text()
+        return self._jid
+
+    async def set_jid(self, uniqid: int | str):
+        self._jid = uniqid
+        await self.jid_file.a_write_text(str(uniqid))
+
         """Query the status of the job
 
         If the job is submitted, try to query it from the status file
