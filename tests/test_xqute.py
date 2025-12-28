@@ -20,7 +20,7 @@ class EchoPlugin:
 
     @plugin.impl
     async def on_job_init(scheduler, job):
-        print(await job.jid)
+        print(await job.get_jid())
         print(repr(job))
         await job.jid_file.a_write_text("-1")
 
@@ -62,7 +62,7 @@ class JobFailPlugin:
     async def on_job_killing(scheduler, job):
         if job.index == 0:
             await scheduler.kill_job(job)
-            job.status = JobStatus.FINISHED
+            await job.set_status(JobStatus.FINISHED)
             return False
 
     @plugin.impl
@@ -81,25 +81,39 @@ class JobCancelPlugin:
     async def on_job_submitting(scheduler, job):
         await job.clean()
         await job.set_jid(await scheduler.submit_job(job))
-        job.status = JobStatus.SUBMITTED
+        await job.set_status(JobStatus.SUBMITTED)
         return False
 
 
-async def test_main(tmp_path):
+async def test_main(tmp_path, capsys):
     with plugin.plugins_context([EchoPlugin]):
         xqute = Xqute(LocalScheduler, forks=2, workdir=tmp_path)
         await xqute.feed(["bash", "-c", "echo 1"])
         await xqute.feed(["echo", 2])
         await xqute.run_until_complete()
-        assert await xqute.jobs[0].rc == 0
+        assert await xqute.jobs[0].get_rc() == 0
 
-        # jobcmd_logfile0 = tmp_path / "0" / "jobsched.log"
-        # assert jobcmd_logfile0.is_file()
-        # assert jobcmd_logfile0.read_text() == "jobsched started\njobsched ended\n"
+        await xqute.stop_feeding()
+        out = capsys.readouterr().out
+        assert "keep_feeding mode was not started" in out
 
-        # jobcmd_logfile1 = tmp_path / "0" / "jobsched.log"
-        # assert jobcmd_logfile1.is_file()
-        # assert jobcmd_logfile1.read_text() == "jobsched started\njobsched ended\n"
+
+async def test_keep_feeding(tmp_path):
+    xqute = Xqute(LocalScheduler, forks=2, workdir=tmp_path)
+    await xqute.run_until_complete(keep_feeding=True)
+    for i in range(2):
+        await xqute.feed(["echo", i])
+    await xqute.stop_feeding()
+
+
+async def test_del_without_stop_feeding(tmp_path, caplog):
+    xqute = Xqute(LocalScheduler, forks=2, workdir=tmp_path)
+    await xqute.run_until_complete(keep_feeding=True)
+    for i in range(2):
+        await xqute.feed(["echo", i])
+
+    xqute.__del__()
+    assert "Did you forget to call 'await xqute.stop_feeding()'?" in caplog.text
 
 
 async def test_xqute_cloud_workdir(request):
@@ -113,8 +127,8 @@ async def test_xqute_cloud_workdir(request):
     job = await xqute.scheduler.create_job(1, ["echo", 1])
     await xqute.feed(job)
     await xqute.run_until_complete()
-    assert await xqute.jobs[0].rc == 0
-    assert await xqute.jobs[1].rc == 0
+    assert await xqute.jobs[0].get_rc() == 0
+    assert await xqute.jobs[1].get_rc() == 0
     await PanPath(workdir).a_rmtree()
 
 
@@ -169,9 +183,12 @@ async def test_job_failed_hook(tmp_path, caplog, capsys):
         await xqute.feed(["echo", 1])
         await xqute.run_until_complete()
         assert "Job Failed: <Job-0" in capsys.readouterr().out
-        assert "/Job-0 Status changed: 'SUBMITTED' -> 'RETRYING'" in caplog.text
-        assert "/Job-0 Status changed: 'SUBMITTED' -> 'FAILED'" in caplog.text
-        assert "/Job-1 Status changed: 'SUBMITTED' -> 'FINISHED'" in caplog.text
+        assert "/Job-0 Status changed: 'SUBMITTED' -> 'RUNNING'" in caplog.text
+        assert "/Job-0 Status changed: 'RUNNING' -> 'FAILED'" in caplog.text
+        assert "/Job-0 Status changed: 'FAILED' -> 'RETRYING'" in caplog.text
+        assert "/Job-0 Status changed: 'RETRYING' -> 'SUBMITTED'" in caplog.text
+        assert "/Job-1 Status changed: 'SUBMITTED' -> 'RUNNING'" in caplog.text
+        assert "/Job-1 Status changed: 'RUNNING' -> 'FINISHED'" in caplog.text
 
         # should clean retry directories
         xqute = Xqute(
@@ -190,6 +207,21 @@ async def test_job_is_running(tmp_path, caplog):
         loop.call_later(2.0, xqute.cancel)
         await xqute.run_until_complete()
         assert "Skip submitting" in caplog.text
+
+
+async def test_job_set_rc_jid(tmp_path):
+    xqute = Xqute(workdir=tmp_path)
+    await xqute.feed(["bash", "-c", "exit 3"])
+    await xqute.run_until_complete()
+    job = xqute.jobs[0]
+    assert await job.get_rc() == 3
+
+    await job.set_rc(5)
+    assert await job.get_rc() == 5
+
+    await job.set_jid(12345)
+    job._jid = None  # force reload
+    assert await job.get_jid() == "12345"
 
 
 async def test_halt(tmp_path, caplog):
@@ -228,8 +260,8 @@ async def test_put_job_with_envs(tmp_path):
     await xqute.feed(job2, envs={"MYVAR": "456"})
     await xqute.run_until_complete()
     job = xqute.jobs[0]
-    assert await job.rc == 0
+    assert await job.get_rc() == 0
     assert (await job.stdout_file.a_read_text()).strip() == "123"
 
-    assert await job2.rc == 0
+    assert await job2.get_rc() == 0
     assert (await job2.stdout_file.a_read_text()).strip() == "456"

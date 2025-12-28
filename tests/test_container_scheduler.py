@@ -236,5 +236,5 @@ async def test_submission_failure(temp_workdir):
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False
-    assert await job.status == JobStatus.FAILED
+    assert await job.get_status(True) == JobStatus.FAILED
     assert "Failed to submit job" in await job.stderr_file.a_read_text()

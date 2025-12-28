@@ -37,9 +37,7 @@ async def test_immediate_submission_failure(tmp_path):
     await job.stderr_file.a_unlink(missing_ok=True)
     await job.stdout_file.a_unlink(missing_ok=True)
 
-    with pytest.raises(
-        RuntimeError, match=r"bad_non_existent_command.+not found"
-    ):
+    with pytest.raises(RuntimeError, match=r"bad_non_existent_command.+not found"):
         await scheduler.submit_job(job)
 
 
@@ -51,14 +49,17 @@ async def test_killing_running_jobs(tmp_path):
     await scheduler.submit_job_and_update_status(job1)
     await scheduler.submit_job_and_update_status(job2)
 
-    while await job1.status == JobStatus.INIT or await job2.status == JobStatus.INIT:
-        await asyncio.sleep(.1)
+    while (
+        await job1.get_status(True) == JobStatus.INIT
+        or await job2.get_status(True) == JobStatus.INIT
+    ):
+        await asyncio.sleep(0.1)
     await scheduler.kill_running_jobs([job1, job2])
 
-    assert await job1.status == JobStatus.FINISHED
-    assert await job2.status == JobStatus.FINISHED
-    assert await job1.rc != 0
-    assert await job2.rc != 0
+    assert await job1.get_status(True) == JobStatus.FINISHED
+    assert await job2.get_status(True) == JobStatus.FINISHED
+    assert await job1.get_rc() != 0
+    assert await job2.get_rc() != 0
 
 
 async def test_cwd(tmp_path):
@@ -67,7 +68,7 @@ async def test_cwd(tmp_path):
     scheduler = LocalScheduler(workdir=tmp_path, cwd=cwd)
     job = await scheduler.create_job(0, ["pwd"])
     await scheduler.submit_job_and_update_status(job)
-    while await job.status == JobStatus.INIT:
-        await asyncio.sleep(.1)
+    while await job.get_status(True) != JobStatus.FINISHED:
+        await asyncio.sleep(0.1)
 
-    assert job.stdout_file.read_text().strip() == str(cwd)
+    assert (await job.stdout_file.a_read_text()).strip() == str(cwd)
