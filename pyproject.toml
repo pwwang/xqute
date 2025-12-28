@@ -31,6 +31,7 @@ cloudsh = ["cloudsh"]
 pytest = "^8"
 pytest-cov = "^6"
 pytest-asyncio = "^1"
+pytest-xdist = ">=3.0.0"
 python-dotenv = "^1"
 ipykernel = "^6.29.5"
 backports-asyncio-runner = {version = "^1.1.0", python = "<3.11"}
@@ -40,7 +41,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-addopts = "-vv --cov=xqute --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv -n auto --cov=xqute --cov-report xml:.coverage.xml --cov-report term-missing"
 filterwarnings = [
    "ignore:.+may lead to deadlocks in the child:DeprecationWarning",
 ]
