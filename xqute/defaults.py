@@ -109,11 +109,11 @@ SLEEP_INTERVAL_CLOUD_FILE_CHECK: float = 2.0
 # Wait for GBatch status check
 SLEEP_INTERVAL_GBATCH_STATUS_CHECK: float = 1.0
 JOBCMD_WRAPPER_TEMPLATE: str = r"""#!{shebang}
-set -u -E -o pipefail
+set -x -u -E -o pipefail
+exec >"{job.metadir.mounted}/job.wrapped.log" 2>&1
 
 {scheduler.jobcmd_wrapper_init}
 
-# tell the xqute that the job is submitted
 update_metafile "{status.RUNNING}" "{job.status_file.mounted}"
 update_metafile "" "{job.stdout_file.mounted}"
 
