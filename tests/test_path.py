@@ -9,14 +9,14 @@ from xqute.path import (
     SpecLocalPath,
     SpecCloudPath,
     SpecGSPath,
-    # SpecAzureBlobPath,
-    # SpecS3Path,
+    SpecAzurePath,
+    SpecS3Path,
     MountedPath,
     MountedLocalPath,
     MountedCloudPath,
     MountedGSPath,
-    # MountedAzureBlobPath,
-    # MountedS3Path,
+    MountedAzurePath,
+    MountedS3Path,
 )
 
 
@@ -847,3 +847,29 @@ def test_mountedpath_serialization():
     assert str(deserialized4.spec) == str(p4.spec)
     assert isinstance(deserialized4, MountedGSPath)
     assert deserialized4.is_mounted()
+
+
+def test_path_router():
+    p1 = SpecPath("/path/to/file")
+    assert isinstance(p1, SpecLocalPath)
+
+    p2 = SpecPath("gs://bucket/path/to/file")
+    assert isinstance(p2, SpecGSPath)
+
+    p3 = SpecPath("s3://bucket/path/to/file")
+    assert isinstance(p3, SpecS3Path)
+
+    p4 = SpecPath("azure://container/path/to/file")
+    assert isinstance(p4, SpecAzurePath)
+
+    m1 = MountedPath("/path/to/file")
+    assert isinstance(m1, MountedLocalPath)
+
+    m2 = MountedPath("gs://bucket/path/to/file")
+    assert isinstance(m2, MountedGSPath)
+
+    m3 = MountedPath("s3://bucket/path/to/file")
+    assert isinstance(m3, MountedS3Path)
+
+    m4 = MountedPath("azure://container/path/to/file")
+    assert isinstance(m4, MountedAzurePath)

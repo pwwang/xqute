@@ -101,9 +101,9 @@ class MountedPath(PanPath):
             path = PanPath(path)  # type: ignore
             if isinstance(path, GSPath):
                 mounted_class = MountedGSPath
-            elif isinstance(path, AzurePath):  # pragma: no cover
+            elif isinstance(path, AzurePath):
                 mounted_class = MountedAzurePath  # type: ignore
-            elif isinstance(path, S3Path):  # pragma: no cover
+            elif isinstance(path, S3Path):
                 mounted_class = MountedS3Path  # type: ignore
             else:
                 mounted_class = MountedLocalPath  # type: ignore
@@ -114,9 +114,7 @@ class MountedPath(PanPath):
 
         # Ensure the underlying Path initialization receives the path so
         # internal parts like `_parts` are populated on older Python versions.
-        return super().__new__(
-            cls, path, *args, **kwargs
-        )  # type: ignore # pragma: no cover
+        return super().__new__(cls, path, *args, **kwargs)  # type: ignore
 
     @property
     def spec(self) -> SpecPath:
@@ -507,7 +505,7 @@ class SpecPath(PanPath):
         Returns:
             An instance of the appropriate SpecPath subclass based on the path type:
             - SpecGSPath for Google Cloud Storage paths
-            - SpecAzureBlobPath for Azure Blob Storage paths
+            - SpecAzurePath for Azure Blob Storage paths
             - SpecS3Path for Amazon S3 paths
             - SpecLocalPath for local filesystem paths
         """
@@ -515,9 +513,9 @@ class SpecPath(PanPath):
             path = PanPath(path)  # type: ignore
             if isinstance(path, GSPath):
                 spec_class = SpecGSPath
-            elif isinstance(path, AzurePath):  # pragma: no cover
-                spec_class = SpecAzureBlobPath  # type: ignore
-            elif isinstance(path, S3Path):  # pragma: no cover
+            elif isinstance(path, AzurePath):
+                spec_class = SpecAzurePath  # type: ignore
+            elif isinstance(path, S3Path):
                 spec_class = SpecS3Path  # type: ignore
             else:
                 spec_class = SpecLocalPath
@@ -527,9 +525,7 @@ class SpecPath(PanPath):
             return obj
 
         # Ensure Path internals are initialized with the provided path
-        return super().__new__(
-            cls, path, *args, **kwargs
-        )  # type: ignore # pragma: no cover
+        return super().__new__(cls, path, *args, **kwargs)  # type: ignore
 
     @property
     def mounted(self) -> MountedPath:
@@ -725,7 +721,7 @@ class SpecGSPath(SpecCloudPath, GSPath):
     """
 
 
-class SpecAzureBlobPath(SpecCloudPath, AzurePath):
+class SpecAzurePath(SpecCloudPath, AzurePath):
     """A class to represent a spec Azure Blob Storage path
 
     This class represents an Azure Blob Storage path as it appears in the
@@ -735,7 +731,7 @@ class SpecAzureBlobPath(SpecCloudPath, AzurePath):
     Examples:
         >>> spec_path = SpecPath("az://container/blob",
         ...                    mounted="az://remote-container/blob")
-        >>> isinstance(spec_path, SpecAzureBlobPath)
+        >>> isinstance(spec_path, SpecAzurePath)
         True
     """
 
