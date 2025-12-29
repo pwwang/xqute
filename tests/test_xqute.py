@@ -187,8 +187,8 @@ async def test_job_failed_hook(tmp_path, caplog, capsys):
         assert "Job Failed: <Job-0" in capsys.readouterr().out
         assert "/Job-0 Status changed: 'SUBMITTED' -> 'RUNNING'" in caplog.text
         assert "/Job-0 Status changed: 'RUNNING' -> 'FAILED'" in caplog.text
-        assert "/Job-0 Status changed: 'FAILED' -> 'RETRYING'" in caplog.text
-        assert "/Job-0 Status changed: 'RETRYING' -> 'SUBMITTED'" in caplog.text
+        assert "/Job-0 Status changed: 'FAILED' -> 'QUEUED'" in caplog.text
+        assert "/Job-0 Status changed: 'QUEUED' -> 'SUBMITTED'" in caplog.text
         assert "/Job-1 Status changed: 'SUBMITTED' -> 'RUNNING'" in caplog.text
         assert "/Job-1 Status changed: 'RUNNING' -> 'FINISHED'" in caplog.text
 

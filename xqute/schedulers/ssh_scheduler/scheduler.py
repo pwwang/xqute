@@ -103,7 +103,7 @@ class SshScheduler(LocalScheduler):
 
                 if isinstance(job.stdout_file, CloudPath):  # pragma: no cover
                     await asyncio.sleep(SLEEP_INTERVAL_CLOUD_FILE_CHECK)
-                else:
+                else:  # pragma: no cover
                     await asyncio.sleep(0.1)
 
         return stdout.decode()

@@ -366,7 +366,8 @@ class Scheduler(ABC):
             job.trial_count,
             job,
         )
-        await self.transition_job_status(job, JobStatus.RETRYING, flush=False)
+        await self.transition_job_status(job, JobStatus.QUEUED, flush=False)
+        await plugin.hooks.on_job_queued(self, job)
         await self.submit_job_and_update_status(job)
 
     async def count_running_jobs(self, jobs: List[Job]) -> int:
