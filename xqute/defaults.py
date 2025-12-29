@@ -44,13 +44,13 @@ class JobStatus:
     INIT -> QUEUED -> SUBMITTED -> KILLING -> FINISHED
     INIT -> QUEUED -> (CANCELLED)
 
-    Note that RETRYING is a transient status used when a job is being retried.
-    RUNNING, FINISHED and FAILED are the statuses that are polled from the scheduler.
+    Note that RUNNING, FINISHED and FAILED are the statuses that are polled
+    from the scheduler.
     They can not be set directly by xqute; they are set in the job wrapper script.
 
     Attributes:
         INIT: When a job is initialized
-        RETRYING: When a job is to be retried
+        # RETRYING: When a job is to be retried
         QUEUED: When a job is queued
         SUBMITTED: When a job is submitted
         RUNNING: When a job is running
@@ -60,7 +60,7 @@ class JobStatus:
     """
 
     INIT: int = 0
-    RETRYING: int = 1
+    # RETRYING: int = 1
     QUEUED: int = 2
     SUBMITTED: int = 3
     RUNNING: int = 4

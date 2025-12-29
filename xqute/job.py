@@ -168,13 +168,6 @@ class Job:
             ):  # pragma: no cover
                 pass
 
-        # if (
-        #     self._status == JobStatus.FAILED
-        #     and self._error_retry
-        #     and self.trial_count < self._num_retries  # type: ignore
-        # ):
-        #     self._status = JobStatus.RETRYING
-
         # Don't log here - let scheduler handle transition logging
         return self._status
 
