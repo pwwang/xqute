@@ -70,7 +70,7 @@ class SshScheduler(LocalScheduler):
             *shlex.split(self.jobcmd_shebang(job)),
             job_script,
         )
-        print(f"SSH submit rc: {rc}, stdout: {stdout}, stderr: {stderr}")
+
         if rc != 0:
             # job.stdout_file.write_bytes(stdout)
             # job.stderr_file.write_bytes(stderr)
@@ -105,7 +105,7 @@ class SshScheduler(LocalScheduler):
                     await asyncio.sleep(SLEEP_INTERVAL_CLOUD_FILE_CHECK)
                 else:
                     await asyncio.sleep(0.1)
-        print(f"SSH job #{job.index} submitted with pid {pid} on {srvname}")
+
         return stdout.decode()
 
     async def kill_job(self, job: Job):
