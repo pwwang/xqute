@@ -189,7 +189,7 @@ class Job:
         prev_status = self._status
 
         if stat != prev_status:
-            logger.debug(
+            logger.info(
                 "/Job-%s Status changed: %r -> %r",
                 self.index,
                 *JobStatus.get_name(prev_status, stat),
