@@ -2,7 +2,8 @@ import pytest  # noqa: F401
 
 from pathlib import Path
 
-from panpath import CloudPath, GSPath
+from panpath import CloudPath, GSPath, PanPath
+from xqute.defaults import DEFAULT_CLOUD_FSPATH
 from xqute.path import (
     LocalPath,
     SpecPath,
@@ -18,6 +19,7 @@ from xqute.path import (
     MountedAzurePath,
     MountedS3Path,
 )
+from .conftest import BUCKET
 
 
 def test_mountedpath_is_hashable():
@@ -314,11 +316,13 @@ def test_specpath_is_hashable():
     assert d[p] == "value"
 
 
-def test_speclocalpath():
+async def test_speclocalpath():
     p = SpecPath("/path/to/file")
     assert p.name == "file"
     assert p.suffix == ""
     assert p.stem == "file"
+    assert p.__fspath__() == "/path/to/file"
+    assert await p.get_fspath() == "/path/to/file"
 
     assert p != 1
 
@@ -440,6 +444,7 @@ def test_speccloudpath():
     assert p.name == "file"
     assert p.suffix == ""
     assert p.stem == "file"
+    assert p.__fspath__() == f"{DEFAULT_CLOUD_FSPATH}/gs/bucket/path/to/file"
 
     assert p == GSPath("gs://bucket/path/to/file")
     assert isinstance(p, CloudPath)
@@ -494,6 +499,23 @@ def test_speccloudpath():
     assert p7.mounted == p7
 
     assert p7.mounted.spec.mounted.spec.mounted.spec.mounted.spec.mounted == p7
+
+
+async def test_speccloudpath_get_fspath():
+    p = SpecPath(f"{BUCKET}/readonly.txt")
+    fspath = await p.get_fspath()
+    assert fspath == (
+        f"{DEFAULT_CLOUD_FSPATH}/gs/handy-buffer-287000.appspot.com/readonly.txt"
+    )
+    assert await p.a_read_text() == "123"
+
+    p_dir = SpecPath(f"{BUCKET}/readonly")
+    fspath_dir = await p_dir.get_fspath()
+    assert fspath_dir == (
+        f"{DEFAULT_CLOUD_FSPATH}/gs/handy-buffer-287000.appspot.com/readonly"
+    )
+    p_txt = PanPath(fspath_dir) / "keep.txt"
+    assert await p_txt.a_read_text() == "Don't delete."
 
 
 def test_speccloudpath_with_mounted():

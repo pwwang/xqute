@@ -317,7 +317,7 @@ class GbatchScheduler(Scheduler):
         base = f"job.wrapped.{self.name}.json"
         conf_file = job.metadir / base
 
-        wrapt_script = await self.wrapped_job_script(job, _mounted=True)
+        wrapt_script = await self.wrapped_job_script(job)
         config = deepcopy(self.config)
         runnable = config["taskGroups"][0]["taskSpec"]["runnables"][self.runnable_index]
         if "container" in runnable:

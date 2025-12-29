@@ -27,19 +27,17 @@ class LocalScheduler(Scheduler):
 
     name = "local"
 
-    async def submit_job(self, job: Job, _mounted: bool = False) -> int:
+    async def submit_job(self, job: Job) -> int:
         """Submit a job locally
 
         Args:
             job: The job
-            _mounted: Whether to use the mounted path of the wrapped job script
-                Used internally for container scheduler
 
         Returns:
             The process id
         """
-        job_script = await self.wrapped_job_script(job, _mounted=_mounted)
-        wrapt_script_path = job_script.mounted
+        job_script = await self.wrapped_job_script(job)
+        wrapt_script_path = await job_script.get_fspath()
         # In case the process exits very quickly
         if not await job.jid_file.a_exists():
             await job.jid_file.a_write_text("0")

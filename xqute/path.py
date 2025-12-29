@@ -28,8 +28,11 @@ from __future__ import annotations
 
 from typing import Any
 
+import os
 from pathlib import Path
 from panpath import PanPath, LocalPath, CloudPath, GSPath, AzurePath, S3Path
+
+from .defaults import DEFAULT_CLOUD_FSPATH
 
 __all__ = ["SpecPath", "MountedPath"]
 
@@ -527,6 +530,14 @@ class SpecPath(PanPath):
         # Ensure Path internals are initialized with the provided path
         return super().__new__(cls, path, *args, **kwargs)  # type: ignore
 
+    async def get_fspath(self) -> str:
+        """Get the corresponding local filesystem path and copy from cloud.
+
+        Returns:
+            PanPath: The path as it appears in the local filesystem.
+        """
+        return self.__fspath__()
+
     @property
     def mounted(self) -> MountedPath:
         """Get the corresponding mounted path in the remote environment.
@@ -704,6 +715,36 @@ class SpecCloudPath(SpecPath, CloudPath):
         >>> str(spec_path.mounted)
         'gs://container-bucket/file.txt'
     """
+
+    def __fspath__(self) -> str:
+        """Return the filesystem path representation.
+
+        Returns:
+            str: The filesystem path as a string.
+        """
+        cloud_fspath = os.getenv("XQUTE_CLOUD_FSPATH", DEFAULT_CLOUD_FSPATH)
+        parts = [
+            cloud_fspath,
+            self.parts[0].replace(":", ""),
+            *self.parts[1:],
+        ]
+        return os.path.join(*parts)
+
+    async def get_fspath(self) -> str:
+        """Get the corresponding local filesystem path and copy from cloud.
+
+        Returns:
+            PanPath: The path as it appears in the local filesystem.
+        """
+        p = PanPath(self.__fspath__())
+        await p.parent.a_mkdir(parents=True, exist_ok=True)
+
+        if await self.a_is_dir():
+            await self.a_copytree(p)
+        else:
+            await self.a_copy(p)
+
+        return str(p)
 
 
 class SpecGSPath(SpecCloudPath, GSPath):

@@ -5,12 +5,11 @@ from __future__ import annotations
 import os
 import shlex
 import signal
-from tempfile import gettempdir
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, List, Type
 
-from panpath import PanPath, CloudPath
+from panpath import CloudPath
 from diot import Diot  # type: ignore
 
 from .defaults import (
@@ -674,35 +673,20 @@ class Scheduler(ABC):
             jobcmd_end=self.jobcmd_end(job),
         )
 
-    async def wrapped_job_script(self, job: Job, _mounted: bool = False) -> SpecPath:
+    async def wrapped_job_script(self, job: Job) -> SpecPath:
         """Get the wrapped job script
 
         Args:
             job: The job
-            _mounted: Whether to use the mounted system path
-                if True, that means the returned SpecPath will have
-                the mounted path set to the actual file path on the
-                local filesystem.
 
         Returns:
             The path of the wrapped job script
         """
         base = f"job.wrapped.{self.name}"
         wrapt_script = job.metadir / base
-        script = self.wrap_job_script(job)
-        await wrapt_script.a_write_text(script)
-        if _mounted:
-            return wrapt_script
-        elif isinstance(job.metadir, CloudPath):
-            fspath = PanPath(gettempdir()).joinpath(
-                str(job.metadir).replace(":", "").replace("/", "-"),
-                base,
-            )
-            await fspath.parent.a_mkdir(parents=True, exist_ok=True)
-            await fspath.a_write_text(script)
-            return SpecPath(wrapt_script, mounted=fspath)
-        else:
-            return SpecPath(wrapt_script)
+        await wrapt_script.a_write_text(self.wrap_job_script(job))
+
+        return wrapt_script
 
     @abstractmethod
     async def submit_job(self, job: Job) -> int | str:

@@ -361,7 +361,7 @@ async def test_job(workdir):
     assert scheduler.subm_batch == 1
     job = await scheduler.create_job(0, ["echo", 1])
     assert (
-        await scheduler.wrapped_job_script(job, _mounted=True)
+        await scheduler.wrapped_job_script(job)
         == scheduler.workdir / "0" / "job.wrapped.gbatch"
     )
     assert job.metadir.mounted == Path("/mnt/disks/xqute_workdir/0")
