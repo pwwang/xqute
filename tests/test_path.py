@@ -33,12 +33,14 @@ def test_mountedpath_is_hashable():
     assert d[p] == "value"
 
 
-def test_mountedlocalpath():
+async def test_mountedlocalpath():
     p = MountedPath("/path/to/file")
     assert p.name == "file"
     assert p.suffix == ""
     assert p.stem == "file"
     assert p.absolute()
+    assert p.__fspath__() == "/path/to/file"
+    assert await p.get_fspath() == "/path/to/file"
 
     assert p != 1
 
@@ -165,6 +167,7 @@ async def test_mountedcloudpath():
     assert p.name == "file"
     assert p.suffix == ""
     assert p.stem == "file"
+    assert p.__fspath__() == f"{DEFAULT_CLOUD_FSPATH}/gs/bucket/path/to/file"
 
     assert p == GSPath("gs://bucket/path/to/file")
     assert isinstance(p, GSPath)
@@ -235,6 +238,23 @@ async def test_mountedcloudpath():
     assert p7.spec == p7
 
     assert p7.spec.mounted.spec.mounted.spec.mounted.spec.mounted == p7
+
+
+async def test_mountedcloudpath_get_fspath():
+    p = MountedPath(f"{BUCKET}/readonly.txt")
+    fspath = await p.get_fspath()
+    assert fspath == (
+        f"{DEFAULT_CLOUD_FSPATH}/gs/handy-buffer-287000.appspot.com/readonly.txt"
+    )
+    assert await p.a_read_text() == "123"
+
+    p_dir = MountedPath(f"{BUCKET}/readonly")
+    fspath_dir = await p_dir.get_fspath()
+    assert fspath_dir == (
+        f"{DEFAULT_CLOUD_FSPATH}/gs/handy-buffer-287000.appspot.com/readonly"
+    )
+    p_txt = PanPath(fspath_dir) / "keep.txt"
+    assert await p_txt.a_read_text() == "Don't delete."
 
 
 def test_mountedcloudpath_with_spec():

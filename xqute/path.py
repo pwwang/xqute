@@ -119,6 +119,14 @@ class MountedPath(PanPath):
         # internal parts like `_parts` are populated on older Python versions.
         return super().__new__(cls, path, *args, **kwargs)  # type: ignore
 
+    async def get_fspath(self) -> str:
+        """Get the corresponding local filesystem path and copy from cloud.
+
+        Returns:
+            PanPath: The path as it appears in the local filesystem.
+        """
+        return self.__fspath__()
+
     @property
     def spec(self) -> SpecPath:
         """Get the corresponding spec path in the local environment.
@@ -304,114 +312,35 @@ class MountedCloudPath(MountedPath, CloudPath):
         'gs://local-bucket/file.txt'
     """
 
-    def __new__(
-        cls,
-        path: str | Path,
-        *args: Any,
-        spec: str | Path | None = None,
-        **kwargs: Any,
-    ):
-        """Create a new MountedCloudPath instance.
-
-        Args:
-            path: The path string or object representing the mounted cloud path.
-            spec: The path string or object representing the corresponding spec path.
-                If None, the mounted path itself will be used as the spec path.
-            *args: Additional positional arguments passed to the path constructor.
-            **kwargs: Additional keyword arguments passed to the path constructor.
+    def __fspath__(self) -> str:
+        """Return the filesystem path representation.
 
         Returns:
-            A new MountedCloudPath instance.
+            str: The filesystem path as a string.
         """
-        # Let the Path hierarchy initialize internal structures (e.g. `_parts`).
-        obj = super().__new__(cls, path, *args, **kwargs)
-        obj._spec = PanPath(spec) if spec is not None else obj
+        cloud_fspath = os.getenv("XQUTE_CLOUD_FSPATH", DEFAULT_CLOUD_FSPATH)
+        parts = [
+            cloud_fspath,
+            self.parts[0].replace(":", ""),
+            *self.parts[1:],
+        ]
+        return os.path.join(*parts)
 
-        return obj
-
-    def __truediv__(self, other):
-        """Implement the / operator for cloud paths.
-
-        Args:
-            other: The path segment to append to this path.
+    async def get_fspath(self) -> str:
+        """Get the corresponding local filesystem path and copy from cloud.
 
         Returns:
-            MountedPath: A new mounted cloud path with the segment appended.
+            PanPath: The path as it appears in the local filesystem.
         """
-        # it was not implemented with .with_segments()
-        out = self.joinpath(other)
-        spec = PanPath(str(self._spec)).joinpath(other)
-        return MountedPath(out, spec=spec)
+        p = PanPath(self.__fspath__())
+        await p.parent.a_mkdir(parents=True, exist_ok=True)
 
-    def with_name(self, name):
-        """Return a new path with the name changed.
+        if await self.a_is_dir():
+            await self.a_copytree(p)
+        else:
+            await self.a_copy(p)
 
-        Args:
-            name: The new name for the path.
-
-        Returns:
-            MountedPath: A new mounted path with the name changed in both
-                the mounted path and spec path.
-        """
-        out = CloudPath.with_name(self, name)
-        spec = PanPath(str(self._spec)).with_name(name)
-        return MountedPath(out, spec=spec)
-
-    def with_suffix(self, suffix):
-        """Return a new path with the suffix changed.
-
-        Args:
-            suffix: The new suffix for the path.
-
-        Returns:
-            MountedPath: A new mounted path with the suffix changed in both
-                the mounted path and spec path.
-        """
-        out = CloudPath.with_suffix(self, suffix)
-        spec = PanPath(str(self._spec)).with_suffix(suffix)
-        return MountedPath(out, spec=spec)
-
-    def with_stem(self, stem):
-        """Return a new path with the stem changed.
-
-        The stem is the filename without the suffix.
-
-        Args:
-            stem: The new stem for the path.
-
-        Returns:
-            MountedPath: A new mounted path with the stem changed in both
-                the mounted path and spec path.
-        """
-        out = CloudPath.with_stem(self, stem)
-        spec = PanPath(str(self._spec)).with_stem(stem)
-        return MountedPath(out, spec=spec)
-
-    def joinpath(self, *pathsegments):
-        """Join path components to this path.
-
-        Args:
-            *pathsegments: The path segments to append to this path.
-
-        Returns:
-            MountedPath: A new mounted path with the segments appended to both
-                the mounted path and spec path.
-        """
-        out = CloudPath.joinpath(self, *pathsegments)
-        spec = PanPath(str(self._spec)).joinpath(*pathsegments)
-        return MountedPath(out, spec=spec)
-
-    @property
-    def parent(self):
-        """Get the parent directory of this path.
-
-        Returns:
-            MountedPath: A new mounted path representing the parent directory
-                of both the mounted path and spec path.
-        """
-        out = CloudPath.parent.fget(self)
-        spec = PanPath(str(self._spec)).parent
-        return MountedPath(out, spec=spec)
+        return str(p)
 
 
 class MountedGSPath(MountedCloudPath, GSPath):
