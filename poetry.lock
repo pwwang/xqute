@@ -217,21 +217,21 @@ test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
 
 [[package]]
 name = "argx"
-version = "0.3.3"
+version = "0.4.0"
 description = "Super-charged argparse for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "argx-0.3.3-py3-none-any.whl", hash = "sha256:92816987c00dc9a77d389aa7b9174fc3255f042b69fc56236c628ec8d0845329"},
-    {file = "argx-0.3.3.tar.gz", hash = "sha256:ecaae92b567dce8c4c88d8ec912f0949324885885e9983388dfdba2427cd81f7"},
+    {file = "argx-0.4.0-py3-none-any.whl", hash = "sha256:0856b7af4728a6c6d21162172612ef3a316a44eafe41859b94adba1d6d2e2676"},
+    {file = "argx-0.4.0.tar.gz", hash = "sha256:20892280b7386ab540f0e39a4c380cbef53a899d8b3c79c9528c79e7e7c560c2"},
 ]
 
 [package.dependencies]
 python-simpleconf = ">=0.7,<0.8"
 
 [package.extras]
-anypath = ["cloudpathlib (>=0.21,<0.22)"]
+anypath = ["panpath (>=0.4,<0.5)"]
 
 [[package]]
 name = "asttokens"
@@ -414,21 +414,21 @@ files = [
 
 [[package]]
 name = "cloudsh"
-version = "0.3.3"
+version = "0.3.4"
 description = "A Python CLI wrapping common Linux commands for local/cloud files."
 optional = true
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 markers = "extra == \"cloudsh\""
 files = [
-    {file = "cloudsh-0.3.3-py3-none-any.whl", hash = "sha256:d7852b09916fdb8a21e90fa629a2ef542a6e5b79c75cfa8386caaf44b978d26c"},
-    {file = "cloudsh-0.3.3.tar.gz", hash = "sha256:117550dc13f5fad888e0f44cb06c98c8a9496a7977a3d84676bab14ad924d5a5"},
+    {file = "cloudsh-0.3.4-py3-none-any.whl", hash = "sha256:61773be8a516562485f44697a6528754f2e402ad4f690c47b95f416d304c226c"},
+    {file = "cloudsh-0.3.4.tar.gz", hash = "sha256:1d1c35be4aa40e690e02ec8dd503d98ea2646c527007f6257604d16015f021e2"},
 ]
 
 [package.dependencies]
 aiofiles = ">=23.0.0,<24.0.0"
 argcomplete = ">=3.5.3,<4.0.0"
-argx = ">=0.3,<0.4"
+argx = ">=0.4,<0.5"
 panpath = ">=0.4,<0.5"
 python-dateutil = ">=2.9.0.post0,<3.0.0"
 python-simpleconf = {version = ">=0.7,<0.8", extras = ["toml"]}
@@ -2913,4 +2913,4 @@ gs = ["gcloud-aio-storage"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "83834217f2dd8f91f0bb4847c9122ba696e5839b69e2b64436a3ce0bcb767da7"
+content-hash = "1f4c8610aef1a9516acf6251ce3a702550a99a74c77677422abb3abee52497ee"
