@@ -115,7 +115,8 @@ SLEEP_INTERVAL_CLOUD_FILE_CHECK: float = 2.0
 SLEEP_INTERVAL_GBATCH_STATUS_CHECK: float = 1.0
 JOBCMD_WRAPPER_TEMPLATE: str = r"""#!{shebang}
 set -x -u -E -o pipefail
-exec >"{job.metadir.mounted}/job.wrapped.log" 2>&1
+# exec >"{job.metadir.mounted}/job.wrapped.log" 2>&1
+# TODO: make it work for cloud workdir
 
 {scheduler.jobcmd_wrapper_init}
 
