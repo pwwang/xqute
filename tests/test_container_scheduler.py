@@ -213,7 +213,7 @@ async def test_scheduler(mock_bin_path, temp_workdir):
     )
     job = await scheduler.create_job(0, ["echo", 1])
     wrapt_script = str((await scheduler.wrapped_job_script(job)).mounted)
-    assert wrapt_script == str(mounted_dir / "0" / "job.wrapped.docker")
+    assert wrapt_script == str(mounted_dir / "0" / "job.wrapped.container-docker")
 
     pid = await scheduler.submit_job(job)
     assert isinstance(pid, int)
