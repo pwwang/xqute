@@ -414,31 +414,31 @@ files = [
 
 [[package]]
 name = "cloudsh"
-version = "0.3.4"
+version = "0.3.5"
 description = "A Python CLI wrapping common Linux commands for local/cloud files."
 optional = true
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 markers = "extra == \"cloudsh\""
 files = [
-    {file = "cloudsh-0.3.4-py3-none-any.whl", hash = "sha256:61773be8a516562485f44697a6528754f2e402ad4f690c47b95f416d304c226c"},
-    {file = "cloudsh-0.3.4.tar.gz", hash = "sha256:1d1c35be4aa40e690e02ec8dd503d98ea2646c527007f6257604d16015f021e2"},
+    {file = "cloudsh-0.3.5-py3-none-any.whl", hash = "sha256:7c5d995c3a9e06ddde870bafea82b6968ded66ddecacc2b5fef209f80e989cd9"},
+    {file = "cloudsh-0.3.5.tar.gz", hash = "sha256:a5be88bf2e05aad5b6e0660ba391efee10bff34ee24235ba7b8f476c58db584e"},
 ]
 
 [package.dependencies]
 aiofiles = ">=23.0.0,<24.0.0"
 argcomplete = ">=3.5.3,<4.0.0"
 argx = ">=0.4,<0.5"
-panpath = ">=0.4,<0.5"
+panpath = ">=0.4.7,<0.5.0"
 python-dateutil = ">=2.9.0.post0,<3.0.0"
 python-simpleconf = {version = ">=0.7,<0.8", extras = ["toml"]}
 
 [package.extras]
-all = ["aioboto3 (>=11.0.0)", "azure-storage-blob (>=12,<13)", "gcloud-aio-storage (>=8.0.0)"]
+all = ["aioboto3 (>=11.0.0)", "azure-storage-blob (>=12,<13)", "gcloud-aio-storage (>=9.5)"]
 aws = ["aioboto3 (>=11.0.0)"]
 azure = ["azure-storage-blob (>=12,<13)"]
-gcs = ["gcloud-aio-storage (>=8.0.0)"]
-gs = ["gcloud-aio-storage (>=8.0.0)"]
+gcs = ["gcloud-aio-storage (>=9.5)"]
+gs = ["gcloud-aio-storage (>=9.5)"]
 s3 = ["aioboto3 (>=11.0.0)"]
 
 [[package]]
@@ -1706,25 +1706,25 @@ files = [
 
 [[package]]
 name = "panpath"
-version = "0.4.5"
+version = "0.4.7"
 description = "Universal sync/async local/cloud path library with pathlib-compatible interface"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "panpath-0.4.5-py3-none-any.whl", hash = "sha256:6dd02efa613a99266fac4600e1eb9086aaaa966c9f09cf0f3d61e7ecb253746f"},
-    {file = "panpath-0.4.5.tar.gz", hash = "sha256:2e2613dd788e7f137df74df3bd80f1c0644d8a62fbd8573ff8d66f4e3a56333f"},
+    {file = "panpath-0.4.7-py3-none-any.whl", hash = "sha256:b3171586ef87cfbfe687ac2ada907db7756bb51b4cf3a9c77e4cb82613ae3ce5"},
+    {file = "panpath-0.4.7.tar.gz", hash = "sha256:f21fbc5f586897d33c460c17615e526373ddf74f793ebb4a5bc9dbfeed51461c"},
 ]
 
 [package.dependencies]
 typing-extensions = ">=4.0.0"
 
 [package.extras]
-all = ["aioboto3 (>=11.0.0)", "aiofiles (>=23.0.0)", "azure-storage-blob (>=12.0.0)", "boto3 (>=1.20.0)", "gcloud-aio-storage (>=8.0.0)", "google-cloud-storage (>=2.0.0)"]
-all-async = ["aioboto3 (>=11.0.0)", "aiofiles (>=23.0.0)", "azure-storage-blob (>=12.0.0)", "gcloud-aio-storage (>=8.0.0)"]
+all = ["aioboto3 (>=11.0.0)", "aiofiles (>=23.0.0)", "azure-storage-blob (>=12.0.0)", "boto3 (>=1.20.0)", "gcloud-aio-storage (>=9.5)", "google-cloud-storage (>=2.0.0)"]
+all-async = ["aioboto3 (>=11.0.0)", "aiofiles (>=23.0.0)", "azure-storage-blob (>=12.0.0)", "gcloud-aio-storage (>=9.5)"]
 all-sync = ["azure-storage-blob (>=12.0.0)", "boto3 (>=1.20.0)", "google-cloud-storage (>=2.0.0)"]
 async-azure = ["aiofiles (>=23.0.0)", "azure-storage-blob (>=12.0.0)"]
-async-gs = ["aiofiles (>=23.0.0)", "gcloud-aio-storage (>=8.0.0)"]
+async-gs = ["aiofiles (>=23.0.0)", "gcloud-aio-storage (>=9.5)"]
 async-s3 = ["aioboto3 (>=11.0.0)", "aiofiles (>=23.0.0)"]
 azure = ["azure-storage-blob (>=12.0.0)"]
 gs = ["google-cloud-storage (>=2.0.0)"]
