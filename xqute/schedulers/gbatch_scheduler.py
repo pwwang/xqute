@@ -378,7 +378,7 @@ class GbatchScheduler(Scheduler):
             jsons = json.dumps(config, indent=2)
             await f.write(jsons)
 
-        return conf_file
+        return SpecPath(conf_file, mounted=await conf_file.get_fspath())
 
     async def _delete_job(self, job: Job) -> None:
         """Try to delete the job from google cloud's registry
