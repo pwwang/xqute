@@ -20,6 +20,7 @@ from .defaults import (
     DEFAULT_ERROR_STRATEGY,
     DEFAULT_NUM_RETRIES,
     DEFAULT_SUBMISSION_BATCH,
+    DEFAULT_RECHECK_INTERVAL,
     get_jobcmd_wrapper_init,
 )
 from .utils import logger, CommandType
@@ -55,8 +56,8 @@ class Scheduler(ABC):
         recheck_interval: The number of polling iterations between rechecks of
             whether a job is still running on the scheduler. Helps detect jobs
             that fail before the wrapped script updates status (e.g., resource
-            allocation failures). Each iteration takes ~0.1s, so default 600 means
-            rechecking every ~60 seconds.
+            allocation failures). Each iteration takes
+            `xqute.defaults.SLEEP_INTERVAL_POLLING_JOBS`
         cwd: The working directory for the job command wrapper
         **kwargs: Other arguments for the scheduler
     """
@@ -91,7 +92,7 @@ class Scheduler(ABC):
         postscript: str = "",
         jobname_prefix: str | None = None,
         submission_batch: int | None = None,
-        recheck_interval: int = 600,
+        recheck_interval: int = DEFAULT_RECHECK_INTERVAL,
         cwd: str | Path = None,
         **kwargs,
     ):

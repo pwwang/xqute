@@ -92,7 +92,7 @@ Available arguments are:
 - `submission_batch`: Number of jobs to submit in a batch
 - `scheduler_opts`: Additional keyword arguments for the scheduler
 - `jobname_prefix`: Prefix for job names
-- `recheck_interval`: Interval (in seconds) to recheck job status
+- `recheck_interval`: Interval to recheck job status. The actual interval will be `<recheck_interval> * <xqute.defaults.SLEEP_INTERVAL_POLLING_JOBS>`
 
 **Note:** The producer must be initialized within an event loop.
 
