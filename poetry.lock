@@ -2,14 +2,14 @@
 
 [[package]]
 name = "aiofiles"
-version = "23.2.1"
+version = "25.1.0"
 description = "File support for asyncio."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "aiofiles-23.2.1-py3-none-any.whl", hash = "sha256:19297512c647d4b27a2cf7c34caa7e405c0d60b5560618a29a9fe027b18b0107"},
-    {file = "aiofiles-23.2.1.tar.gz", hash = "sha256:84ec2218d8419404abcb9f0c02df3f34c6e0a68ed41072acfb1cef5cbc29051a"},
+    {file = "aiofiles-25.1.0-py3-none-any.whl", hash = "sha256:abe311e527c862958650f9438e859c1fa7568a141b22abcd015e120e86a85695"},
+    {file = "aiofiles-25.1.0.tar.gz", hash = "sha256:a8d728f0a29de45dc521f18f07297428d56992a742f0cd2701ba86e44d23d5b2"},
 ]
 
 [[package]]
@@ -217,21 +217,22 @@ test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
 
 [[package]]
 name = "argx"
-version = "0.4.0"
+version = "0.4.2"
 description = "Super-charged argparse for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "argx-0.4.0-py3-none-any.whl", hash = "sha256:0856b7af4728a6c6d21162172612ef3a316a44eafe41859b94adba1d6d2e2676"},
-    {file = "argx-0.4.0.tar.gz", hash = "sha256:20892280b7386ab540f0e39a4c380cbef53a899d8b3c79c9528c79e7e7c560c2"},
+    {file = "argx-0.4.2-py3-none-any.whl", hash = "sha256:fd1fdde7b5ae72faa74cd9bce20caa017e4589d69bdf4c33ed57bc4df49ffb3f"},
+    {file = "argx-0.4.2.tar.gz", hash = "sha256:30688135adbf5fa179619731e9525d31fbb1da4db3dd6a8505d475162e93c8f4"},
 ]
 
 [package.dependencies]
-python-simpleconf = ">=0.7,<0.8"
+python-simpleconf = ">=0.8,<0.9"
 
 [package.extras]
 anypath = ["panpath (>=0.4,<0.5)"]
+panpath = ["panpath (>=0.4,<0.5)"]
 
 [[package]]
 name = "asttokens"
@@ -414,24 +415,24 @@ files = [
 
 [[package]]
 name = "cloudsh"
-version = "0.3.5"
+version = "0.3.7"
 description = "A Python CLI wrapping common Linux commands for local/cloud files."
 optional = true
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 markers = "extra == \"cloudsh\""
 files = [
-    {file = "cloudsh-0.3.5-py3-none-any.whl", hash = "sha256:7c5d995c3a9e06ddde870bafea82b6968ded66ddecacc2b5fef209f80e989cd9"},
-    {file = "cloudsh-0.3.5.tar.gz", hash = "sha256:a5be88bf2e05aad5b6e0660ba391efee10bff34ee24235ba7b8f476c58db584e"},
+    {file = "cloudsh-0.3.7-py3-none-any.whl", hash = "sha256:1a5e898af6599936171a95b6051401a1b93a538e7fba1bc0f7cf102d47d93d7c"},
+    {file = "cloudsh-0.3.7.tar.gz", hash = "sha256:7505ad81ddb03e52279a77621541503e54c517cc80a59eb6cbf7e511a77f6ad3"},
 ]
 
 [package.dependencies]
-aiofiles = ">=23.0.0,<24.0.0"
+aiofiles = ">=23.0.0"
 argcomplete = ">=3.5.3,<4.0.0"
 argx = ">=0.4,<0.5"
-panpath = ">=0.4.7,<0.5.0"
+panpath = ">=0.4.8,<0.5.0"
 python-dateutil = ">=2.9.0.post0,<3.0.0"
-python-simpleconf = {version = ">=0.7,<0.8", extras = ["toml"]}
+python-simpleconf = {version = ">=0.8,<0.9", extras = ["toml"]}
 
 [package.extras]
 all = ["aioboto3 (>=11.0.0)", "azure-storage-blob (>=12,<13)", "gcloud-aio-storage (>=9.5)"]
@@ -1280,15 +1281,15 @@ test-extra = ["curio", "matplotlib (!=3.2.0)", "nbformat", "numpy (>=1.22)", "pa
 
 [[package]]
 name = "ipython"
-version = "9.8.0"
+version = "9.9.0"
 description = "IPython: Productive Interactive Computing"
 optional = false
 python-versions = ">=3.11"
 groups = ["dev"]
 markers = "python_full_version >= \"3.14.0\" and platform_python_implementation != \"PyPy\""
 files = [
-    {file = "ipython-9.8.0-py3-none-any.whl", hash = "sha256:ebe6d1d58d7d988fbf23ff8ff6d8e1622cfdb194daf4b7b73b792c4ec3b85385"},
-    {file = "ipython-9.8.0.tar.gz", hash = "sha256:8e4ce129a627eb9dd221c41b1d2cdaed4ef7c9da8c17c63f6f578fe231141f83"},
+    {file = "ipython-9.9.0-py3-none-any.whl", hash = "sha256:b457fe9165df2b84e8ec909a97abcf2ed88f565970efba16b1f7229c283d252b"},
+    {file = "ipython-9.9.0.tar.gz", hash = "sha256:48fbed1b2de5e2c7177eefa144aba7fcb82dac514f09b57e2ac9da34ddb54220"},
 ]
 
 [package.dependencies]
@@ -1304,7 +1305,7 @@ stack_data = ">=0.6.0"
 traitlets = ">=5.13.0"
 
 [package.extras]
-all = ["ipython[doc,matplotlib,test,test-extra]"]
+all = ["argcomplete (>=3.0)", "ipython[doc,matplotlib,terminal,test,test-extra]"]
 black = ["black"]
 doc = ["docrepr", "exceptiongroup", "intersphinx_registry", "ipykernel", "ipython[matplotlib,test]", "setuptools (>=70.0)", "sphinx (>=8.0)", "sphinx-rtd-theme (>=0.1.8)", "sphinx_toml (==0.0.4)", "typing_extensions"]
 matplotlib = ["matplotlib (>3.9)"]
@@ -1706,14 +1707,14 @@ files = [
 
 [[package]]
 name = "panpath"
-version = "0.4.8"
+version = "0.4.9"
 description = "Universal sync/async local/cloud path library with pathlib-compatible interface"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "panpath-0.4.8-py3-none-any.whl", hash = "sha256:d3dffda701b4503dccb437fe845a9882c4e3d35c38c26accfbd69d4b924a2dab"},
-    {file = "panpath-0.4.8.tar.gz", hash = "sha256:d6db046824a0924e37bea19afa88eca17fe4c3d8909bea05948ae4ac8f193315"},
+    {file = "panpath-0.4.9-py3-none-any.whl", hash = "sha256:566e5964c80f22a17f8cb9a99fa75aed98ab962e0fed377ea7842e1889c36cf3"},
+    {file = "panpath-0.4.9.tar.gz", hash = "sha256:9a623d65bcd1415e97b776dd59bbb89e43fb20846899e86daf6b2eb1332e2aaa"},
 ]
 
 [package.dependencies]
@@ -2241,24 +2242,25 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-simpleconf"
-version = "0.7.2"
+version = "0.8.2"
 description = "Simple configuration management with python."
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "python_simpleconf-0.7.2-py3-none-any.whl", hash = "sha256:7d0ce8febd1e0826084ad32c96ffa531c1ec40e7632b2abb67c02c41157bd4ab"},
-    {file = "python_simpleconf-0.7.2.tar.gz", hash = "sha256:03b01c6235f5f288f00ba590564b6bda56c0c1baba71fcf4612caa7c9e63de6f"},
+    {file = "python_simpleconf-0.8.2-py3-none-any.whl", hash = "sha256:8462229665207389fab5797104003d52f8c1d6d9d75c0447c5182169f80fdf30"},
+    {file = "python_simpleconf-0.8.2.tar.gz", hash = "sha256:21f9e68865ed6762a641db26900a300aee86149ab79e3d430f7811d7fcb4c47e"},
 ]
 
 [package.dependencies]
 diot = ">=0.3.2,<0.4.0"
+panpath = ">=0.4.8,<0.5.0"
 rtoml = {version = ">=0.12,<0.13", optional = true, markers = "sys_platform == \"linux\" and (extra == \"toml\" or extra == \"all\")"}
 tomli = {version = ">=2.0,<3.0", optional = true, markers = "sys_platform != \"linux\" and (extra == \"toml\" or extra == \"all\")"}
 
 [package.extras]
 all = ["iniconfig (>=2.0,<3.0)", "python-dotenv (>=1.1,<2.0)", "pyyaml (>=6,<7)", "rtoml (>=0.12,<0.13) ; sys_platform == \"linux\"", "tomli (>=2.0,<3.0) ; sys_platform != \"linux\""]
-cloud = ["yunpath (>=0.0.4,<0.0.5)"]
+async = ["aiofiles (>=23.0.0)"]
 env = ["python-dotenv (>=1.1,<2.0)"]
 ini = ["iniconfig (>=2.0,<3.0)"]
 toml = ["rtoml (>=0.12,<0.13) ; sys_platform == \"linux\"", "tomli (>=2.0,<3.0) ; sys_platform != \"linux\""]
