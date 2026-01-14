@@ -133,7 +133,7 @@ class GbatchScheduler(Scheduler):
         if not JOBNAME_PREFIX_RE.match(self.jobname_prefix):
             raise ValueError(
                 "'jobname_prefix' for gbatch scheduler doesn't follow pattern "
-                "^[a-zA-Z][a-zA-Z0-9-]{0,47}$."
+                f"'^[a-zA-Z][a-zA-Z0-9-]{{0,47}}$', got '{self.jobname_prefix}'."
             )
 
         self._path_envs = {}
