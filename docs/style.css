@@ -74,6 +74,9 @@
 .mkapi-node .mkapi-code * {
     font-size: .65rem;
 }
+.mkapi-node .mkapi-code code.md-code__content {
+    display: inherit !important;
+}
 .mkapi-node a.mkapi-docs-link {
     font-size: .6rem;
 }

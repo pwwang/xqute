@@ -14,4 +14,9 @@ extra_css:
     - style.css
 nav:
     - 'Home': 'index.md'
+    - 'Quick Start': 'quickstart.md'
+    - 'User Guide': 'user-guide.md'
+    - 'Schedulers': 'schedulers.md'
+    - 'Plugins': 'plugins.md'
+    - 'Advanced Usage': 'advanced.md'
     - 'API': mkapi/api/xqute
