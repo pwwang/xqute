@@ -12,6 +12,7 @@ Attributes:
 
 from __future__ import annotations
 
+import os
 import asyncio
 import textwrap
 from typing import Tuple
@@ -97,7 +98,10 @@ DEFAULT_WORKDIR = "./.xqute"
 DEFAULT_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
 DEFAULT_NUM_RETRIES: int = 3
 DEFAULT_SUBMISSION_BATCH: int = 8
-DEFAULT_CLOUD_FSPATH: str = "/tmp/xqute_cloud_cache"
+DEFAULT_CLOUD_FSPATH: str = (
+    "/tmp/xqute_cloud_cache_"
+    f"{os.getenv('USER', 'u' + str(os.getuid()))}"
+)
 DEFAULT_RECHECK_INTERVAL: int = 60
 # DEFAULT_SUBMISSION_BATCH: int = 8
 JOBCMD_WRAPPER_LANG: str = "/bin/bash"
