@@ -1,0 +1,1895 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>xqute.path - xqute</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../../style.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xqutepath" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="xqute" class="md-header__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xqute
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              xqute.path
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="xqute" class="md-nav__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xqute
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_1" id="__nav_7_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.job/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.job
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.defaults/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.defaults
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.local_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.local_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.container_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.container_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.sge_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.sge_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.gbatch_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.gbatch_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.slurm_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.slurm_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.ssh_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.ssh_scheduler.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.ssh_scheduler.submitter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.submitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#xqutepath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xqute.path
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">xqute.</span><span class="mkapi-object-name">path</span>
+<span id="xqute.path"></span><a class="mkapi-docs-link" href="../../xqute.path">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Provides the SpecPath and MountedPath classes.</span>
+
+<span class="sd">It is used to represent paths of jobs and it is useful when a job is running in a</span>
+<span class="sd">remote system (a VM, a container, etc.), where we need to mount the paths into</span>
+<span class="sd">the remote system (MountedPath).</span>
+
+<span class="sd">But in the system where this framework is running, we need to use the paths</span>
+<span class="sd">(specified directly) that are used in the framework, where we also need to carry</span>
+<span class="sd">the information of the mounted path (SpecPath).</span>
+
+<span class="sd">The module provides two main abstract base classes:</span>
+<span class="sd">- `MountedPath`: Represents a path as it appears in the remote execution environment.</span>
+<span class="sd">- `SpecPath`: Represents a path as it appears in the local environment where the</span>
+<span class="sd">framework runs.</span>
+
+<span class="sd">Both classes have implementations for local paths and various cloud storage paths,</span>
+<span class="sd">including:</span>
+<span class="sd">- Google Cloud Storage</span>
+<span class="sd">- Azure Blob Storage</span>
+<span class="sd">- Amazon S3</span>
+
+<span class="sd">These classes maintain the relationship between the local and remote path</span>
+<span class="sd">representations, allowing transparent path operations while preserving both path</span>
+<span class="sd">contexts.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">panpath</span><span class="w"> </span><span class="kn">import</span> <span class="n">PanPath</span><span class="p">,</span> <span class="n">LocalPath</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">,</span> <span class="n">GSPath</span><span class="p">,</span> <span class="n">AzurePath</span><span class="p">,</span> <span class="n">S3Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_CLOUD_FSPATH</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SpecPath&quot;</span><span class="p">,</span> <span class="s2">&quot;MountedPath&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MountedPath</span><span class="p">(</span><span class="n">PanPath</span><span class="p">):</span><span id="xqute.path.MountedPath"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath" href="../../xqute.path/#xqute.path.MountedPath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A router class to instantiate the correct path based on the path type</span>
+<span class="sd">    for the mounted path.</span>
+
+<span class="sd">    This abstract base class serves as a factory that creates appropriate mounted path</span>
+<span class="sd">    instances based on the input path type. It represents a path as it exists in a</span>
+<span class="sd">    remote execution environment (e.g., container, VM) while maintaining a reference to</span>
+<span class="sd">    the corresponding path in the local environment.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        _spec: The corresponding path in the local environment (SpecPath).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; # Create a mounted path with corresponding spec path</span>
+<span class="sd">        &gt;&gt;&gt; mounted_path = MountedPath(</span>
+<span class="sd">        &gt;&gt;&gt;   &quot;/container/data/file.txt&quot;, spec=&quot;/local/data/file.txt&quot;</span>
+<span class="sd">        &gt;&gt;&gt; )</span>
+<span class="sd">        &gt;&gt;&gt; str(mounted_path)</span>
+<span class="sd">        &#39;/container/data/file.txt&#39;</span>
+<span class="sd">        &gt;&gt;&gt; str(mounted_path.spec)</span>
+<span class="sd">        &#39;/local/data/file.txt&#39;</span>
+
+<span class="sd">        &gt;&gt;&gt; # Create a GCS mounted path</span>
+<span class="sd">        &gt;&gt;&gt; gs_path = MountedPath(&quot;gs://bucket/file.txt&quot;, spec=&quot;/local/file.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; type(gs_path)</span>
+<span class="sd">        &lt;class &#39;xqute.path.MountedGSPath&#39;&gt;</span>
+
+<span class="sd">        &gt;&gt;&gt; # Serialize and deserialize a mounted path</span>
+<span class="sd">        &gt;&gt;&gt; import pickle</span>
+<span class="sd">        &gt;&gt;&gt; mounted_path = MountedPath(&quot;/container/data/file.txt&quot;,</span>
+<span class="sd">        ...                            spec=&quot;/local/data/file.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; serialized = pickle.dumps(mounted_path)</span>
+<span class="sd">        &gt;&gt;&gt; restored = pickle.loads(serialized)</span>
+<span class="sd">        &gt;&gt;&gt; str(restored) == str(mounted_path)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; str(restored.spec) == str(mounted_path.spec)</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span>  <span class="c1"># type: ignore</span><span id="xqute.path.MountedPath.__new__"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.__new__" href="../../xqute.path/#xqute.path.MountedPath.__new__">DOCS</a>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="n">spec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MountedPath</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Factory method to create the appropriate MountedPath subclass instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: The path string or object representing the mounted path location.</span>
+<span class="sd">            spec: The path string or object representing the corresponding spec path.</span>
+<span class="sd">                If None, the mounted path itself will be used as the spec path.</span>
+<span class="sd">            *args: Additional positional arguments passed to the path constructor.</span>
+<span class="sd">            **kwargs: Additional keyword arguments passed to the path constructor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            An instance of the appropriate MountedPath subclass based on the path type:</span>
+<span class="sd">            - MountedGSPath for Google Cloud Storage paths</span>
+<span class="sd">            - MountedAzurePath for Azure Blob Storage paths</span>
+<span class="sd">            - MountedS3Path for Amazon S3 paths</span>
+<span class="sd">            - MountedLocalPath for local filesystem paths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="n">MountedPath</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">GSPath</span><span class="p">):</span>
+                <span class="n">mounted_class</span> <span class="o">=</span> <span class="n">MountedGSPath</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">AzurePath</span><span class="p">):</span>
+                <span class="n">mounted_class</span> <span class="o">=</span> <span class="n">MountedAzurePath</span>  <span class="c1"># type: ignore</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">S3Path</span><span class="p">):</span>
+                <span class="n">mounted_class</span> <span class="o">=</span> <span class="n">MountedS3Path</span>  <span class="c1"># type: ignore</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mounted_class</span> <span class="o">=</span> <span class="n">MountedLocalPath</span>  <span class="c1"># type: ignore</span>
+
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">mounted_class</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">_spec</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">obj</span>
+            <span class="k">return</span> <span class="n">obj</span>
+
+        <span class="c1"># Ensure the underlying Path initialization receives the path so</span>
+        <span class="c1"># internal parts like `_parts` are populated on older Python versions.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_fspath</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.path.MountedPath.get_fspath"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.get_fspath" href="../../xqute.path/#xqute.path.MountedPath.get_fspath">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the corresponding local filesystem path and copy from cloud.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PanPath: The path as it appears in the local filesystem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fspath__</span><span class="p">()</span>
+
+    <span class="nd">@property</span><span id="xqute.path.MountedPath.spec"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.spec" href="../../xqute.path/#xqute.path.MountedPath.spec">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the corresponding spec path in the local environment.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SpecPath: The path as it appears in the local environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SpecPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_mounted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="xqute.path.MountedPath.is_mounted"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.is_mounted" href="../../xqute.path/#xqute.path.MountedPath.is_mounted">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if this path is actually mounted (different from spec path).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the mounted path is different from the spec path, False</span>
+<span class="sd">            otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Direct string comparison instead of using equality operator</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="xqute.path.MountedPath.__repr__"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.__repr__" href="../../xqute.path/#xqute.path.MountedPath.__repr__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a string representation of the MountedPath.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: A string showing the class name, path, and spec path (if different).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if spec is different by string comparison rather than using is_mounted()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_mounted</span><span class="p">():</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&#39;, spec=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="xqute.path.MountedPath.__eq__"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.__eq__" href="../../xqute.path/#xqute.path.MountedPath.__eq__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check equality with another path object.</span>
+
+<span class="sd">        Two MountedPath objects are equal if they have the same path string</span>
+<span class="sd">        and the same spec path string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: Another object to compare with.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the paths are equal, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MountedPath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spec</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">spec</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span><span id="xqute.path.MountedPath.__hash__"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.__hash__" href="../../xqute.path/#xqute.path.MountedPath.__hash__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a hash for the MountedPath.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: A hash value based on the path string and spec path string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spec</span><span class="p">)))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="xqute.path.MountedPath.__reduce__"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.__reduce__" href="../../xqute.path/#xqute.path.MountedPath.__reduce__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Support for pickling and serialization.</span>
+
+<span class="sd">        Returns a tuple of (callable, args, state) so that the</span>
+<span class="sd">        underlying path is reconstructed from its string, and the</span>
+<span class="sd">        spec relationship is restored via state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),),</span> <span class="p">{</span><span class="s2">&quot;_spec&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">)})</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="xqute.path.MountedPath.__setstate__"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.__setstate__" href="../../xqute.path/#xqute.path.MountedPath.__setstate__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Restore internal state after unpickling.&quot;&quot;&quot;</span>
+        <span class="n">spec_str</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;_spec&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spec</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">spec_str</span><span class="p">)</span> <span class="k">if</span> <span class="n">spec_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">with_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span><span id="xqute.path.MountedPath.with_name"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.with_name" href="../../xqute.path/#xqute.path.MountedPath.with_name">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new path with the name changed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: The new name for the path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MountedPath: A new mounted path with the name changed in both</span>
+<span class="sd">                the mounted path and spec path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">new_spec</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">))</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">new_spec</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">with_suffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suffix</span><span class="p">):</span><span id="xqute.path.MountedPath.with_suffix"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.with_suffix" href="../../xqute.path/#xqute.path.MountedPath.with_suffix">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new path with the suffix changed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            suffix: The new suffix for the path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MountedPath: A new mounted path with the suffix changed in both</span>
+<span class="sd">                the mounted path and spec path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+        <span class="n">new_spec</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">))</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">new_spec</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pathsegments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MountedPath</span><span class="p">:</span><span id="xqute.path.MountedPath.joinpath"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.joinpath" href="../../xqute.path/#xqute.path.MountedPath.joinpath">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Join path components to this path.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *pathsegments: The path segments to append to this path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MountedPath: A new mounted path with the segments appended to both</span>
+<span class="sd">                the mounted path and spec path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pathsegments</span><span class="p">)</span>
+        <span class="n">new_spec</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">))</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="o">*</span><span class="n">pathsegments</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">new_spec</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span><span id="xqute.path.MountedPath.__truediv__"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.__truediv__" href="../../xqute.path/#xqute.path.MountedPath.__truediv__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Implement the / operator for paths.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: The path segment to append to this path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MountedPath: A new mounted path with the segment appended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># it was not implemented with .with_segments()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="nd">@property</span><span id="xqute.path.MountedPath.parent"></span><a class="mkapi-docs-link" title="xqute.path.MountedPath.parent" href="../../xqute.path/#xqute.path.MountedPath.parent">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the parent directory of this path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MountedPath: A new mounted path representing the parent directory</span>
+<span class="sd">                of both the mounted path and spec path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">new_spec</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">))</span><span class="o">.</span><span class="n">parent</span>
+
+        <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">new_spec</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MountedLocalPath</span><span class="p">(</span><span class="n">MountedPath</span><span class="p">,</span> <span class="n">LocalPath</span><span class="p">):</span>  <span class="c1"># type: ignore</span><span id="xqute.path.MountedLocalPath"></span><a class="mkapi-docs-link" title="xqute.path.MountedLocalPath" href="../../xqute.path/#xqute.path.MountedLocalPath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a mounted local path</span>
+
+<span class="sd">    This class represents a path in a local filesystem as it appears in a remote</span>
+<span class="sd">    execution environment, while maintaining a reference to its corresponding</span>
+<span class="sd">    path in the framework&#39;s environment.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        _spec: The corresponding path in the local environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; mounted_path = MountedLocalPath(&quot;/container/data/file.txt&quot;,</span>
+<span class="sd">        ...                               spec=&quot;/local/data/file.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; str(mounted_path)</span>
+<span class="sd">        &#39;/container/data/file.txt&#39;</span>
+<span class="sd">        &gt;&gt;&gt; str(mounted_path.spec)</span>
+<span class="sd">        &#39;/local/data/file.txt&#39;</span>
+<span class="sd">        &gt;&gt;&gt; mounted_path.name</span>
+<span class="sd">        &#39;file.txt&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MountedCloudPath</span><span class="p">(</span><span class="n">MountedPath</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">):</span><span id="xqute.path.MountedCloudPath"></span><a class="mkapi-docs-link" title="xqute.path.MountedCloudPath" href="../../xqute.path/#xqute.path.MountedCloudPath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a mounted cloud path</span>
+
+<span class="sd">    This class represents a cloud storage path as it appears in a remote</span>
+<span class="sd">    execution environment, while maintaining a reference to its corresponding</span>
+<span class="sd">    path in the framework&#39;s environment.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        _spec: The corresponding path in the local environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; mounted_path = MountedPath(&quot;gs://bucket/file.txt&quot;,</span>
+<span class="sd">        ...    spec=&quot;gs://local-bucket/file.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; str(mounted_path)</span>
+<span class="sd">        &#39;gs://bucket/file.txt&#39;</span>
+<span class="sd">        &gt;&gt;&gt; str(mounted_path.spec)</span>
+<span class="sd">        &#39;gs://local-bucket/file.txt&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__fspath__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.path.MountedCloudPath.__fspath__"></span><a class="mkapi-docs-link" title="xqute.path.MountedCloudPath.__fspath__" href="../../xqute.path/#xqute.path.MountedCloudPath.__fspath__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the filesystem path representation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The filesystem path as a string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cloud_fspath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;XQUTE_CLOUD_FSPATH&quot;</span><span class="p">,</span> <span class="n">DEFAULT_CLOUD_FSPATH</span><span class="p">)</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">cloud_fspath</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_fspath</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.path.MountedCloudPath.get_fspath"></span><a class="mkapi-docs-link" title="xqute.path.MountedCloudPath.get_fspath" href="../../xqute.path/#xqute.path.MountedCloudPath.get_fspath">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the corresponding local filesystem path and copy from cloud.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PanPath: The path as it appears in the local filesystem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fspath__</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">a_mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_is_dir</span><span class="p">():</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_copytree</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_copy</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MountedGSPath</span><span class="p">(</span><span class="n">MountedCloudPath</span><span class="p">,</span> <span class="n">GSPath</span><span class="p">):</span><span id="xqute.path.MountedGSPath"></span><a class="mkapi-docs-link" title="xqute.path.MountedGSPath" href="../../xqute.path/#xqute.path.MountedGSPath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a mounted Google Cloud Storage path</span>
+
+<span class="sd">    This class represents a Google Cloud Storage path as it appears in a remote</span>
+<span class="sd">    execution environment, while maintaining a reference to its corresponding</span>
+<span class="sd">    path in the framework&#39;s environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; mounted_path = MountedPath(&quot;gs://bucket/file.txt&quot;,</span>
+<span class="sd">        ...                          spec=&quot;gs://local-bucket/file.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(mounted_path, MountedGSPath)</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MountedAzurePath</span><span class="p">(</span><span class="n">MountedCloudPath</span><span class="p">,</span> <span class="n">AzurePath</span><span class="p">):</span><span id="xqute.path.MountedAzurePath"></span><a class="mkapi-docs-link" title="xqute.path.MountedAzurePath" href="../../xqute.path/#xqute.path.MountedAzurePath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a mounted Azure Blob Storage path</span>
+
+<span class="sd">    This class represents an Azure Blob Storage path as it appears in a remote</span>
+<span class="sd">    execution environment, while maintaining a reference to its corresponding</span>
+<span class="sd">    path in the framework&#39;s environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; mounted_path = MountedPath(&quot;az://container/blob&quot;,</span>
+<span class="sd">        ...                          spec=&quot;az://local-container/blob&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(mounted_path, MountedAzurePath)</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MountedS3Path</span><span class="p">(</span><span class="n">MountedCloudPath</span><span class="p">,</span> <span class="n">S3Path</span><span class="p">):</span><span id="xqute.path.MountedS3Path"></span><a class="mkapi-docs-link" title="xqute.path.MountedS3Path" href="../../xqute.path/#xqute.path.MountedS3Path">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a mounted Amazon S3 path</span>
+
+<span class="sd">    This class represents an Amazon S3 path as it appears in a remote</span>
+<span class="sd">    execution environment, while maintaining a reference to its corresponding</span>
+<span class="sd">    path in the framework&#39;s environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; mounted_path = MountedPath(&quot;s3://bucket/key&quot;,</span>
+<span class="sd">        ...                          spec=&quot;s3://local-bucket/key&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(mounted_path, MountedS3Path)</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SpecPath</span><span class="p">(</span><span class="n">PanPath</span><span class="p">):</span><span id="xqute.path.SpecPath"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath" href="../../xqute.path/#xqute.path.SpecPath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A router class to instantiate the correct path based on the path type</span>
+<span class="sd">    for the spec path.</span>
+
+<span class="sd">    This abstract base class serves as a factory that creates appropriate spec path</span>
+<span class="sd">    instances based on the input path type. It represents a path in the local</span>
+<span class="sd">    environment where the framework runs, while maintaining a reference to the</span>
+<span class="sd">    corresponding path in the remote execution environment.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        _mounted: The corresponding path in the remote execution environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; # Create a spec path with corresponding mounted path</span>
+<span class="sd">        &gt;&gt;&gt; spec_path = SpecPath(</span>
+<span class="sd">        &gt;&gt;&gt;   &quot;/local/data/file.txt&quot;, mounted=&quot;/container/data/file.txt&quot;</span>
+<span class="sd">        &gt;&gt;&gt; )</span>
+<span class="sd">        &gt;&gt;&gt; str(spec_path)</span>
+<span class="sd">        &#39;/local/data/file.txt&#39;</span>
+<span class="sd">        &gt;&gt;&gt; str(spec_path.mounted)</span>
+<span class="sd">        &#39;/container/data/file.txt&#39;</span>
+
+<span class="sd">        &gt;&gt;&gt; # Create a GCS spec path</span>
+<span class="sd">        &gt;&gt;&gt; gs_path = SpecPath(</span>
+<span class="sd">        &gt;&gt;&gt;   &quot;gs://bucket/file.txt&quot;, mounted=&quot;gs://container-bucket/file.txt&quot;</span>
+<span class="sd">        &gt;&gt;&gt; )</span>
+<span class="sd">        &gt;&gt;&gt; type(gs_path)</span>
+<span class="sd">        &lt;class &#39;xqute.path.SpecGSPath&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span>  <span class="c1"># type: ignore</span><span id="xqute.path.SpecPath.__new__"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.__new__" href="../../xqute.path/#xqute.path.SpecPath.__new__">DOCS</a>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">mounted</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecLocalPath</span> <span class="o">|</span> <span class="n">SpecCloudPath</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Factory method to create the appropriate SpecPath subclass instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: The path string or object representing the spec path.</span>
+<span class="sd">            mounted: The path string or object representing the corresponding mounted</span>
+<span class="sd">                path. If None, the spec path itself will be used as the mounted path.</span>
+<span class="sd">            *args: Additional positional arguments passed to the path constructor.</span>
+<span class="sd">            **kwargs: Additional keyword arguments passed to the path constructor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            An instance of the appropriate SpecPath subclass based on the path type:</span>
+<span class="sd">            - SpecGSPath for Google Cloud Storage paths</span>
+<span class="sd">            - SpecAzurePath for Azure Blob Storage paths</span>
+<span class="sd">            - SpecS3Path for Amazon S3 paths</span>
+<span class="sd">            - SpecLocalPath for local filesystem paths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="n">SpecPath</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">GSPath</span><span class="p">):</span>
+                <span class="n">spec_class</span> <span class="o">=</span> <span class="n">SpecGSPath</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">AzurePath</span><span class="p">):</span>
+                <span class="n">spec_class</span> <span class="o">=</span> <span class="n">SpecAzurePath</span>  <span class="c1"># type: ignore</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">S3Path</span><span class="p">):</span>
+                <span class="n">spec_class</span> <span class="o">=</span> <span class="n">SpecS3Path</span>  <span class="c1"># type: ignore</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spec_class</span> <span class="o">=</span> <span class="n">SpecLocalPath</span>
+
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">spec_class</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">_mounted</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">mounted</span><span class="p">)</span> <span class="k">if</span> <span class="n">mounted</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">obj</span>
+            <span class="k">return</span> <span class="n">obj</span>
+
+        <span class="c1"># Ensure Path internals are initialized with the provided path</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_fspath</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.path.SpecPath.get_fspath"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.get_fspath" href="../../xqute.path/#xqute.path.SpecPath.get_fspath">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the corresponding local filesystem path and copy from cloud.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PanPath: The path as it appears in the local filesystem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fspath__</span><span class="p">()</span>
+
+    <span class="nd">@property</span><span id="xqute.path.SpecPath.mounted"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.mounted" href="../../xqute.path/#xqute.path.SpecPath.mounted">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mounted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MountedPath</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the corresponding mounted path in the remote environment.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MountedPath: The path as it appears in the remote execution environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Make sure we handle the case where _mounted might not be set</span>
+        <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mounted</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.path.SpecPath.__repr__"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.__repr__" href="../../xqute.path/#xqute.path.SpecPath.__repr__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a string representation of the SpecPath.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: A string showing the class name, path, and mounted path (if different).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mounted</span><span class="o">.</span><span class="n">is_mounted</span><span class="p">():</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&#39;, mounted=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_mounted</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="xqute.path.SpecPath.__eq__"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.__eq__" href="../../xqute.path/#xqute.path.SpecPath.__eq__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check equality with another path object.</span>
+
+<span class="sd">        Two SpecPath objects are equal if they have the same path string</span>
+<span class="sd">        and the same mounted path string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: Another object to compare with.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the paths are equal, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SpecPath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mounted</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">mounted</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span><span id="xqute.path.SpecPath.__hash__"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.__hash__" href="../../xqute.path/#xqute.path.SpecPath.__hash__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a hash for the SpecPath.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: A hash value based on the path string and mounted path string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mounted</span><span class="p">)))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">with_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span><span id="xqute.path.SpecPath.with_name"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.with_name" href="../../xqute.path/#xqute.path.SpecPath.with_name">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new path with the name changed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: The new name for the path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SpecPath: A new spec path with the name changed in both</span>
+<span class="sd">                the spec path and mounted path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">new_mounted</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mounted</span><span class="p">))</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SpecPath</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="n">new_mounted</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">with_suffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span><span id="xqute.path.SpecPath.with_suffix"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.with_suffix" href="../../xqute.path/#xqute.path.SpecPath.with_suffix">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new path with the suffix changed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            suffix: The new suffix for the path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SpecPath: A new spec path with the suffix changed in both</span>
+<span class="sd">                the spec path and mounted path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+        <span class="n">new_mounted</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mounted</span><span class="p">))</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SpecPath</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="n">new_mounted</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">with_stem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span><span id="xqute.path.SpecPath.with_stem"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.with_stem" href="../../xqute.path/#xqute.path.SpecPath.with_stem">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new path with the stem changed.</span>
+
+<span class="sd">        The stem is the filename without the suffix.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stem: The new stem for the path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SpecPath: A new spec path with the stem changed in both</span>
+<span class="sd">                the spec path and mounted path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="o">.</span><span class="n">with_stem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stem</span><span class="p">)</span>
+        <span class="n">new_mounted</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mounted</span><span class="p">))</span><span class="o">.</span><span class="n">with_stem</span><span class="p">(</span><span class="n">stem</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SpecPath</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="n">new_mounted</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pathsegments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span><span id="xqute.path.SpecPath.joinpath"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.joinpath" href="../../xqute.path/#xqute.path.SpecPath.joinpath">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Join path components to this path.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *pathsegments: The path segments to append to this path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SpecPath: A new spec path with the segments appended to both</span>
+<span class="sd">                the spec path and mounted path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pathsegments</span><span class="p">)</span>
+        <span class="n">new_mounted</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mounted</span><span class="p">))</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="o">*</span><span class="n">pathsegments</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SpecPath</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="n">new_mounted</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span><span id="xqute.path.SpecPath.__truediv__"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.__truediv__" href="../../xqute.path/#xqute.path.SpecPath.__truediv__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Implement the / operator for paths.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: The path segment to append to this path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SpecPath: A new spec path with the segment appended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># it was not implemented with .with_segments()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="nd">@property</span><span id="xqute.path.SpecPath.parent"></span><a class="mkapi-docs-link" title="xqute.path.SpecPath.parent" href="../../xqute.path/#xqute.path.SpecPath.parent">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the parent directory of this path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SpecPath: A new spec path representing the parent directory</span>
+<span class="sd">                of both the spec path and mounted path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">new_mounted</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mounted</span><span class="p">))</span><span class="o">.</span><span class="n">parent</span>
+
+        <span class="k">return</span> <span class="n">SpecPath</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="n">new_mounted</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SpecLocalPath</span><span class="p">(</span><span class="n">SpecPath</span><span class="p">,</span> <span class="n">LocalPath</span><span class="p">):</span>  <span class="c1"># type: ignore</span><span id="xqute.path.SpecLocalPath"></span><a class="mkapi-docs-link" title="xqute.path.SpecLocalPath" href="../../xqute.path/#xqute.path.SpecLocalPath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a spec local path</span>
+
+<span class="sd">    This class represents a path in the local filesystem as it appears in the</span>
+<span class="sd">    framework&#39;s environment, while maintaining a reference to its corresponding</span>
+<span class="sd">    path in the remote execution environment.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        _mounted: The corresponding path in the remote execution environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; spec_path = SpecLocalPath(&quot;/local/data/file.txt&quot;,</span>
+<span class="sd">        ...                         mounted=&quot;/container/data/file.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; str(spec_path)</span>
+<span class="sd">        &#39;/local/data/file.txt&#39;</span>
+<span class="sd">        &gt;&gt;&gt; str(spec_path.mounted)</span>
+<span class="sd">        &#39;/container/data/file.txt&#39;</span>
+<span class="sd">        &gt;&gt;&gt; spec_path.name</span>
+<span class="sd">        &#39;file.txt&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SpecCloudPath</span><span class="p">(</span><span class="n">SpecPath</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">):</span><span id="xqute.path.SpecCloudPath"></span><a class="mkapi-docs-link" title="xqute.path.SpecCloudPath" href="../../xqute.path/#xqute.path.SpecCloudPath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a spec cloud path</span>
+
+<span class="sd">    This class represents a cloud storage path as it appears in the local</span>
+<span class="sd">    environment where the framework runs, while maintaining a reference to its</span>
+<span class="sd">    corresponding path in the remote execution environment.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        _mounted: The corresponding path in the remote execution environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; spec_path = SpecPath(&quot;gs://bucket/file.txt&quot;,</span>
+<span class="sd">        ...                    mounted=&quot;gs://container-bucket/file.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; str(spec_path)</span>
+<span class="sd">        &#39;gs://bucket/file.txt&#39;</span>
+<span class="sd">        &gt;&gt;&gt; str(spec_path.mounted)</span>
+<span class="sd">        &#39;gs://container-bucket/file.txt&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__fspath__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.path.SpecCloudPath.__fspath__"></span><a class="mkapi-docs-link" title="xqute.path.SpecCloudPath.__fspath__" href="../../xqute.path/#xqute.path.SpecCloudPath.__fspath__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the filesystem path representation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The filesystem path as a string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cloud_fspath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;XQUTE_CLOUD_FSPATH&quot;</span><span class="p">,</span> <span class="n">DEFAULT_CLOUD_FSPATH</span><span class="p">)</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">cloud_fspath</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_fspath</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.path.SpecCloudPath.get_fspath"></span><a class="mkapi-docs-link" title="xqute.path.SpecCloudPath.get_fspath" href="../../xqute.path/#xqute.path.SpecCloudPath.get_fspath">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the corresponding local filesystem path and copy from cloud.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PanPath: The path as it appears in the local filesystem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fspath__</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">a_mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_is_dir</span><span class="p">():</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_copytree</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_copy</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SpecGSPath</span><span class="p">(</span><span class="n">SpecCloudPath</span><span class="p">,</span> <span class="n">GSPath</span><span class="p">):</span><span id="xqute.path.SpecGSPath"></span><a class="mkapi-docs-link" title="xqute.path.SpecGSPath" href="../../xqute.path/#xqute.path.SpecGSPath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a spec Google Cloud Storage path</span>
+
+<span class="sd">    This class represents a Google Cloud Storage path as it appears in the</span>
+<span class="sd">    local environment where the framework runs, while maintaining a reference</span>
+<span class="sd">    to its corresponding path in the remote execution environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; spec_path = SpecPath(&quot;gs://bucket/file.txt&quot;,</span>
+<span class="sd">        ...                    mounted=&quot;gs://container-bucket/file.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(spec_path, SpecGSPath)</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SpecAzurePath</span><span class="p">(</span><span class="n">SpecCloudPath</span><span class="p">,</span> <span class="n">AzurePath</span><span class="p">):</span><span id="xqute.path.SpecAzurePath"></span><a class="mkapi-docs-link" title="xqute.path.SpecAzurePath" href="../../xqute.path/#xqute.path.SpecAzurePath">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a spec Azure Blob Storage path</span>
+
+<span class="sd">    This class represents an Azure Blob Storage path as it appears in the</span>
+<span class="sd">    local environment where the framework runs, while maintaining a reference</span>
+<span class="sd">    to its corresponding path in the remote execution environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; spec_path = SpecPath(&quot;az://container/blob&quot;,</span>
+<span class="sd">        ...                    mounted=&quot;az://remote-container/blob&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(spec_path, SpecAzurePath)</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SpecS3Path</span><span class="p">(</span><span class="n">SpecCloudPath</span><span class="p">,</span> <span class="n">S3Path</span><span class="p">):</span><span id="xqute.path.SpecS3Path"></span><a class="mkapi-docs-link" title="xqute.path.SpecS3Path" href="../../xqute.path/#xqute.path.SpecS3Path">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent a spec Amazon S3 path</span>
+
+<span class="sd">    This class represents an Amazon S3 path as it appears in the</span>
+<span class="sd">    local environment where the framework runs, while maintaining a reference</span>
+<span class="sd">    to its corresponding path in the remote execution environment.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; spec_path = SpecPath(&quot;s3://bucket/key&quot;,</span>
+<span class="sd">        ...                    mounted=&quot;s3://remote-bucket/key&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(spec_path, SpecS3Path)</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2771 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../plugins/">
+      
+      
+        <link rel="next" href="../api/xqute/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Advanced Usage - xqute</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../style.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#advanced-usage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="xqute" class="md-header__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xqute
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Advanced Usage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="xqute" class="md-nav__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xqute
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Schedulers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom Schedulers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-custom-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a Custom Scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-custom-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Custom Scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-custom-scheduler-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Custom Scheduler Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Job Dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sequential-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequential Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-tracking-with-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency Tracking with Plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Arrays
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Job Arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simple-job-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Simple Job Array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-array-with-slurm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Array with Slurm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#progress-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Progress Tracking
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Progress Tracking">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simple-progress-bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Simple Progress Bar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#detailed-progress-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed Progress Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming Output
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Streaming Output">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stream-output-to-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream Output to Console
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-time-output-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-time Output Streaming
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Error Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom Error Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conditional-retry-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional Retry Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Templates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Job Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#template-with-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template with Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-with-command-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template with Command Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Processing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Batch Processing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#process-files-in-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Process Files in Batches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-processing-with-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Processing with Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-other-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Other Tools
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration with Other Tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-airflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Airflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-dask" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Dask
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Optimization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Optimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optimize-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimize Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-submissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Submissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reduce-polling-frequency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reduce Polling Frequency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optimize-working-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimize Working Directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_1" id="__nav_7_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.job/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.job
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.defaults/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.defaults
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.local_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.local_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.container_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.container_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.sge_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.sge_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.gbatch_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.gbatch_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.slurm_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.slurm_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.ssh_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.ssh_scheduler.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.ssh_scheduler.submitter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.submitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Schedulers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom Schedulers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-custom-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a Custom Scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-custom-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Custom Scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-custom-scheduler-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Custom Scheduler Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Job Dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sequential-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequential Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-tracking-with-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency Tracking with Plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Arrays
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Job Arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simple-job-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Simple Job Array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-array-with-slurm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Array with Slurm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#progress-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Progress Tracking
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Progress Tracking">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simple-progress-bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Simple Progress Bar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#detailed-progress-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed Progress Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming Output
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Streaming Output">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stream-output-to-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream Output to Console
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-time-output-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-time Output Streaming
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Error Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom Error Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conditional-retry-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional Retry Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Templates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Job Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#template-with-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template with Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-with-command-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template with Command Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Processing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Batch Processing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#process-files-in-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Process Files in Batches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-processing-with-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Processing with Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-other-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Other Tools
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration with Other Tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-airflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Airflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-dask" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Dask
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Optimization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Optimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optimize-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimize Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-submissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Submissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reduce-polling-frequency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reduce Polling Frequency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optimize-working-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimize Working Directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+  <h1>Advanced Usage</h1>
+
+<h2 id="advanced-usage">Advanced Usage</h2>
+<p>Advanced patterns and customization for power users.</p>
+<h3 id="table-of-contents">Table of Contents</h3>
+<ul>
+<li><a href="#custom-schedulers">Custom Schedulers</a></li>
+<li><a href="#job-dependencies">Job Dependencies</a></li>
+<li><a href="#job-arrays">Job Arrays</a></li>
+<li><a href="#progress-tracking">Progress Tracking</a></li>
+<li><a href="#streaming-output">Streaming Output</a></li>
+<li><a href="#custom-error-handling">Custom Error Handling</a></li>
+<li><a href="#job-templates">Job Templates</a></li>
+<li><a href="#batch-processing">Batch Processing</a></li>
+<li><a href="#integration-with-other-tools">Integration with Other Tools</a></li>
+<li><a href="#performance-optimization">Performance Optimization</a></li>
+</ul>
+<h3 id="custom-schedulers">Custom Schedulers</h3>
+<h4 id="creating-a-custom-scheduler">Creating a Custom Scheduler</h4>
+<p>Implement the <code>Scheduler</code> abstract class:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scheduler</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomScheduler</span><span class="p">(</span><span class="n">Scheduler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom scheduler implementation&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;custom&#39;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">submit_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit a job and return its unique ID&quot;&quot;&quot;</span>
+        <span class="c1"># Your submission logic here</span>
+        <span class="n">job_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_submit_to_custom_system</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">job_id</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kill_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Kill a job&quot;&quot;&quot;</span>
+        <span class="n">jid</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_jid</span><span class="p">()</span>
+        <span class="c1"># Your kill logic here</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kill_in_custom_system</span><span class="p">(</span><span class="n">jid</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">job_is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a job is running&quot;&quot;&quot;</span>
+        <span class="n">jid</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_jid</span><span class="p">()</span>
+        <span class="c1"># Your status check logic here</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_status</span><span class="p">(</span><span class="n">jid</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;running&#39;</span>
+</code></pre></div>
+<h4 id="using-custom-scheduler">Using Custom Scheduler</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="n">CustomScheduler</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;custom_param&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;echo&#39;</span><span class="p">,</span> <span class="s1">&#39;Hello&#39;</span><span class="p">])</span>
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="advanced-custom-scheduler-example">Advanced Custom Scheduler Example</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scheduler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyClusterScheduler</span><span class="p">(</span><span class="n">Scheduler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scheduler for custom cluster&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;mycluster&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">submit_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit job to custom cluster&quot;&quot;&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_submit_command</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_subprocess_exec</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">cmd</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="k">await</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Submission failed: </span><span class="si">{</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">job_id</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;job&#39;</span><span class="p">:</span> <span class="n">job</span><span class="p">,</span>
+            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;submitted&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">job_id</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kill_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Kill job&quot;&quot;&quot;</span>
+        <span class="n">jid</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_jid</span><span class="p">()</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mycluster-kill&#39;</span><span class="p">,</span> <span class="n">jid</span><span class="p">]</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_subprocess_exec</span><span class="p">(</span><span class="o">*</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">jid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">[</span><span class="n">jid</span><span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">job_is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if job is running&quot;&quot;&quot;</span>
+        <span class="n">jid</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_jid</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">jid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mycluster-status&#39;</span><span class="p">,</span> <span class="n">jid</span><span class="p">]</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_subprocess_exec</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">cmd</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">[</span><span class="n">jid</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span>
+        <span class="k">return</span> <span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;running&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_submit_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build submission command&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="s1">&#39;mycluster-submit&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--job-name&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jobname_prefix</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--output&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">stdout_file</span><span class="p">),</span>
+            <span class="s1">&#39;--error&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">stderr_file</span><span class="p">),</span>
+        <span class="p">]</span>
+</code></pre></div>
+<h3 id="job-dependencies">Job Dependencies</h3>
+<h4 id="sequential-dependencies">Sequential Dependencies</h4>
+<p>Run jobs in order using daemon mode:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_with_dependencies</span><span class="p">():</span>
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Single fork for sequential execution</span>
+
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">keep_feeding</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Job 1</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;prepare_data.sh&#39;</span><span class="p">])</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+
+    <span class="c1"># Job 2 (depends on Job 1)</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;process_data.sh&#39;</span><span class="p">])</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+
+    <span class="c1"># Job 3 (depends on Job 2)</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;finalize.sh&#39;</span><span class="p">])</span>
+
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">stop_feeding</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="dependency-tracking-with-plugins">Dependency Tracking with Plugins</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="n">dependencies</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># job_index -&gt; [parent_indices]</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_queued</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if dependencies are satisfied&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dependencies</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">deps</span> <span class="o">=</span> <span class="n">dependencies</span><span class="p">[</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">dep_idx</span> <span class="ow">in</span> <span class="n">deps</span><span class="p">:</span>
+        <span class="n">dep_job</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">jobs</span><span class="p">[</span><span class="n">dep_idx</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dep_job</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>  <span class="c1"># Not FINISHED</span>
+            <span class="c1"># Skip for now, will be retried later</span>
+            <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div>
+<h3 id="job-arrays">Job Arrays</h3>
+<h4 id="simple-job-array">Simple Job Array</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="c1"># Submit job array</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;process.sh&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
+
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<h4 id="job-array-with-slurm">Job Array with Slurm</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;slurm&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;partition&#39;</span><span class="p">:</span> <span class="s1">&#39;compute&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;array&#39;</span><span class="p">:</span> <span class="s1">&#39;1-100&#39;</span><span class="p">,</span>  <span class="c1"># Job array</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Single submission for array</span>
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;process.sh&#39;</span><span class="p">,</span> <span class="s1">&#39;$SLURM_ARRAY_TASK_ID&#39;</span><span class="p">])</span>
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="progress-tracking">Progress Tracking</h3>
+<h4 id="simple-progress-bar">Simple Progress Bar</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="n">JobStatus</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">track_progress</span><span class="p">():</span>
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="c1"># Submit jobs</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;sleep&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Start progress bar</span>
+    <span class="n">progress</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing&quot;</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">update_progress</span><span class="p">():</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">completed</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="mi">1</span> <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="n">xqute</span><span class="o">.</span><span class="n">jobs</span>
+                <span class="k">if</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">completed</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">completed</span> <span class="o">==</span> <span class="mi">100</span><span class="p">:</span>
+                <span class="n">progress</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">break</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Run jobs with progress tracking</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+        <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(),</span>
+        <span class="n">update_progress</span><span class="p">(),</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h4 id="detailed-progress-tracking">Detailed Progress Tracking</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="n">JobStatus</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ProgressTracker</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xqute</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span> <span class="o">=</span> <span class="n">xqute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">track</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">status_counts</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">JobStatus</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                    <span class="mi">1</span> <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">jobs</span>
+                    <span class="k">if</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span> <span class="o">==</span> <span class="n">status</span>
+                <span class="p">)</span>
+                <span class="n">status_counts</span><span class="p">[</span><span class="n">status</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span>
+
+            <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">jobs</span><span class="p">)</span>
+            <span class="n">completed</span> <span class="o">=</span> <span class="n">status_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">failed</span> <span class="o">=</span> <span class="n">status_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] &quot;</span>
+                  <span class="sa">f</span><span class="s2">&quot;Completed: </span><span class="si">{</span><span class="n">completed</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">total</span><span class="si">}</span><span class="s2"> &quot;</span>
+                  <span class="sa">f</span><span class="s2">&quot;Failed: </span><span class="si">{</span><span class="n">failed</span><span class="si">}</span><span class="s2"> &quot;</span>
+                  <span class="sa">f</span><span class="s2">&quot;Running: </span><span class="si">{</span><span class="n">status_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">completed</span> <span class="o">+</span> <span class="n">failed</span> <span class="o">==</span> <span class="n">total</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;sleep&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">5</span><span class="p">)])</span>
+
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">ProgressTracker</span><span class="p">(</span><span class="n">xqute</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+        <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(),</span>
+        <span class="n">tracker</span><span class="o">.</span><span class="n">track</span><span class="p">(),</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="streaming-output">Streaming Output</h3>
+<h4 id="stream-output-to-console">Stream Output to Console</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_succeeded</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream output after job completes&quot;&quot;&quot;</span>
+    <span class="n">stdout</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stdout_file</span><span class="o">.</span><span class="n">a_read_text</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">stdout</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> output:</span><span class="se">\n</span><span class="si">{</span><span class="n">stdout</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="real-time-output-streaming">Real-time Output Streaming</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">aiofiles</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_polling</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">counter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream output during polling&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">aiofiles</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">stdout_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="c1"># Seek to end</span>
+            <span class="k">await</span> <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="c1"># Read new lines</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="k">await</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="k">pass</span>
+</code></pre></div>
+<h3 id="custom-error-handling">Custom Error Handling</h3>
+<h4 id="conditional-retry-logic">Conditional Retry Logic</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_failed</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom retry logic based on error type&quot;&quot;&quot;</span>
+    <span class="n">stderr</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stderr_file</span><span class="o">.</span><span class="n">a_read_text</span><span class="p">()</span>
+
+    <span class="c1"># Don&#39;t retry on certain errors</span>
+    <span class="k">if</span> <span class="s1">&#39;SyntaxError&#39;</span> <span class="ow">in</span> <span class="n">stderr</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xqute.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Syntax error in job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">, not retrying&quot;</span><span class="p">)</span>
+        <span class="c1"># Disable retry for this job</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">_error_retry</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">_num_retries</span> <span class="o">=</span> <span class="mi">0</span>
+</code></pre></div>
+<h4 id="error-aggregation">Error Aggregation</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="n">error_summary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;syntax_errors&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;runtime_errors&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;timeout_errors&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_failed</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Aggregate error types&quot;&quot;&quot;</span>
+    <span class="n">stderr</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stderr_file</span><span class="o">.</span><span class="n">a_read_text</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="s1">&#39;SyntaxError&#39;</span> <span class="ow">in</span> <span class="n">stderr</span><span class="p">:</span>
+        <span class="n">error_summary</span><span class="p">[</span><span class="s1">&#39;syntax_errors&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">elif</span> <span class="s1">&#39;TimeoutError&#39;</span> <span class="ow">in</span> <span class="n">stderr</span><span class="p">:</span>
+        <span class="n">error_summary</span><span class="p">[</span><span class="s1">&#39;timeout_errors&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">error_summary</span><span class="p">[</span><span class="s1">&#39;runtime_errors&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_shutdown</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Print error summary&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error Summary:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">error_type</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">error_summary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">error_type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="job-templates">Job Templates</h3>
+<h4 id="template-with-environment-variables">Template with Environment Variables</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_template_job</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create job from template&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;cmd&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="s1">&#39;process.py&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;envs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;INPUT_FILE&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;OUTPUT_DIR&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;PARAM_A&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;param_a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="c1"># Create jobs from templates</span>
+    <span class="n">jobs</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;input&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;/data/input_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">.txt&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;output&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;/data/output_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">/&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;param_a&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">jobs</span><span class="p">):</span>
+        <span class="n">job</span> <span class="o">=</span> <span class="n">create_template_job</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s1">&#39;cmd&#39;</span><span class="p">],</span> <span class="n">envs</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s1">&#39;envs&#39;</span><span class="p">])</span>
+
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="template-with-command-generation">Template with Command Generation</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_job_commands</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate job commands from configuration&quot;&quot;&quot;</span>
+    <span class="n">commands</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">]:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="s1">&#39;train.py&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--dataset&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span>
+                <span class="s1">&#39;--model&#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span>
+                <span class="s1">&#39;--epochs&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;epochs&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span>
+                <span class="s1">&#39;--batch-size&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;batch_size&#39;</span><span class="p">,</span> <span class="mi">32</span><span class="p">)),</span>
+            <span class="p">]</span>
+            <span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">commands</span>
+
+<span class="c1"># Usage</span>
+<span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;datasets&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;imagenet&#39;</span><span class="p">,</span> <span class="s1">&#39;cifar10&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;models&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;resnet50&#39;</span><span class="p">,</span> <span class="s1">&#39;vgg16&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;epochs&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">generate_job_commands</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="batch-processing">Batch Processing</h3>
+<h4 id="process-files-in-batches">Process Files in Batches</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process_files</span><span class="p">(</span><span class="n">file_list</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process files in batches&quot;&quot;&quot;</span>
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_list</span><span class="p">),</span> <span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">file_list</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">batch_size</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="s1">&#39;process.py&#39;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">])</span>
+
+        <span class="c1"># Wait for batch to complete</span>
+        <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+        <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># Create new Xqute for next batch</span>
+
+<span class="c1"># Usage</span>
+<span class="n">files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;/data&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.txt&#39;</span><span class="p">))</span>
+<span class="k">await</span> <span class="n">process_files</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="batch-processing-with-results">Batch Processing with Results</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process_with_results</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">process_func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process items and collect results&quot;&quot;&quot;</span>
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="c1"># Submit all jobs</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="n">process_func</span><span class="p">,</span> <span class="n">item</span><span class="p">])</span>
+
+    <span class="c1"># Wait for completion</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+
+    <span class="c1"># Collect results</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="n">xqute</span><span class="o">.</span><span class="n">jobs</span><span class="p">:</span>
+        <span class="n">stdout</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stdout_file</span><span class="o">.</span><span class="n">a_read_text</span><span class="p">()</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">stdout</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">results</span>
+
+<span class="c1"># Usage</span>
+<span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;item1&#39;</span><span class="p">,</span> <span class="s1">&#39;item2&#39;</span><span class="p">,</span> <span class="s1">&#39;item3&#39;</span><span class="p">]</span>
+<span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">process_with_results</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="s1">&#39;processor.py&#39;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="integration-with-other-tools">Integration with Other Tools</h3>
+<h4 id="integration-with-airflow">Integration with Airflow</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">airflow</span><span class="w"> </span><span class="kn">import</span> <span class="n">DAG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">airflow.operators.python</span><span class="w"> </span><span class="kn">import</span> <span class="n">PythonOperator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_xqute_jobs</span><span class="p">(</span><span class="o">**</span><span class="n">context</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run Xqute jobs in Airflow task&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">():</span>
+        <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+            <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;slurm&#39;</span><span class="p">,</span>
+            <span class="n">forks</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;partition&#39;</span><span class="p">:</span> <span class="s1">&#39;airflow&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get files from Airflow context</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;files&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="s1">&#39;process.py&#39;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">])</span>
+
+        <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">process</span><span class="p">())</span>
+
+<span class="k">with</span> <span class="n">DAG</span><span class="p">(</span>
+    <span class="s1">&#39;xqute_pipeline&#39;</span><span class="p">,</span>
+    <span class="n">default_args</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;owner&#39;</span><span class="p">:</span> <span class="s1">&#39;airflow&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;depends_on_past&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s1">&#39;start_date&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="s1">&#39;retries&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">schedule_interval</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">dag</span><span class="p">:</span>
+
+    <span class="n">run_jobs</span> <span class="o">=</span> <span class="n">PythonOperator</span><span class="p">(</span>
+        <span class="n">task_id</span><span class="o">=</span><span class="s1">&#39;run_xqute_jobs&#39;</span><span class="p">,</span>
+        <span class="n">python_callable</span><span class="o">=</span><span class="n">run_xqute_jobs</span><span class="p">,</span>
+        <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;files&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;/data/file1.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;/data/file2.txt&#39;</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h4 id="integration-with-dask">Integration with Dask</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="nd">@dask</span><span class="o">.</span><span class="n">delayed</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_xqute_task</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run Xqute job as Dask task&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">():</span>
+        <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">process</span><span class="p">())</span>
+
+<span class="c1"># Create Dask workflow</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">run_xqute_task</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="s1">&#39;process.py&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="c1"># Execute with Dask</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="performance-optimization">Performance Optimization</h3>
+<h4 id="optimize-concurrency">Optimize Concurrency</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_optimal_forks</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate optimal concurrency based on resources&quot;&quot;&quot;</span>
+    <span class="n">cpu_count</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+    <span class="n">mem_gb</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">total</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="c1"># Adjust based on job type</span>
+    <span class="k">if</span> <span class="n">mem_gb</span> <span class="o">&gt;</span> <span class="mi">64</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cpu_count</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="k">elif</span> <span class="n">mem_gb</span> <span class="o">&gt;</span> <span class="mi">32</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cpu_count</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cpu_count</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="n">calculate_optimal_forks</span><span class="p">())</span>
+</code></pre></div>
+<h4 id="batch-submissions">Batch Submissions</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Reduce scheduler overhead by batching submissions</span>
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;slurm&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">submission_batch</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>  <span class="c1"># Submit 50 jobs at once</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="reduce-polling-frequency">Reduce Polling Frequency</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Poll less frequently for long-running jobs</span>
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;slurm&#39;</span><span class="p">,</span>
+    <span class="n">recheck_interval</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>  <span class="c1"># Check every 50 polls instead of 10</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="optimize-working-directory">Optimize Working Directory</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Use local directory instead of cloud for speed</span>
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">workdir</span><span class="o">=</span><span class="s1">&#39;./.xqute&#39;</span><span class="p">,</span>  <span class="c1"># Local, not &#39;gs://bucket/jobs&#39;</span>
+<span class="p">)</span>
+
+<span class="c1"># Or use mounted path</span>
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">workdir</span><span class="o">=</span><span class="s1">&#39;gs://bucket/jobs&#39;</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;mounted_workdir&#39;</span><span class="p">:</span> <span class="s1">&#39;/mnt/gs&#39;</span><span class="p">,</span>  <span class="c1"># Faster access</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="memory-management">Memory Management</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_succeeded</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean up large output files to save space&quot;&quot;&quot;</span>
+    <span class="c1"># Remove stdout if it&#39;s too large</span>
+    <span class="k">if</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stdout_file</span><span class="o">.</span><span class="n">a_size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">10_000_000</span><span class="p">:</span>  <span class="c1"># 10MB</span>
+        <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stdout_file</span><span class="o">.</span><span class="n">a_unlink</span><span class="p">()</span>
+
+    <span class="c1"># Remove stderr</span>
+    <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stderr_file</span><span class="o">.</span><span class="n">a_unlink</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="next-steps">Next Steps</h3>
+<ul>
+<li><a href="../user-guide/">User Guide</a> - Comprehensive usage guide</li>
+<li><a href="../schedulers/">Schedulers</a> - Learn about different scheduler backends</li>
+<li><a href="../plugins/">Plugins</a> - Extend functionality</li>
+<li><a href="../api/xqute/">API Reference</a> - Complete API documentation</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

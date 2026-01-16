@@ -1,0 +1,2579 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../schedulers/">
+      
+      
+        <link rel="next" href="../advanced/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Plugins - xqute</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../style.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#plugins" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="xqute" class="md-header__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xqute
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Plugins
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="xqute" class="md-nav__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xqute
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#available-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Hooks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Available Hooks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scheduler-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scheduler Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-lifecycle-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Lifecycle Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-command-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Command Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a Plugin
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a Plugin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-plugin-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Plugin Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complete-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Plugins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable Plugin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enable-multiple-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable Multiple Plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disable-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disable Plugin
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-email-notifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Email Notifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-database-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Database Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-slack-notifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Slack Notifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-custom-command-wrapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Custom Command Wrapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-resource-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Resource Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-conditional-job-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Conditional Job Submission
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-development-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin Development Tips
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin Development Tips">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-async-vs-sync-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Async vs Sync Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-hook-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Hook Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-canceling-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Canceling Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-hook-return-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Hook Return Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin Distribution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin Distribution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#package-as-python-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package as Python Package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install Plugin
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Plugins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unit-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_1" id="__nav_7_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.job/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.job
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.defaults/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.defaults
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.local_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.local_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.container_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.container_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.sge_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.sge_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.gbatch_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.gbatch_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.slurm_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.slurm_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.ssh_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.ssh_scheduler.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.ssh_scheduler.submitter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.submitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#available-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Hooks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Available Hooks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scheduler-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scheduler Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-lifecycle-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Lifecycle Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-command-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Command Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a Plugin
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a Plugin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-plugin-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Plugin Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complete-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Plugins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable Plugin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enable-multiple-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable Multiple Plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disable-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disable Plugin
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-email-notifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Email Notifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-database-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Database Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-slack-notifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Slack Notifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-custom-command-wrapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Custom Command Wrapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-resource-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Resource Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-conditional-job-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Conditional Job Submission
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-development-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin Development Tips
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin Development Tips">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-async-vs-sync-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Async vs Sync Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-hook-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Hook Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-canceling-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Canceling Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-hook-return-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Hook Return Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin Distribution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin Distribution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#package-as-python-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package as Python Package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install Plugin
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Plugins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unit-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+  <h1>Plugins</h1>
+
+<h2 id="plugins">Plugins</h2>
+<p>Extend Xqute's functionality using the plugin system based on <code>simplug</code>.</p>
+<h3 id="overview">Overview</h3>
+<p>Xqute uses a hook-based plugin system that allows you to:</p>
+<ul>
+<li>Customize job lifecycle behavior</li>
+<li>Add custom logging and monitoring</li>
+<li>Integrate with external services</li>
+<li>Modify job commands dynamically</li>
+<li>Implement custom error handling</li>
+</ul>
+<h3 id="available-hooks">Available Hooks</h3>
+<h4 id="scheduler-hooks">Scheduler Hooks</h4>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>on_init</code></td>
+<td>sync</td>
+<td>Called when scheduler is initialized</td>
+</tr>
+<tr>
+<td><code>on_shutdown</code></td>
+<td>sync</td>
+<td>Called when scheduler shuts down</td>
+</tr>
+</tbody>
+</table>
+<h4 id="job-lifecycle-hooks">Job Lifecycle Hooks</h4>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>on_job_init</code></td>
+<td>async</td>
+<td>Called when a job is created</td>
+</tr>
+<tr>
+<td><code>on_job_queued</code></td>
+<td>async</td>
+<td>Called when job is queued</td>
+</tr>
+<tr>
+<td><code>on_job_submitted</code></td>
+<td>async</td>
+<td>Called after job is submitted</td>
+</tr>
+<tr>
+<td><code>on_job_started</code></td>
+<td>async</td>
+<td>Called when job starts running</td>
+</tr>
+<tr>
+<td><code>on_job_polling</code></td>
+<td>async</td>
+<td>Called during status polling</td>
+</tr>
+<tr>
+<td><code>on_job_killing</code></td>
+<td>async</td>
+<td>Called when job is being killed</td>
+</tr>
+<tr>
+<td><code>on_job_killed</code></td>
+<td>async</td>
+<td>Called after job is killed</td>
+</tr>
+<tr>
+<td><code>on_job_failed</code></td>
+<td>async</td>
+<td>Called when job fails</td>
+</tr>
+<tr>
+<td><code>on_job_succeeded</code></td>
+<td>async</td>
+<td>Called when job succeeds</td>
+</tr>
+</tbody>
+</table>
+<h4 id="job-command-hooks">Job Command Hooks</h4>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>on_jobcmd_init</code></td>
+<td>sync</td>
+<td>Returns code to prepend to job script</td>
+</tr>
+<tr>
+<td><code>on_jobcmd_prep</code></td>
+<td>sync</td>
+<td>Returns code before job command</td>
+</tr>
+<tr>
+<td><code>on_jobcmd_end</code></td>
+<td>sync</td>
+<td>Returns code after job command</td>
+</tr>
+</tbody>
+</table>
+<h3 id="creating-a-plugin">Creating a Plugin</h3>
+<h4 id="basic-plugin-structure">Basic Plugin Structure</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when scheduler is initialized&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scheduler </span><span class="si">{</span><span class="n">scheduler</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> initialized&quot;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_submitted</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when job is submitted&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> submitted with JID: </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">_jid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="complete-example">Complete Example</h4>
+<p>Create a file <code>myplugin.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Custom plugin for Xqute&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="n">JobStatus</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="c1"># Setup logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;myplugin&#39;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize plugin with scheduler&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MyPlugin loaded for </span><span class="si">{</span><span class="n">scheduler</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when job is initialized&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> initialized: </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">cmd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_queued</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when job is queued&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> queued&quot;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_submitted</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called after job is submitted&quot;&quot;&quot;</span>
+    <span class="n">jid</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_jid</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> submitted (JID: </span><span class="si">{</span><span class="n">jid</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_started</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when job starts running&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> started&quot;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_polling</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">counter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called during status polling&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">counter</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
+        <span class="n">status_name</span> <span class="o">=</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> polling: </span><span class="si">{</span><span class="n">status_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_failed</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when job fails&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> failed&quot;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_succeeded</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when job succeeds&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> succeeded&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="using-plugins">Using Plugins</h3>
+<h4 id="enable-plugin">Enable Plugin</h4>
+<p>Import the plugin module before creating Xqute:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="c1"># Import your plugin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">myplugin</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;echo&#39;</span><span class="p">,</span> <span class="s1">&#39;Hello&#39;</span><span class="p">])</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<h4 id="enable-multiple-plugins">Enable Multiple Plugins</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Import multiple plugins</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging_plugin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">monitoring_plugin</span>
+
+<span class="c1"># Enable specific plugins</span>
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;logging_plugin&#39;</span><span class="p">,</span> <span class="s1">&#39;monitoring_plugin&#39;</span><span class="p">])</span>
+</code></pre></div>
+<h4 id="disable-plugin">Disable Plugin</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Import all plugins</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">myplugin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">another_plugin</span>
+
+<span class="c1"># Disable specific plugin</span>
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-myplugin&#39;</span><span class="p">])</span>
+</code></pre></div>
+<h3 id="plugin-examples">Plugin Examples</h3>
+<h4 id="1-email-notifications">1. Email Notifications</h4>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Send email notifications for job completion&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">smtplib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">email.mime.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">MIMEText</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="n">SMTP_SERVER</span> <span class="o">=</span> <span class="s1">&#39;smtp.example.com&#39;</span>
+<span class="n">SMTP_PORT</span> <span class="o">=</span> <span class="mi">587</span>
+<span class="n">SMTP_USER</span> <span class="o">=</span> <span class="s1">&#39;user@example.com&#39;</span>
+<span class="n">SMTP_PASSWORD</span> <span class="o">=</span> <span class="s1">&#39;password&#39;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">send_email</span><span class="p">(</span><span class="n">to</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send email notification&quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">MIMEText</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject</span>
+    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;From&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SMTP_USER</span>
+    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;To&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to</span>
+
+    <span class="k">with</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTP</span><span class="p">(</span><span class="n">SMTP_SERVER</span><span class="p">,</span> <span class="n">SMTP_PORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">server</span><span class="p">:</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">starttls</span><span class="p">()</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">SMTP_USER</span><span class="p">,</span> <span class="n">SMTP_PASSWORD</span><span class="p">)</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_failed</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send email on job failure&quot;&quot;&quot;</span>
+    <span class="n">stderr</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stderr_file</span><span class="o">.</span><span class="n">a_read_text</span><span class="p">()</span>
+    <span class="n">subject</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> Failed&quot;</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Job command: </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">cmd</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">Stderr:</span><span class="se">\n</span><span class="si">{</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">send_email</span><span class="p">(</span><span class="s1">&#39;admin@example.com&#39;</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="2-database-logging">2. Database Logging</h4>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Log job information to database&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="n">DB_PATH</span> <span class="o">=</span> <span class="s1">&#39;jobs.db&#39;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_db</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get database connection&quot;&quot;&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">DB_PATH</span><span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">        CREATE TABLE IF NOT EXISTS jobs (</span>
+<span class="s1">            index INTEGER PRIMARY KEY,</span>
+<span class="s1">            command TEXT,</span>
+<span class="s1">            status INTEGER,</span>
+<span class="s1">            submitted_at TIMESTAMP,</span>
+<span class="s1">            completed_at TIMESTAMP</span>
+<span class="s1">        )</span>
+<span class="s1">    &#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">conn</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_submitted</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Log job submission&quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">get_db</span><span class="p">()</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s1">&#39;INSERT INTO jobs (index, command, status, submitted_at) VALUES (?, ?, ?, ?)&#39;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">cmd</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+    <span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_succeeded</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update job completion&quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">get_db</span><span class="p">()</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s1">&#39;UPDATE jobs SET status = 4, completed_at = ? WHERE index = ?&#39;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="3-slack-notifications">3. Slack Notifications</h4>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Send Slack notifications&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="n">SLACK_WEBHOOK</span> <span class="o">=</span> <span class="s1">&#39;https://hooks.slack.com/services/YOUR/WEBHOOK/URL&#39;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">send_slack</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send message to Slack&quot;&quot;&quot;</span>
+    <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">SLACK_WEBHOOK</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">message</span><span class="p">})</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_failed</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send Slack notification on failure&quot;&quot;&quot;</span>
+    <span class="n">send_slack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;:x: Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">cmd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_succeeded</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send Slack notification on success&quot;&quot;&quot;</span>
+    <span class="n">send_slack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;:white_check_mark: Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> completed&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="4-custom-command-wrapping">4. Custom Command Wrapping</h4>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Wrap job commands with additional setup&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_jobcmd_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add initialization code to job script&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"># Custom initialization</span>
+<span class="s2">set -e</span>
+<span class="s2">export CUSTOM_VAR=&quot;value&quot;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_jobcmd_prep</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add preparation code before job command&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"># Preparation</span>
+<span class="s2">cd /tmp/workdir</span>
+<span class="s2">echo &quot;Preparing job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_jobcmd_end</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add cleanup code after job command&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"># Cleanup</span>
+<span class="s2">rm -rf /tmp/workdir</span>
+<span class="s2">echo &quot;Job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> completed&quot;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<h4 id="5-resource-monitoring">5. Resource Monitoring</h4>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Monitor job resource usage&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="n">MONITOR_FILE</span> <span class="o">=</span> <span class="s1">&#39;job_resources.txt&#39;</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_started</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start resource monitoring&quot;&quot;&quot;</span>
+    <span class="c1"># In real implementation, start background monitoring</span>
+    <span class="k">pass</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_polling</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">counter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Log resource usage&quot;&quot;&quot;</span>
+    <span class="c1"># Log CPU, memory usage</span>
+    <span class="n">cpu_percent</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">cpu_percent</span><span class="p">()</span>
+    <span class="n">memory</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">MONITOR_FILE</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">counter</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">cpu_percent</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">memory</span><span class="o">.</span><span class="n">percent</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="6-conditional-job-submission">6. Conditional Job Submission</h4>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Conditionally submit jobs based on criteria&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_submitting</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decide whether to submit job&quot;&quot;&quot;</span>
+    <span class="c1"># Skip jobs with index 5 and 10</span>
+    <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping job </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Cancel submission</span>
+
+    <span class="c1"># Proceed with submission</span>
+    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+<h3 id="plugin-development-tips">Plugin Development Tips</h3>
+<h4 id="1-error-handling">1. Error Handling</h4>
+<p>Always handle errors gracefully:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_failed</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Your code here</span>
+        <span class="k">pass</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Log error but don&#39;t crash</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xqute.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plugin error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="2-async-vs-sync-hooks">2. Async vs Sync Hooks</h4>
+<p>Use async hooks for I/O operations:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Async: Use for file I/O, network calls</span>
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_submitted</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stdout_file</span><span class="o">.</span><span class="n">a_read_text</span><span class="p">()</span>
+
+<span class="c1"># Sync: Use for simple operations</span>
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initialized&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="3-hook-order">3. Hook Order</h4>
+<p>Multiple plugins can implement the same hook. They execute in import order:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># plugin1.py</span>
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First&quot;</span><span class="p">)</span>
+
+<span class="c1"># plugin2.py</span>
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Second&quot;</span><span class="p">)</span>
+
+<span class="c1"># Output when imported:</span>
+<span class="c1"># First</span>
+<span class="c1"># Second</span>
+</code></pre></div>
+<h4 id="4-canceling-hooks">4. Canceling Hooks</h4>
+<p>Return <code>False</code> from specific hooks to cancel actions:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_submitting</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+    <span class="c1"># Cancel submission</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_killing</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+    <span class="c1"># Prevent job from being killed</span>
+    <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div>
+<h4 id="5-hook-return-values">5. Hook Return Values</h4>
+<p>Some hooks expect return values:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># on_jobcmd_* hooks return code strings</span>
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_jobcmd_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;# My initialization code&quot;</span>
+</code></pre></div>
+<h3 id="plugin-distribution">Plugin Distribution</h3>
+<h4 id="package-as-python-package">Package as Python Package</h4>
+<p>Create directory structure:</p>
+<div class="highlight"><pre><span></span><code>xqute-myplugin/
+├── setup.py
+├── pyproject.toml
+├── README.md
+└── xqute_myplugin/
+    └── __init__.py
+</code></pre></div>
+<p><code>xqute_myplugin/__init__.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Xqute plugin for custom functionality&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;MyPlugin loaded&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>setup.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">setuptools</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+
+<span class="n">setup</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;xqute-myplugin&#39;</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s1">&#39;0.1.0&#39;</span><span class="p">,</span>
+    <span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(),</span>
+    <span class="n">install_requires</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;xqute&#39;</span><span class="p">],</span>
+    <span class="n">entry_points</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;xqute.plugins&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;myplugin = xqute_myplugin&#39;</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="install-plugin">Install Plugin</h4>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>xqute-myplugin
+
+<span class="c1"># Use plugin</span>
+from<span class="w"> </span>xqute<span class="w"> </span>import<span class="w"> </span>Xqute
+<span class="nv">xqute</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>Xqute<span class="o">(</span><span class="nv">plugins</span><span class="o">=[</span><span class="s1">&#39;myplugin&#39;</span><span class="o">])</span>
+</code></pre></div>
+<h3 id="testing-plugins">Testing Plugins</h3>
+<h4 id="unit-testing">Unit Testing</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span><span class="p">,</span> <span class="n">simplug</span> <span class="k">as</span> <span class="n">pm</span>
+
+<span class="c1"># Define test plugin</span>
+<span class="nd">@pm</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_init</span><span class="p">(</span><span class="n">scheduler</span><span class="p">):</span>
+    <span class="n">scheduler</span><span class="o">.</span><span class="n">test_flag</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_plugin</span><span class="p">():</span>
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">xqute</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span> <span class="s1">&#39;test_flag&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">xqute</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">test_flag</span> <span class="ow">is</span> <span class="kc">True</span>
+</code></pre></div>
+<h4 id="integration-testing">Integration Testing</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_plugin_integration</span><span class="p">():</span>
+    <span class="c1"># Import plugin</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">myplugin</span>
+
+    <span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;echo&#39;</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">])</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+
+    <span class="c1"># Verify plugin behavior</span>
+    <span class="c1"># ... assertions</span>
+</code></pre></div>
+<h3 id="best-practices">Best Practices</h3>
+<ol>
+<li><strong>Error Handling</strong>: Always catch exceptions in hooks</li>
+<li><strong>Logging</strong>: Use <code>xqute.utils.logger</code> for consistent logging</li>
+<li><strong>Performance</strong>: Avoid blocking operations in async hooks</li>
+<li><strong>Idempotency</strong>: Hooks should be safe to call multiple times</li>
+<li><strong>Documentation</strong>: Document your hooks and behavior</li>
+<li><strong>Testing</strong>: Write tests for your plugin functionality</li>
+<li><strong>Compatibility</strong>: Test with multiple Xqute versions</li>
+</ol>
+<h3 id="next-steps">Next Steps</h3>
+<ul>
+<li><a href="../advanced/">Advanced Usage</a> - Advanced patterns and customization</li>
+<li><a href="../user-guide/">User Guide</a> - Comprehensive usage guide</li>
+<li><a href="../api/xqute/">API Reference</a> - Complete API documentation</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

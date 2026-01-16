@@ -1,0 +1,3087 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../user-guide/">
+      
+      
+        <link rel="next" href="../plugins/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Schedulers - xqute</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../style.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#schedulers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="xqute" class="md-header__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xqute
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Schedulers
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="xqute" class="md-nav__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xqute
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schedulers
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schedulers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Schedulers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Schedulers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Local Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sge-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SGE Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SGE Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-sge-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common SGE Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slurm-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slurm Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Slurm Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-allocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Allocation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-slurm-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Slurm Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ssh-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSH Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SSH Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#google-batch-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google Batch Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Google Batch Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-group-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task Group Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Container Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#volume-mounts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Volume Mounts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-docker-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Docker Arguments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a Scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Schedulers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_1" id="__nav_7_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.job/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.job
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.defaults/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.defaults
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.local_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.local_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.container_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.container_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.sge_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.sge_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.gbatch_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.gbatch_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.slurm_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.slurm_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.ssh_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.ssh_scheduler.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xqute.schedulers.ssh_scheduler.submitter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.submitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schedulers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Schedulers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Schedulers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Local Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sge-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SGE Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SGE Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-sge-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common SGE Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slurm-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slurm Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Slurm Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-allocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Allocation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-slurm-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Slurm Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ssh-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSH Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SSH Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#google-batch-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google Batch Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Google Batch Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-group-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task Group Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container Scheduler
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Container Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-options_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#volume-mounts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Volume Mounts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-docker-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Docker Arguments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choosing-a-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a Scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Schedulers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+  <h1>Schedulers</h1>
+
+<h2 id="schedulers">Schedulers</h2>
+<p>Xqute supports multiple scheduler backends for different computing environments. Each scheduler provides a unified interface while handling backend-specific details.</p>
+<h3 id="available-schedulers">Available Schedulers</h3>
+<ul>
+<li><a href="#local-scheduler">Local Scheduler</a> - Run jobs on the local machine</li>
+<li><a href="#sge-scheduler">SGE Scheduler</a> - Sun Grid Engine clusters</li>
+<li><a href="#slurm-scheduler">Slurm Scheduler</a> - Slurm workload manager</li>
+<li><a href="#ssh-scheduler">SSH Scheduler</a> - Distribute jobs across SSH servers</li>
+<li><a href="#google-batch-scheduler">Google Batch Scheduler</a> - Google Cloud Batch</li>
+<li><a href="#container-scheduler">Container Scheduler</a> - Docker containers</li>
+</ul>
+<h3 id="local-scheduler">Local Scheduler</h3>
+<h4 id="overview">Overview</h4>
+<p>Runs jobs directly on the local machine. Best for:
+- Development and testing
+- Small-scale processing
+- Single-machine workloads</p>
+<h4 id="basic-usage">Basic Usage</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;local&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>  <span class="c1"># Max 4 concurrent jobs</span>
+<span class="p">)</span>
+
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;echo&#39;</span><span class="p">,</span> <span class="s1">&#39;Hello&#39;</span><span class="p">])</span>
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="configuration-options">Configuration Options</h4>
+<div class="highlight"><pre><span></span><code><span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;local&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>              <span class="c1"># Max concurrent jobs</span>
+    <span class="n">workdir</span><span class="o">=</span><span class="s1">&#39;./.xqute&#39;</span><span class="p">,</span>   <span class="c1"># Job metadata directory</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="use-cases">Use Cases</h4>
+<ul>
+<li>Running small batches of jobs</li>
+<li>Testing job pipelines</li>
+<li>Processing data on a single machine</li>
+<li>Development and debugging</li>
+</ul>
+<h4 id="limitations">Limitations</h4>
+<ul>
+<li>Limited to local machine resources</li>
+<li>No cluster management</li>
+<li>No job priority queues</li>
+</ul>
+<hr />
+<h3 id="sge-scheduler">SGE Scheduler</h3>
+<h4 id="overview_1">Overview</h4>
+<p>Integrates with Sun Grid Engine (SGE) for HPC cluster job management. Best for:
+- University and research clusters
+- Traditional HPC environments
+- Job queue management with resource allocation</p>
+<h4 id="basic-usage_1">Basic Usage</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;sge&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;q&#39;</span><span class="p">:</span> <span class="s1">&#39;1-day&#39;</span><span class="p">,</span>  <span class="c1"># Queue name</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;echo&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Job </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">])</span>
+
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="configuration-options_1">Configuration Options</h4>
+<div class="highlight"><pre><span></span><code><span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;sge&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="c1"># Command paths</span>
+        <span class="s1">&#39;qsub&#39;</span><span class="p">:</span> <span class="s1">&#39;/usr/bin/qsub&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;qdel&#39;</span><span class="p">:</span> <span class="s1">&#39;/usr/bin/qdel&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;qstat&#39;</span><span class="p">:</span> <span class="s1">&#39;/usr/bin/qstat&#39;</span><span class="p">,</span>
+
+        <span class="c1"># Queue configuration (shortcut for qsub_q)</span>
+        <span class="s1">&#39;q&#39;</span><span class="p">:</span> <span class="s1">&#39;1-day&#39;</span><span class="p">,</span>
+
+        <span class="c1"># Resource requirements</span>
+        <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;h_vmem=2G&#39;</span><span class="p">,</span> <span class="s1">&#39;gpu=1&#39;</span><span class="p">],</span>
+
+        <span class="c1"># Job arrays</span>
+        <span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="s1">&#39;1-100&#39;</span><span class="p">,</span>
+
+        <span class="c1"># Additional qsub options</span>
+        <span class="s1">&#39;cwd&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s1">&#39;notify&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+
+        <span class="c1"># Direct qsub parameters</span>
+        <span class="s1">&#39;qsub_q&#39;</span><span class="p">:</span> <span class="s1">&#39;1-day&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;qsub_l&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;h_vmem=2G&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;qsub_N&#39;</span><span class="p">:</span> <span class="s1">&#39;myjob&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="resource-requirements">Resource Requirements</h4>
+<p>Specify resources using the <code>l</code> option:</p>
+<div class="highlight"><pre><span></span><code><span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+    <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s1">&#39;h_vmem=4G&#39;</span><span class="p">,</span>      <span class="c1"># Memory per job</span>
+        <span class="s1">&#39;gpu=1&#39;</span><span class="p">,</span>          <span class="c1"># GPU count</span>
+        <span class="s1">&#39;h_rt=24:00:00&#39;</span><span class="p">,</span>  <span class="c1"># Runtime</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="common-sge-options">Common SGE Options</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>q</code></td>
+<td>Queue name</td>
+<td><code>'1-day'</code></td>
+</tr>
+<tr>
+<td><code>l</code></td>
+<td>Resource list</td>
+<td><code>['h_vmem=2G']</code></td>
+</tr>
+<tr>
+<td><code>t</code></td>
+<td>Task array</td>
+<td><code>'1-100'</code></td>
+</tr>
+<tr>
+<td><code>N</code></td>
+<td>Job name</td>
+<td><code>'myjob'</code></td>
+</tr>
+<tr>
+<td><code>cwd</code></td>
+<td>Current working directory</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>notify</code></td>
+<td>Email notification</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="use-cases_1">Use Cases</h4>
+<ul>
+<li>University cluster jobs</li>
+<li>Large-scale data processing</li>
+<li>HPC workflows</li>
+<li>Resource-constrained jobs</li>
+</ul>
+<h4 id="notes">Notes</h4>
+<ul>
+<li>Jobs are submitted via <code>qsub</code></li>
+<li>Status checked via <code>qstat</code></li>
+<li>Jobs cancelled via <code>qdel</code></li>
+<li>Jobs fail before running if resources are unavailable</li>
+</ul>
+<hr />
+<h3 id="slurm-scheduler">Slurm Scheduler</h3>
+<h4 id="overview_2">Overview</h4>
+<p>Integrates with Slurm workload manager. Best for:
+- Modern HPC clusters
+- Cloud-based HPC (e.g., Google Cloud Slurm)
+- Job arrays and dependency management</p>
+<h4 id="basic-usage_2">Basic Usage</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;slurm&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;partition&#39;</span><span class="p">:</span> <span class="s1">&#39;compute&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;echo&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Job </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">])</span>
+
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="configuration-options_2">Configuration Options</h4>
+<div class="highlight"><pre><span></span><code><span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;slurm&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="c1"># Command paths</span>
+        <span class="s1">&#39;sbatch&#39;</span><span class="p">:</span> <span class="s1">&#39;/usr/bin/sbatch&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;scancel&#39;</span><span class="p">:</span> <span class="s1">&#39;/usr/bin/scancel&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;squeue&#39;</span><span class="p">:</span> <span class="s1">&#39;/usr/bin/squeue&#39;</span><span class="p">,</span>
+
+        <span class="c1"># Job configuration</span>
+        <span class="s1">&#39;partition&#39;</span><span class="p">:</span> <span class="s1">&#39;compute&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;01:00:00&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mem&#39;</span><span class="p">:</span> <span class="s1">&#39;2G&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;cpus-per-task&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+
+        <span class="c1"># Additional options</span>
+        <span class="s1">&#39;job-name&#39;</span><span class="p">:</span> <span class="s1">&#39;myjob&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;output&#39;</span><span class="p">:</span> <span class="s1">&#39;job-%j.out&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;job-%j.err&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="resource-allocation">Resource Allocation</h4>
+<div class="highlight"><pre><span></span><code><span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+    <span class="s1">&#39;partition&#39;</span><span class="p">:</span> <span class="s1">&#39;gpu&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s1">&#39;24:00:00&#39;</span><span class="p">,</span>        <span class="c1"># Max runtime</span>
+    <span class="s1">&#39;mem&#39;</span><span class="p">:</span> <span class="s1">&#39;8G&#39;</span><span class="p">,</span>                <span class="c1"># Memory</span>
+    <span class="s1">&#39;cpus-per-task&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>        <span class="c1"># CPUs per job</span>
+    <span class="s1">&#39;gres&#39;</span><span class="p">:</span> <span class="s1">&#39;gpu:1&#39;</span><span class="p">,</span>           <span class="c1"># GPU resources</span>
+    <span class="s1">&#39;nodes&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>                <span class="c1"># Number of nodes</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="common-slurm-options">Common Slurm Options</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>partition</code></td>
+<td>Queue/partition name</td>
+<td><code>'compute'</code></td>
+</tr>
+<tr>
+<td><code>time</code></td>
+<td>Runtime limit</td>
+<td><code>'01:00:00'</code></td>
+</tr>
+<tr>
+<td><code>mem</code></td>
+<td>Memory</td>
+<td><code>'2G'</code></td>
+</tr>
+<tr>
+<td><code>cpus-per-task</code></td>
+<td>CPUs per job</td>
+<td><code>4</code></td>
+</tr>
+<tr>
+<td><code>gres</code></td>
+<td>Generic resources</td>
+<td><code>'gpu:1'</code></td>
+</tr>
+<tr>
+<td><code>job-name</code></td>
+<td>Job name</td>
+<td><code>'myjob'</code></td>
+</tr>
+<tr>
+<td><code>output</code></td>
+<td>Stdout file</td>
+<td><code>'job-%j.out'</code></td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Stderr file</td>
+<td><code>'job-%j.err'</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="use-cases_2">Use Cases</h4>
+<ul>
+<li>Modern HPC clusters</li>
+<li>GPU-accelerated computing</li>
+<li>Job arrays</li>
+<li>Large-scale parallel processing</li>
+</ul>
+<h4 id="notes_1">Notes</h4>
+<ul>
+<li>Jobs are submitted via <code>sbatch</code></li>
+<li>Status checked via <code>squeue</code></li>
+<li>Jobs cancelled via <code>scancel</code></li>
+<li>Supports job arrays and dependencies</li>
+</ul>
+<hr />
+<h3 id="ssh-scheduler">SSH Scheduler</h3>
+<h4 id="overview_3">Overview</h4>
+<p>Distributes jobs across multiple SSH-accessible servers. Best for:
+- Cluster of Linux servers
+- Load balancing across machines
+- Using existing SSH infrastructure</p>
+<h4 id="basic-usage_3">Basic Usage</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;ssh&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;servers&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;server1&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;username&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;server1.example.com&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span>
+                <span class="s1">&#39;keyfile&#39;</span><span class="p">:</span> <span class="s1">&#39;/path/to/keyfile&#39;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;server2&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;username&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;server2.example.com&#39;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;echo&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Job </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">])</span>
+
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="configuration-options_3">Configuration Options</h4>
+<div class="highlight"><pre><span></span><code><span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;ssh&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="c1"># SSH command path</span>
+        <span class="s1">&#39;ssh&#39;</span><span class="p">:</span> <span class="s1">&#39;/usr/bin/ssh&#39;</span><span class="p">,</span>
+
+        <span class="c1"># Server configuration</span>
+        <span class="s1">&#39;servers&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;server1&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;username&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;server1.example.com&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span>
+                <span class="s1">&#39;keyfile&#39;</span><span class="p">:</span> <span class="s1">&#39;/path/to/keyfile&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;ctrl_persist&#39;</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>  <span class="c1"># Connection persistence</span>
+                <span class="s1">&#39;ctrl_dir&#39;</span><span class="p">:</span> <span class="s1">&#39;/tmp/ssh&#39;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;server2&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;username&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;server2.example.com&#39;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="server-configuration">Server Configuration</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td>SSH username</td>
+<td><code>'username'</code></td>
+</tr>
+<tr>
+<td><code>host</code></td>
+<td>Server hostname</td>
+<td><code>'server1.example.com'</code></td>
+</tr>
+<tr>
+<td><code>port</code></td>
+<td>SSH port</td>
+<td><code>22</code></td>
+</tr>
+<tr>
+<td><code>keyfile</code></td>
+<td>SSH private key path</td>
+<td><code>'/path/to/key'</code></td>
+</tr>
+<tr>
+<td><code>ctrl_persist</code></td>
+<td>Keep-alive time (seconds)</td>
+<td><code>600</code></td>
+</tr>
+<tr>
+<td><code>ctrl_dir</code></td>
+<td>Control socket directory</td>
+<td><code>'/tmp/ssh'</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="use-cases_3">Use Cases</h4>
+<ul>
+<li>Load balancing across servers</li>
+<li>Using existing SSH infrastructure</li>
+<li>Distributed computing on multiple machines</li>
+<li>Resource utilization across a cluster</li>
+</ul>
+<h4 id="notes_2">Notes</h4>
+<ul>
+<li><strong>Requirement</strong>: All servers must share the same filesystem</li>
+<li><strong>Authentication</strong>: Key-based authentication required</li>
+<li><strong>Connection</strong>: Uses SSH control sockets for efficiency</li>
+<li><strong>Workdir</strong>: Must be accessible from all servers</li>
+</ul>
+<hr />
+<h3 id="google-batch-scheduler">Google Batch Scheduler</h3>
+<h4 id="overview_4">Overview</h4>
+<p>Integrates with Google Cloud Batch for cloud-based job execution. Best for:
+- Cloud-native workflows
+- Large-scale parallel processing
+- Auto-scaling compute resources</p>
+<h4 id="basic-usage_4">Basic Usage</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;gbatch&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="s1">&#39;your-project-id&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;us-central1&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;taskGroups&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;taskSpec&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;runnables&#39;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="s1">&#39;container&#39;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s1">&#39;imageUri&#39;</span><span class="p">:</span> <span class="s1">&#39;ubuntu&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;entrypoint&#39;</span><span class="p">:</span> <span class="s1">&#39;bash&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;commands&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;echo &quot;Hello from Google Batch&quot;&#39;</span><span class="p">]</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">]</span>
+                <span class="p">},</span>
+                <span class="s1">&#39;taskCount&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                <span class="s1">&#39;parallelism&#39;</span><span class="p">:</span> <span class="mi">3</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="configuration-options_4">Configuration Options</h4>
+<div class="highlight"><pre><span></span><code><span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;gbatch&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="c1"># Google Cloud configuration</span>
+        <span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="s1">&#39;your-project-id&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;us-central1&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;gcloud&#39;</span><span class="p">:</span> <span class="s1">&#39;/path/to/gcloud&#39;</span><span class="p">,</span>
+
+        <span class="c1"># Job configuration</span>
+        <span class="s1">&#39;taskGroups&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;taskSpec&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;runnables&#39;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="s1">&#39;container&#39;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s1">&#39;imageUri&#39;</span><span class="p">:</span> <span class="s1">&#39;python:3.11&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;entrypoint&#39;</span><span class="p">:</span> <span class="s1">&#39;python&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;commands&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;print(&quot;Hello&quot;)&#39;</span><span class="p">]</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">],</span>
+                    <span class="s1">&#39;environment&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;variables&#39;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s1">&#39;MY_VAR&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+                <span class="s1">&#39;taskCount&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                <span class="s1">&#39;parallelism&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                <span class="s1">&#39;taskCountPerNode&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+
+        <span class="c1"># Additional options</span>
+        <span class="s1">&#39;allocationPolicy&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;instances&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s1">&#39;policy&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;machineType&#39;</span><span class="p">:</span> <span class="s1">&#39;n1-standard-4&#39;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="task-group-configuration">Task Group Configuration</h4>
+<div class="highlight"><pre><span></span><code><span class="s1">&#39;taskGroups&#39;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;taskSpec&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;runnables&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s1">&#39;container&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;imageUri&#39;</span><span class="p">:</span> <span class="s1">&#39;python:3.11&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;entrypoint&#39;</span><span class="p">:</span> <span class="s1">&#39;python&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;commands&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;print(&quot;Hello&quot;)&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="s1">&#39;environment&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;variables&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;MY_VAR&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;maxRetryCount&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;taskCount&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>        <span class="c1"># Total number of tasks</span>
+        <span class="s1">&#39;parallelism&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>       <span class="c1"># Max parallel tasks</span>
+        <span class="s1">&#39;taskCountPerNode&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>   <span class="c1"># Tasks per VM</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+<h4 id="use-cases_4">Use Cases</h4>
+<ul>
+<li>Cloud-native processing</li>
+<li>Auto-scaling workloads</li>
+<li>Large-scale data processing</li>
+<li>Serverless batch jobs</li>
+</ul>
+<h4 id="notes_3">Notes</h4>
+<ul>
+<li>Requires Google Cloud project and authentication</li>
+<li>Uses Google Cloud Batch API</li>
+<li>Supports container-based jobs</li>
+<li>Auto-scales based on parallelism</li>
+</ul>
+<hr />
+<h3 id="container-scheduler">Container Scheduler</h3>
+<h4 id="overview_5">Overview</h4>
+<p>Runs jobs in Docker containers. Best for:
+- Isolated job execution
+- Consistent environments
+- Reproducible workflows</p>
+<h4 id="basic-usage_5">Basic Usage</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xqute</span>
+
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;container&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="s1">&#39;python:3.11&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;entrypoint&#39;</span><span class="p">:</span> <span class="s1">&#39;/bin/bash&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">feed</span><span class="p">([</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;print(</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">])</span>
+
+<span class="k">await</span> <span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="configuration-options_5">Configuration Options</h4>
+<div class="highlight"><pre><span></span><code><span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;container&#39;</span><span class="p">,</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="c1"># Container image</span>
+        <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="s1">&#39;python:3.11&#39;</span><span class="p">,</span>
+
+        <span class="c1"># Container entrypoint</span>
+        <span class="s1">&#39;entrypoint&#39;</span><span class="p">:</span> <span class="s1">&#39;/bin/bash&#39;</span><span class="p">,</span>
+
+        <span class="c1"># Container runtime</span>
+        <span class="s1">&#39;bin&#39;</span><span class="p">:</span> <span class="s1">&#39;docker&#39;</span><span class="p">,</span>
+
+        <span class="c1"># Volume mounts</span>
+        <span class="s1">&#39;volumes&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;/host/path:/container/path:ro&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;/data:/data:rw&#39;</span><span class="p">,</span>
+        <span class="p">],</span>
+
+        <span class="c1"># Environment variables</span>
+        <span class="s1">&#39;envs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;MY_VAR&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+        <span class="p">},</span>
+
+        <span class="c1"># Additional options</span>
+        <span class="s1">&#39;remove&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># Remove container after completion</span>
+        <span class="s1">&#39;bin_args&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;--hostname&#39;</span><span class="p">,</span> <span class="s1">&#39;my-job&#39;</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="volume-mounts">Volume Mounts</h4>
+<p>Mount host directories into containers:</p>
+<div class="highlight"><pre><span></span><code><span class="s1">&#39;volumes&#39;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="c1"># Format: host:container:mode</span>
+    <span class="s1">&#39;/data:/data:rw&#39;</span><span class="p">,</span>        <span class="c1"># Read-write</span>
+    <span class="s1">&#39;/scripts:/scripts:ro&#39;</span><span class="p">,</span>   <span class="c1"># Read-only</span>
+    <span class="s1">&#39;/tmp:/tmp&#39;</span><span class="p">,</span>             <span class="c1"># Default read-write</span>
+<span class="p">]</span>
+</code></pre></div>
+<h4 id="environment-variables">Environment Variables</h4>
+<div class="highlight"><pre><span></span><code><span class="s1">&#39;envs&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;MY_VAR&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ANOTHER_VAR&#39;</span><span class="p">:</span> <span class="s1">&#39;another value&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="additional-docker-arguments">Additional Docker Arguments</h4>
+<div class="highlight"><pre><span></span><code><span class="s1">&#39;bin_args&#39;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s1">&#39;--hostname&#39;</span><span class="p">,</span> <span class="s1">&#39;my-job&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;--network&#39;</span><span class="p">,</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;--gpus&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+</code></pre></div>
+<h4 id="use-cases_5">Use Cases</h4>
+<ul>
+<li>Isolated job execution</li>
+<li>Reproducible environments</li>
+<li>Testing across different environments</li>
+<li>Container-based workflows</li>
+</ul>
+<h4 id="notes_4">Notes</h4>
+<ul>
+<li>Requires Docker installed</li>
+<li>Containers are removed after completion if <code>remove=True</code></li>
+<li>Volumes must be accessible on all execution nodes</li>
+<li>Supports all Docker run options via <code>bin_args</code></li>
+</ul>
+<hr />
+<h3 id="choosing-a-scheduler">Choosing a Scheduler</h3>
+<table>
+<thead>
+<tr>
+<th>Scheduler</th>
+<th>Best For</th>
+<th>Scale</th>
+<th>Setup Complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Local</strong></td>
+<td>Development, small jobs</td>
+<td>Low</td>
+<td>None</td>
+</tr>
+<tr>
+<td><strong>SGE</strong></td>
+<td>University clusters</td>
+<td>High</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><strong>Slurm</strong></td>
+<td>Modern HPC</td>
+<td>Very High</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><strong>SSH</strong></td>
+<td>Multi-server clusters</td>
+<td>Medium</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Google Batch</strong></td>
+<td>Cloud workloads</td>
+<td>Very High</td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Container</strong></td>
+<td>Isolated environments</td>
+<td>Medium</td>
+<td>Low</td>
+</tr>
+</tbody>
+</table>
+<h3 id="custom-schedulers">Custom Schedulers</h3>
+<p>You can implement custom schedulers by subclassing the <code>Scheduler</code> base class:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scheduler</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyScheduler</span><span class="p">(</span><span class="n">Scheduler</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;mysched&#39;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">submit_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+        <span class="c1"># Submit job to your scheduler</span>
+        <span class="k">return</span> <span class="n">job_id</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kill_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+        <span class="c1"># Kill the job</span>
+        <span class="k">pass</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">job_is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+        <span class="c1"># Check if job is running</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<span class="c1"># Use your scheduler</span>
+<span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="n">MyScheduler</span><span class="p">)</span>
+</code></pre></div>
+<p>For more details, see <a href="../advanced/#custom-schedulers">Advanced Usage</a>.</p>
+<h3 id="next-steps">Next Steps</h3>
+<ul>
+<li><a href="../user-guide/">User Guide</a> - Comprehensive usage guide</li>
+<li><a href="../plugins/">Plugins</a> - Extend scheduler functionality</li>
+<li><a href="../advanced/">Advanced Usage</a> - Custom schedulers and advanced patterns</li>
+<li><a href="../api/xqute/">API Reference</a> - Complete API documentation</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

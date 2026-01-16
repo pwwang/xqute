@@ -1,0 +1,1895 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>xqute.scheduler - xqute</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../../style.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xqutescheduler" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="xqute" class="md-header__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xqute
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              xqute.scheduler
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="xqute" class="md-nav__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xqute
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_1" id="__nav_7_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.job/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.job
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.defaults/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.defaults
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.local_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.local_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.container_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.container_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.sge_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.sge_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.gbatch_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.gbatch_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.slurm_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.slurm_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.ssh_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.ssh_scheduler.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.ssh_scheduler.submitter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.submitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#xqutescheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xqute.scheduler
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">xqute.</span><span class="mkapi-object-name">scheduler</span>
+<span id="xqute.scheduler"></span><a class="mkapi-docs-link" href="../../xqute.scheduler">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;The scheduler to schedule jobs&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">panpath</span><span class="w"> </span><span class="kn">import</span> <span class="n">CloudPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">diot</span><span class="w"> </span><span class="kn">import</span> <span class="n">Diot</span>  <span class="c1"># type: ignore</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JobStatus</span><span class="p">,</span>
+    <span class="n">JobErrorStrategy</span><span class="p">,</span>
+    <span class="n">JOBCMD_WRAPPER_LANG</span><span class="p">,</span>
+    <span class="n">JOBCMD_WRAPPER_TEMPLATE</span><span class="p">,</span>
+    <span class="n">DEFAULT_ERROR_STRATEGY</span><span class="p">,</span>
+    <span class="n">DEFAULT_NUM_RETRIES</span><span class="p">,</span>
+    <span class="n">DEFAULT_SUBMISSION_BATCH</span><span class="p">,</span>
+    <span class="n">DEFAULT_RECHECK_INTERVAL</span><span class="p">,</span>
+    <span class="n">get_jobcmd_wrapper_init</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">CommandType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpecPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.job</span><span class="w"> </span><span class="kn">import</span> <span class="n">Job</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.plugin</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Scheduler</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span><span id="xqute.scheduler.Scheduler"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler" href="../../xqute.scheduler/#xqute.scheduler.Scheduler">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The abstract class for scheduler</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name: The name of the scheduler</span>
+<span class="sd">        jobcmd_wrapper_init: The init script for the job command wrapper</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        workdir: The working directory</span>
+<span class="sd">        forks: Max number of job forks</span>
+<span class="sd">        error_strategy: The strategy when there is error happened</span>
+<span class="sd">        num_retries: Max number of retries when error_strategy is retry</span>
+<span class="sd">        prescript: The prescript to run before the job command</span>
+<span class="sd">            It is a piece of script that inserted into the wrapper script, running</span>
+<span class="sd">            on the scheduler system.</span>
+<span class="sd">        postscript: The postscript to run when job finished</span>
+<span class="sd">            It is a piece of script that inserted into the wrapper script, running</span>
+<span class="sd">            on the scheduler system.</span>
+<span class="sd">        jobname_prefix: The prefix for the job name</span>
+<span class="sd">        submission_batch: The number of consumers to submit jobs. This allows</span>
+<span class="sd">            multiple jobs to be submitted in parallel. This is useful when</span>
+<span class="sd">            there are many jobs to be submitted and the scheduler has a high</span>
+<span class="sd">            latency for each submission. Set this to a smaller number if the</span>
+<span class="sd">            scheduler cannot handle too many simultaneous submissions.</span>
+<span class="sd">        recheck_interval: The number of polling iterations between rechecks of</span>
+<span class="sd">            whether a job is still running on the scheduler. Helps detect jobs</span>
+<span class="sd">            that fail before the wrapped script updates status (e.g., resource</span>
+<span class="sd">            allocation failures). Each iteration takes</span>
+<span class="sd">            `xqute.defaults.SLEEP_INTERVAL_POLLING_JOBS`</span>
+<span class="sd">        cwd: The working directory for the job command wrapper</span>
+<span class="sd">        **kwargs: Other arguments for the scheduler</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;config&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;forks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;workdir&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;error_strategy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;num_retries&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;prescript&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;postscript&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;jobname_prefix&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;recheck_interval&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;subm_batch&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cwd&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># The name of the scheduler</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="c1"># The number of consumers to submit jobs in parallel</span>
+    <span class="n">submission_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_SUBMISSION_BATCH</span>
+    <span class="n">job_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Job</span><span class="p">]</span> <span class="o">=</span> <span class="n">Job</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">workdir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="n">forks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">error_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_ERROR_STRATEGY</span><span class="p">,</span>
+        <span class="n">num_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_NUM_RETRIES</span><span class="p">,</span>
+        <span class="n">prescript</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">postscript</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">jobname_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">submission_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recheck_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_RECHECK_INTERVAL</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forks</span> <span class="o">=</span> <span class="n">forks</span>
+        <span class="n">mounted_workdir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;mounted_workdir&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workdir</span> <span class="o">=</span> <span class="n">SpecPath</span><span class="p">(</span><span class="n">workdir</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="n">mounted_workdir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_strategy</span> <span class="o">=</span> <span class="n">error_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_retries</span> <span class="o">=</span> <span class="n">num_retries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prescript</span> <span class="o">=</span> <span class="n">prescript</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">postscript</span> <span class="o">=</span> <span class="n">postscript</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jobname_prefix</span> <span class="o">=</span> <span class="n">jobname_prefix</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subm_batch</span> <span class="o">=</span> <span class="n">submission_batch</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">submission_batch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recheck_interval</span> <span class="o">=</span> <span class="n">recheck_interval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cwd</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">cwd</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">Diot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_job</span><span class="p">(</span><span id="xqute.scheduler.Scheduler.create_job"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.create_job" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.create_job">DOCS</a>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">cmd</span><span class="p">:</span> <span class="n">CommandType</span><span class="p">,</span>
+        <span class="n">envs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Job</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a job</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index: The index of the job</span>
+<span class="sd">            cmd: The command of the job</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The job</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">job</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_class</span><span class="p">(</span>
+            <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+            <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
+            <span class="n">workdir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span>
+            <span class="n">error_retry</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_strategy</span> <span class="o">==</span> <span class="n">JobErrorStrategy</span><span class="o">.</span><span class="n">RETRY</span><span class="p">,</span>
+            <span class="n">num_retries</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_retries</span><span class="p">,</span>
+            <span class="n">envs</span><span class="o">=</span><span class="n">envs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Creating metadir: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">metadir</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">metadir</span><span class="o">.</span><span class="n">a_mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">job</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">submit_job_and_update_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">):</span><span id="xqute.scheduler.Scheduler.submit_job_and_update_status"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.submit_job_and_update_status" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.submit_job_and_update_status">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit and update the status</span>
+
+<span class="sd">        1. Check if the job is already submitted or running</span>
+<span class="sd">        2. If not, run the hook</span>
+<span class="sd">        3. If the hook is not cancelled, clean the job</span>
+<span class="sd">        4. Submit the job, raising an exception if it fails</span>
+<span class="sd">        5. If the job is submitted successfully, update the status</span>
+<span class="sd">        6. If the job fails to submit, update the status and write stderr to</span>
+<span class="sd">            the job file</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_is_submitted_or_running</span><span class="p">(</span><span class="n">job</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Skip submitting, already submitted or running.&quot;</span><span class="p">,</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Calling on_job_submitting hook ...&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_submitting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> submission cancelled by hook.&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Cleaning up before submission&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># raise the exception immediately</span>
+                <span class="c1"># it somehow cannot be catched immediately</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Submitting to scheduler &#39;</span><span class="si">%s</span><span class="s2">&#39; ...&quot;</span><span class="p">,</span>
+                    <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">set_jid</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit_job</span><span class="p">(</span><span class="n">job</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">exception</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to submit job: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">exception</span><span class="o">.</span><span class="n">__traceback__</span> <span class="o">=</span> <span class="n">exc</span><span class="o">.</span><span class="n">__traceback__</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">SUBMITTED</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">exception</span> <span class="o">=</span> <span class="n">exc</span>
+
+        <span class="k">if</span> <span class="n">exception</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">traceback</span><span class="w"> </span><span class="kn">import</span> <span class="n">format_exception</span>
+
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">format_exception</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="n">exception</span><span class="p">),</span>
+                    <span class="n">exception</span><span class="p">,</span>
+                    <span class="n">exception</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">stderr_file</span><span class="o">.</span><span class="n">a_write_text</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="s2">&quot;-2&quot;</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">transition_job_status</span><span class="p">(</span><span id="xqute.scheduler.Scheduler.transition_job_status"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.transition_job_status" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.transition_job_status">DOCS</a>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span>
+        <span class="n">new_status</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">old_status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">flush</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">rc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">error_msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">is_killed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Centralized status transition handler</span>
+
+<span class="sd">        Handles all aspects of job status transitions:</span>
+<span class="sd">        - Status change logging</span>
+<span class="sd">        - Hook lifecycle management (ensuring on_job_started is called)</span>
+<span class="sd">        - Appropriate hook calls based on new status</span>
+<span class="sd">        - RC file updates</span>
+<span class="sd">        - Error message appending to stderr</span>
+<span class="sd">        - JID file cleanup for terminal states</span>
+<span class="sd">        - Pipeline halt on errors if configured</span>
+
+<span class="sd">        Note that this method will not flush status changes to disk (job.status_file).</span>
+<span class="sd">        You need to call job.set_status() separately if needed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job to transition</span>
+<span class="sd">            new_status: The new status to transition to</span>
+<span class="sd">            old_status: The previous status (if known).</span>
+<span class="sd">                If None, will use job._status</span>
+<span class="sd">            flush: Whether to flush the status to disk</span>
+<span class="sd">            rc: Optional return code to write to rc_file</span>
+<span class="sd">            error_msg: Optional error message to append to stderr_file</span>
+<span class="sd">            is_killed: Whether this is a killed job (uses on_job_killed hook)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Save the previous status before updating</span>
+        <span class="c1"># (setter will update prev_status, so we need to save it first)</span>
+        <span class="n">old_status</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">_status</span> <span class="k">if</span> <span class="n">old_status</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">old_status</span>
+        <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="n">new_status</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="n">flush</span><span class="p">)</span>
+
+        <span class="c1"># Handle killed jobs specially</span>
+        <span class="k">if</span> <span class="n">is_killed</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Calling on_job_killed hook ...&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_killed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Handle status-specific logic</span>
+        <span class="k">if</span> <span class="n">new_status</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">:</span>
+            <span class="c1"># Ensure lifecycle hook was called</span>
+            <span class="c1"># Job may go from SUBMITTED to FAILED directly (finished too soon)</span>
+            <span class="k">if</span> <span class="n">old_status</span> <span class="o">!=</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span>
+                    <span class="n">job</span><span class="p">,</span>
+                    <span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span>
+                    <span class="n">old_status</span><span class="o">=</span><span class="n">old_status</span><span class="p">,</span>
+                    <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span>
+                    <span class="n">job</span><span class="p">,</span>
+                    <span class="n">new_status</span><span class="p">,</span>
+                    <span class="n">old_status</span><span class="o">=</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span>
+                    <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="c1"># Write rc file if provided</span>
+            <span class="k">if</span> <span class="n">rc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">set_rc</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+
+            <span class="c1"># Append error message if provided</span>
+            <span class="k">if</span> <span class="n">error_msg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">async</span> <span class="k">with</span> <span class="n">job</span><span class="o">.</span><span class="n">stderr_file</span><span class="o">.</span><span class="n">a_open</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Call failure hook</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Calling on_job_failed hook ...&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_failed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+
+            <span class="c1"># Clean up jid file</span>
+            <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">jid_file</span><span class="o">.</span><span class="n">a_unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Handle halt strategy</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_strategy</span> <span class="o">==</span> <span class="n">JobErrorStrategy</span><span class="o">.</span><span class="n">HALT</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Pipeline will halt since job failed: </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">job</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">new_status</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">:</span>
+            <span class="c1"># Ensure lifecycle hook was called</span>
+            <span class="k">if</span> <span class="n">old_status</span> <span class="o">!=</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span>
+                    <span class="n">job</span><span class="p">,</span>
+                    <span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span>
+                    <span class="n">old_status</span><span class="o">=</span><span class="n">old_status</span><span class="p">,</span>
+                    <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span>
+                    <span class="n">job</span><span class="p">,</span>
+                    <span class="n">new_status</span><span class="p">,</span>
+                    <span class="n">old_status</span><span class="o">=</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span>
+                    <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="c1"># Call success hook</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Calling on_job_succeeded hook ...&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_succeeded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+
+            <span class="c1"># Clean up jid file</span>
+            <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">jid_file</span><span class="o">.</span><span class="n">a_unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">new_status</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+            <span class="c1"># Call started hook</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Calling on_job_started hook ...&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_started</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">new_status</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">SUBMITTED</span><span class="p">:</span>
+            <span class="c1"># Call submitted hook</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Job </span><span class="si">%s</span><span class="s2"> submitted (jid: </span><span class="si">%s</span><span class="s2">, wrapped: </span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_jid</span><span class="p">(),</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_job_script</span><span class="p">(</span><span class="n">job</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Calling on_job_submitted hook ...&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_submitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kill_job_and_update_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">):</span><span id="xqute.scheduler.Scheduler.kill_job_and_update_status"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.kill_job_and_update_status" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.kill_job_and_update_status">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Kill a job and update its status</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">KILLING</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Calling on_job_killing hook ...&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_killing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Job </span><span class="si">%s</span><span class="s2"> killing cancelled by hook.&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Killing job </span><span class="si">%s</span><span class="s2"> ...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">kill_job</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span> <span class="n">is_killed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">retry_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">):</span><span id="xqute.scheduler.Scheduler.retry_job"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.retry_job" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.retry_job">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retry a job</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">set_jid</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">retry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">trial_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Retrying (#</span><span class="si">%s</span><span class="s2">) job: </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">job</span><span class="o">.</span><span class="n">trial_count</span><span class="p">,</span>
+            <span class="n">job</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">QUEUED</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_queued</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit_job_and_update_status</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">count_running_jobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">jobs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Job</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span><span id="xqute.scheduler.Scheduler.count_running_jobs"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.count_running_jobs" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.count_running_jobs">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Count currently running/active jobs (lightweight check)</span>
+
+<span class="sd">        This is optimized for the producer to check if new jobs can be submitted.</span>
+<span class="sd">        It only counts jobs without refreshing status or calling hooks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            jobs: The list of jobs</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of jobs currently in active states</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check_job_done() has updated _status already</span>
+        <span class="c1"># statuses = await asyncio.gather(*(job.get_status() for job in jobs))</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="n">jobs</span>
+            <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">_status</span>
+            <span class="ow">in</span> <span class="p">(</span>
+                <span class="n">JobStatus</span><span class="o">.</span><span class="n">QUEUED</span><span class="p">,</span>
+                <span class="n">JobStatus</span><span class="o">.</span><span class="n">SUBMITTED</span><span class="p">,</span>
+                <span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span>
+                <span class="n">JobStatus</span><span class="o">.</span><span class="n">KILLING</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_check_job_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span> <span class="n">polling_counter</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a single job is done (lightweight check)</span>
+
+<span class="sd">        This is optimized for the producer to check if new jobs can be submitted.</span>
+<span class="sd">        It only checks the status without refreshing or calling hooks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+<span class="sd">            polling_counter: The polling counter for hook calls</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if the job is done, False if not.</span>
+<span class="sd">            If the job failed, return the &quot;failed&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prev_status</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">_status</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">(</span><span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Keep the previous status, which will be updated later</span>
+        <span class="c1"># So that later parts can know the previous status</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">prev_status</span>
+
+        <span class="c1"># Status changed</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="n">prev_status</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span>
+                <span class="n">job</span><span class="p">,</span>
+                <span class="n">status</span><span class="p">,</span>
+                <span class="n">old_status</span><span class="o">=</span><span class="n">prev_status</span><span class="p">,</span>
+                <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">SUBMITTED</span><span class="p">:</span>
+            <span class="c1"># Status keep being SUBMITTED</span>
+            <span class="c1"># Check if the job fails before running</span>
+            <span class="k">if</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_fails_before_running</span><span class="p">(</span><span class="n">job</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Job </span><span class="si">%s</span><span class="s2"> seems to fail before running, &quot;</span>
+                    <span class="s2">&quot;check your scheduler logs if necessary.&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span>
+                    <span class="n">job</span><span class="p">,</span>
+                    <span class="n">JobStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">,</span>
+                    <span class="n">old_status</span><span class="o">=</span><span class="n">prev_status</span><span class="p">,</span>
+                    <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">rc</span><span class="o">=</span><span class="s2">&quot;-3&quot;</span><span class="p">,</span>
+                    <span class="n">error_msg</span><span class="o">=</span><span class="p">(</span>
+                        <span class="s2">&quot;Error: job seems to fail before running.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="s2">&quot;Check your scheduler logs if necessary.&quot;</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="c1"># transition_job_status handles the HALT, but we still need to break</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_strategy</span> <span class="o">==</span> <span class="n">JobErrorStrategy</span><span class="o">.</span><span class="n">HALT</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s2">&quot;failed&quot;</span>
+
+        <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+            <span class="c1"># Status keep being RUNNING</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Job </span><span class="si">%s</span><span class="s2"> is running, calling polling hook ...&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># Call the polling hook</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;/Job-</span><span class="si">%s</span><span class="s2"> Calling on_job_polling hook ...&quot;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_polling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">polling_counter</span><span class="p">)</span>
+            <span class="c1"># Let&#39;s make sure the job is really running</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">rc_file</span><span class="o">.</span><span class="n">a_is_file</span><span class="p">()</span>
+                <span class="ow">and</span> <span class="p">(</span><span class="n">polling_counter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">recheck_interval</span> <span class="o">==</span> <span class="mi">0</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_is_running</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+            <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Job </span><span class="si">%s</span><span class="s2"> is not running in the scheduler, &quot;</span>
+                    <span class="s2">&quot;but its status is still RUNNING, setting it to FAILED&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_job_status</span><span class="p">(</span>
+                    <span class="n">job</span><span class="p">,</span>
+                    <span class="n">JobStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">,</span>
+                    <span class="n">old_status</span><span class="o">=</span><span class="n">prev_status</span><span class="p">,</span>
+                    <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">rc</span><span class="o">=</span><span class="s2">&quot;-3&quot;</span><span class="p">,</span>
+                    <span class="n">error_msg</span><span class="o">=</span><span class="p">(</span>
+                        <span class="s2">&quot;Error: job is not running in the scheduler, &quot;</span>
+                        <span class="s2">&quot;but its status is still RUNNING.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="s2">&quot;It is likely that the resource is preempted.&quot;</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="c1"># transition_job_status handles the HALT, but we still need to break</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_strategy</span> <span class="o">==</span> <span class="n">JobErrorStrategy</span><span class="o">.</span><span class="n">HALT</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s2">&quot;failed&quot;</span>
+
+        <span class="c1"># Check if we need to halt - this catches any FAILED status</span>
+        <span class="c1"># transition_job_status already sent SIGTERM, we just need to break the loop</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_strategy</span> <span class="o">==</span> <span class="n">JobErrorStrategy</span><span class="o">.</span><span class="n">HALT</span> <span class="ow">and</span> <span class="n">status</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;failed&quot;</span>
+
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Not all jobs are done yet, job </span><span class="si">%s</span><span class="s2"> is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">JobStatus</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">status</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Try to resubmit the job for retrying</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">status</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">FAILED</span>
+            <span class="ow">and</span> <span class="n">job</span><span class="o">.</span><span class="n">_error_retry</span>
+            <span class="ow">and</span> <span class="n">job</span><span class="o">.</span><span class="n">trial_count</span> <span class="o">&lt;</span> <span class="n">job</span><span class="o">.</span><span class="n">_num_retries</span>
+        <span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Job </span><span class="si">%s</span><span class="s2"> is retrying ...&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_job</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check_all_done</span><span class="p">(</span><span id="xqute.scheduler.Scheduler.check_all_done"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.check_all_done" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.check_all_done">DOCS</a>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">jobs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Job</span><span class="p">],</span>
+        <span class="n">polling_counter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if all jobs are done (full polling with hooks)</span>
+
+<span class="sd">        This does complete status refresh and calls all lifecycle hooks.</span>
+<span class="sd">        Used by the main polling loop to track job completion.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            jobs: The list of jobs</span>
+<span class="sd">            polling_counter: The polling counter for hook calls</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if all jobs are done, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Checking if all jobs are done (#</span><span class="si">%s</span><span class="s2">) ...&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">polling_counter</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="n">jobs</span><span class="p">:</span>
+            <span class="c1"># We don&#39;t use gather here, since we may break the loop early</span>
+            <span class="n">job_done</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_job_done</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">polling_counter</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">job_done</span> <span class="o">==</span> <span class="s2">&quot;failed&quot;</span><span class="p">:</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">break</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">job_done</span><span class="p">:</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kill_running_jobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">jobs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Job</span><span class="p">]):</span><span id="xqute.scheduler.Scheduler.kill_running_jobs"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.kill_running_jobs" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.kill_running_jobs">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Try to kill all running jobs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            jobs: The list of jobs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Killing running jobs ...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="n">jobs</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">SUBMITTED</span><span class="p">,</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">):</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">kill_job_and_update_status</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">job_is_submitted_or_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="xqute.scheduler.Scheduler.job_is_submitted_or_running"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.job_is_submitted_or_running" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.job_is_submitted_or_running">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a job is already submitted or running</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if yes otherwise False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">jid_file</span><span class="o">.</span><span class="n">a_is_file</span><span class="p">():</span>
+            <span class="k">if</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_is_running</span><span class="p">(</span><span class="n">job</span><span class="p">):</span>
+                <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">SUBMITTED</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">job_fails_before_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="xqute.scheduler.Scheduler.job_fails_before_running"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.job_fails_before_running" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.job_fails_before_running">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a job fails before running.</span>
+
+<span class="sd">        For some schedulers, the job might fail before running (after submission).</span>
+<span class="sd">        For example, the job might fail to allocate resources. In such a case,</span>
+<span class="sd">        the wrapped script might not be executed, and the job status will not be</span>
+<span class="sd">        updated (stays in SUBMITTED). We need to check such jobs and mark them as</span>
+<span class="sd">        FAILED.</span>
+
+<span class="sd">        For the instant scheduler, for example, the local scheduler, the failure will</span>
+<span class="sd">        be immediately reported when submitting the job, so we don&#39;t need to check</span>
+<span class="sd">        such jobs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job to check</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if the job fails before running, otherwise False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span><span id="xqute.scheduler.Scheduler.jobcmd_wrapper_init"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.jobcmd_wrapper_init" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.jobcmd_wrapper_init">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">jobcmd_wrapper_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The init script for the job command wrapper&quot;&quot;&quot;</span>
+        <span class="n">wrapper_init</span> <span class="o">=</span> <span class="n">get_jobcmd_wrapper_init</span><span class="p">(</span>
+            <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workdir</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cwd</span><span class="p">:</span>
+            <span class="c1"># Some schedulers (e.g. Google Cloud Batch) doesn&#39;t support changing the</span>
+            <span class="c1"># working directory via configuration, so we need to change it in the</span>
+            <span class="c1"># wrapper script.</span>
+            <span class="c1"># See: https://issuetracker.google.com/issues/336164416</span>
+            <span class="n">wrapper_init</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cd </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cwd</span><span class="p">)</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">wrapper_init</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">wrapper_init</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">jobcmd_shebang</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.scheduler.Scheduler.jobcmd_shebang"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.jobcmd_shebang" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.jobcmd_shebang">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The shebang of the wrapper script&quot;&quot;&quot;</span>
+        <span class="n">wrapper_lang</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">JOBCMD_WRAPPER_LANG</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">JOBCMD_WRAPPER_LANG</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span>
+            <span class="k">else</span> <span class="p">[</span><span class="n">JOBCMD_WRAPPER_LANG</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wrapper_lang</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">jobcmd_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.scheduler.Scheduler.jobcmd_init"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.jobcmd_init" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.jobcmd_init">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The job command init&quot;&quot;&quot;</span>
+        <span class="n">init_code</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">envs</span><span class="p">:</span>
+            <span class="n">init_code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Environment variables&quot;</span><span class="p">)</span>
+            <span class="n">init_code</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="sa">f</span><span class="s2">&quot;export </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">job</span><span class="o">.</span><span class="n">envs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="n">codes</span> <span class="o">=</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_jobcmd_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+        <span class="n">init_code</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">code</span> <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span> <span class="k">if</span> <span class="n">code</span><span class="p">])</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">init_code</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">jobcmd_prep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.scheduler.Scheduler.jobcmd_prep"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.jobcmd_prep" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.jobcmd_prep">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The job command preparation&quot;&quot;&quot;</span>
+        <span class="n">codes</span> <span class="o">=</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_jobcmd_prep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+        <span class="n">codes</span> <span class="o">=</span> <span class="p">[</span><span class="n">code</span> <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span> <span class="k">if</span> <span class="n">code</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">jobcmd_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.scheduler.Scheduler.jobcmd_end"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.jobcmd_end" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.jobcmd_end">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The job command end&quot;&quot;&quot;</span>
+        <span class="n">codes</span> <span class="o">=</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_jobcmd_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+        <span class="n">codes</span> <span class="o">=</span> <span class="p">[</span><span class="n">code</span> <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span> <span class="k">if</span> <span class="n">code</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_job_script</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.scheduler.Scheduler.wrap_job_script"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.wrap_job_script" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.wrap_job_script">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap the job script</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The wrapped script</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">JOBCMD_WRAPPER_TEMPLATE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">scheduler</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">shebang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">jobcmd_shebang</span><span class="p">(</span><span class="n">job</span><span class="p">),</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">JobStatus</span><span class="p">,</span>
+            <span class="n">job</span><span class="o">=</span><span class="n">job</span><span class="p">,</span>
+            <span class="n">cmd</span><span class="o">=</span><span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">cmd</span><span class="p">),</span>
+            <span class="n">jobcmd_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">jobcmd_init</span><span class="p">(</span><span class="n">job</span><span class="p">),</span>
+            <span class="n">jobcmd_prep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">jobcmd_prep</span><span class="p">(</span><span class="n">job</span><span class="p">),</span>
+            <span class="n">jobcmd_end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">jobcmd_end</span><span class="p">(</span><span class="n">job</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_job_script</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span><span id="xqute.scheduler.Scheduler.wrapped_job_script"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.wrapped_job_script" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.wrapped_job_script">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the wrapped job script</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The path of the wrapped job script</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;job.wrapped.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">wrapt_script</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">metadir</span> <span class="o">/</span> <span class="n">base</span>
+        <span class="k">await</span> <span class="n">wrapt_script</span><span class="o">.</span><span class="n">a_write_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrap_job_script</span><span class="p">(</span><span class="n">job</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">wrapt_script</span>
+
+    <span class="nd">@abstractmethod</span><span id="xqute.scheduler.Scheduler.submit_job"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.submit_job" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.submit_job">DOCS</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">submit_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit a job</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The unique id in the scheduler system</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span><span id="xqute.scheduler.Scheduler.kill_job"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.kill_job" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.kill_job">DOCS</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kill_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Kill a job</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span><span id="xqute.scheduler.Scheduler.job_is_running"></span><a class="mkapi-docs-link" title="xqute.scheduler.Scheduler.job_is_running" href="../../xqute.scheduler/#xqute.scheduler.Scheduler.job_is_running">DOCS</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">job_is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a job is really running</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if yes otherwise False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</code></pre></div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

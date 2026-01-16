@@ -1,0 +1,1718 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>xqute.schedulers.gbatch_scheduler - xqute</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../../style.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xquteschedulersgbatch_scheduler" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="xqute" class="md-header__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xqute
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              xqute.schedulers.gbatch_scheduler
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="xqute" class="md-nav__button md-logo" aria-label="xqute" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xqute
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_1" id="__nav_7_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.xqute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.xqute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.job/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.job
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.defaults/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.defaults
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.local_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.local_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.container_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.container_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.sge_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.sge_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.gbatch_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.gbatch_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.slurm_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.slurm_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.ssh_scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.ssh_scheduler.scheduler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.scheduler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xqute.schedulers.ssh_scheduler.submitter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xqute.schedulers.ssh_scheduler.submitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#xquteschedulersgbatch_scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xqute.schedulers.gbatch_scheduler
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">xqute.schedulers.</span><span class="mkapi-object-name">gbatch_scheduler</span>
+<span id="xqute.schedulers.gbatch_scheduler"></span><a class="mkapi-docs-link" href="../../xqute.schedulers.gbatch_scheduler">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">getpass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hashlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">sha256</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">panpath</span><span class="w"> </span><span class="kn">import</span> <span class="n">GSPath</span><span class="p">,</span> <span class="n">PanPath</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..job</span><span class="w"> </span><span class="kn">import</span> <span class="n">Job</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scheduler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..defaults</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JOBCMD_WRAPPER_LANG</span><span class="p">,</span>
+    <span class="c1"># get_jobcmd_wrapper_init,</span>
+    <span class="c1"># JOBCMD_WRAPPER_TEMPLATE,</span>
+    <span class="c1"># JobStatus,</span>
+    <span class="n">SLEEP_INTERVAL_GBATCH_STATUS_CHECK</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..path</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpecPath</span>
+
+
+<span class="n">JOBNAME_PREFIX_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-zA-Z][a-zA-Z0-9-]{0,47}$&quot;</span><span class="p">)</span>
+<span class="n">NAMED_MOUNT_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Za-z][A-Za-z0-9_]*=.+$&quot;</span><span class="p">)</span>
+<span class="n">DEFAULT_MOUNTED_ROOT</span> <span class="o">=</span> <span class="s2">&quot;/mnt/disks&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GbatchScheduler</span><span class="p">(</span><span class="n">Scheduler</span><span class="p">):</span><span id="xqute.schedulers.gbatch_scheduler.GbatchScheduler"></span><a class="mkapi-docs-link" title="xqute.schedulers.gbatch_scheduler.GbatchScheduler" href="../../xqute.schedulers.gbatch_scheduler/#xqute.schedulers.gbatch_scheduler.GbatchScheduler">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scheduler for Google Cloud Batch</span>
+
+<span class="sd">    You can pass extra configuration parameters to the constructor</span>
+<span class="sd">    that will be used in the job configuration file.</span>
+<span class="sd">    For example, you can pass `taskGroups` to specify the task groups</span>
+<span class="sd">    and their specifications.</span>
+
+<span class="sd">    For using containers, it is a little bit tricky to specify the commands.</span>
+<span class="sd">    When no `entrypoint` is specified, the `commands` should be a list</span>
+<span class="sd">    with the first element being the interpreter (e.g. `/bin/bash`)</span>
+<span class="sd">    and the second element being the path to the wrapped job script.</span>
+<span class="sd">    If the `entrypoint` is specified, we can use the `{lang}` and `{script}`</span>
+<span class="sd">    placeholders in the `commands` list, where `{lang}` will be replaced</span>
+<span class="sd">    with the interpreter (e.g. `/bin/bash`) and `{script}` will be replaced</span>
+<span class="sd">    with the path to the wrapped job script.</span>
+<span class="sd">    With `entrypoint` specified and no `{script}` placeholder, the joined command</span>
+<span class="sd">    will be the interpreter followed by the path to the wrapped job script will be</span>
+<span class="sd">    appended to the `commands` list.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project: GCP project ID</span>
+<span class="sd">        location: GCP location (e.g. us-central1)</span>
+<span class="sd">        mount: GCS path to mount (e.g. gs://my-bucket:/mnt/my-bucket)</span>
+<span class="sd">            You can pass a list of mounts.</span>
+<span class="sd">            You can also use named mount like `NAME=gs://bucket/dir`</span>
+<span class="sd">            then it will be mounted to `/mnt/disks/NAME` in the container.</span>
+<span class="sd">            You can use environment variable `NAME` in your job scripts to</span>
+<span class="sd">            refer to the mounted path.</span>
+<span class="sd">        service_account: GCP service account email (e.g. test-account@example.com)</span>
+<span class="sd">        network: GCP network (e.g. default-network)</span>
+<span class="sd">        subnetwork: GCP subnetwork (e.g. regions/us-central1/subnetworks/default)</span>
+<span class="sd">        no_external_ip_address: Whether to disable external IP address</span>
+<span class="sd">        machine_type: GCP machine type (e.g. e2-standard-4)</span>
+<span class="sd">        provisioning_model: GCP provisioning model (e.g. SPOT)</span>
+<span class="sd">        image_uri: Container image URI (e.g. ubuntu-2004-lts)</span>
+<span class="sd">        entrypoint: Container entrypoint (e.g. /bin/bash)</span>
+<span class="sd">        commands: The command list to run in the container.</span>
+<span class="sd">            There are three ways to specify the commands:</span>
+<span class="sd">            1. If no entrypoint is specified, the final command will be</span>
+<span class="sd">            [commands, wrapped_script], where the entrypoint is the wrapper script</span>
+<span class="sd">            interpreter that is determined by `JOBCMD_WRAPPER_LANG` (e.g. /bin/bash),</span>
+<span class="sd">            commands is the list you provided, and wrapped_script is the path to the</span>
+<span class="sd">            wrapped job script.</span>
+<span class="sd">            2. You can specify something like &quot;-c&quot;, then the final command</span>
+<span class="sd">            will be [&quot;-c&quot;, &quot;wrapper_script_interpreter, wrapper_script&quot;]</span>
+<span class="sd">            3. You can use the placeholders `{lang}` and `{script}` in the commands</span>
+<span class="sd">            list, where `{lang}` will be replaced with the interpreter (e.g. /bin/bash)</span>
+<span class="sd">            and `{script}` will be replaced with the path to the wrapped job script.</span>
+<span class="sd">            For example, you can specify [&quot;{lang} {script}&quot;] and the final command</span>
+<span class="sd">            will be [&quot;wrapper_interpreter, wrapper_script&quot;]</span>
+<span class="sd">        runnables: Additional runnables to run before or after the main job.</span>
+<span class="sd">            Each runnable should be a dictionary that follows the</span>
+<span class="sd">            [GCP Batch API specification](https://cloud.google.com/batch/docs/reference/rest/v1/projects.locations.jobs#runnable).</span>
+<span class="sd">            You can also specify an &quot;order&quot; key in the dictionary to control the</span>
+<span class="sd">            execution order of the runnables. Runnables with negative order</span>
+<span class="sd">            will be executed before the main job, and those with non-negative</span>
+<span class="sd">            order will be executed after the main job. The main job runnable</span>
+<span class="sd">            will always be executed in the order it is defined in the list.</span>
+<span class="sd">        *args, **kwargs: Other arguments passed to base Scheduler class</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;gbatch&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="o">.</span><span class="vm">__slots__</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="s2">&quot;gcloud&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;project&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;location&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;runnable_index&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_path_envs&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mount</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">service_account</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">network</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">subnetwork</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">no_external_ip_address</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">machine_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">provisioning_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">image_uri</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">entrypoint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">commands</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">runnables</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the gbatch scheduler&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gcloud</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gcloud&quot;</span><span class="p">,</span> <span class="s2">&quot;gcloud&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">project</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">location</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;mounted_workdir&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">DEFAULT_MOUNTED_ROOT</span><span class="si">}</span><span class="s2">/xqute_workdir&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">GSPath</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;&#39;gbatch&#39; scheduler requires google cloud storage &#39;workdir&#39;.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">JOBNAME_PREFIX_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jobname_prefix</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;&#39;jobname_prefix&#39; for gbatch scheduler doesn&#39;t follow pattern &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;^[a-zA-Z][a-zA-Z0-9-]</span><span class="se">{{</span><span class="s2">0,47</span><span class="se">}}</span><span class="s2">$&#39;, got &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jobname_prefix</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path_envs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">task_groups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;taskGroups&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">task_groups</span><span class="p">:</span>
+            <span class="n">task_groups</span><span class="o">.</span><span class="n">append</span><span class="p">({})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">task_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">task_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">task_spec</span> <span class="o">=</span> <span class="n">task_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;taskSpec&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">task_runnables</span> <span class="o">=</span> <span class="n">task_spec</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;runnables&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="c1"># Process additional runnables with ordering</span>
+        <span class="n">additional_runnables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">runnables</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">runnable_dict</span> <span class="ow">in</span> <span class="n">runnables</span><span class="p">:</span>
+                <span class="n">runnable_copy</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">runnable_dict</span><span class="p">)</span>
+                <span class="n">order</span> <span class="o">=</span> <span class="n">runnable_copy</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">additional_runnables</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">order</span><span class="p">,</span> <span class="n">runnable_copy</span><span class="p">))</span>
+
+        <span class="c1"># Sort by order</span>
+        <span class="n">additional_runnables</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Create main job runnable</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">task_runnables</span><span class="p">:</span>
+            <span class="n">task_runnables</span><span class="o">.</span><span class="n">append</span><span class="p">({})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">task_runnables</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">task_runnables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">job_runnable</span> <span class="o">=</span> <span class="n">task_runnables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;container&quot;</span> <span class="ow">in</span> <span class="n">job_runnable</span> <span class="ow">or</span> <span class="n">image_uri</span><span class="p">:</span>
+            <span class="n">job_runnable</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;container&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">job_runnable</span><span class="p">[</span><span class="s2">&quot;container&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;&#39;taskGroups[0].taskSpec.runnables[0].container&#39; should be a &quot;</span>
+                    <span class="s2">&quot;dictionary for gbatch configuration.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">image_uri</span><span class="p">:</span>
+                <span class="n">job_runnable</span><span class="p">[</span><span class="s2">&quot;container&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;image_uri&quot;</span><span class="p">,</span> <span class="n">image_uri</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">entrypoint</span><span class="p">:</span>
+                <span class="n">job_runnable</span><span class="p">[</span><span class="s2">&quot;container&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;entrypoint&quot;</span><span class="p">,</span> <span class="n">entrypoint</span><span class="p">)</span>
+
+            <span class="n">job_runnable</span><span class="p">[</span><span class="s2">&quot;container&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;commands&quot;</span><span class="p">,</span> <span class="n">commands</span> <span class="ow">or</span> <span class="p">[])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">job_runnable</span><span class="p">[</span><span class="s2">&quot;script&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># placeholder for job command</span>
+                <span class="s2">&quot;_commands&quot;</span><span class="p">:</span> <span class="n">commands</span><span class="p">,</span>  <span class="c1"># Store commands for later use</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Clear existing runnables and rebuild with proper ordering</span>
+        <span class="n">task_runnables</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="c1"># Add runnables with negative order (before job)</span>
+        <span class="k">for</span> <span class="n">order</span><span class="p">,</span> <span class="n">runnable_dict</span> <span class="ow">in</span> <span class="n">additional_runnables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">task_runnables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">runnable_dict</span><span class="p">)</span>
+
+        <span class="c1"># Add the main job runnable</span>
+        <span class="n">task_runnables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job_runnable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runnable_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">task_runnables</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="c1"># Add runnables with positive order (after job)</span>
+        <span class="k">for</span> <span class="n">order</span><span class="p">,</span> <span class="n">runnable_dict</span> <span class="ow">in</span> <span class="n">additional_runnables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">order</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">task_runnables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">runnable_dict</span><span class="p">)</span>
+
+        <span class="c1"># Only logs the stdout/stderr of submission (when wrapped script doesn&#39;t run)</span>
+        <span class="c1"># The logs of the wrapped script are logged to stdout/stderr files</span>
+        <span class="c1"># in the workdir.</span>
+        <span class="n">logs_policy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;logsPolicy&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">logs_policy</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;destination&quot;</span><span class="p">,</span> <span class="s2">&quot;CLOUD_LOGGING&quot;</span><span class="p">)</span>
+
+        <span class="n">volumes</span> <span class="o">=</span> <span class="n">task_spec</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;volumes&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">volumes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;&#39;taskGroups[0].taskSpec.volumes&#39; should be a list for &quot;</span>
+                <span class="s2">&quot;gbatch configuration.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">volumes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;gcs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;remotePath&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workdir</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;://&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]},</span>
+                <span class="s2">&quot;mountPath&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workdir</span><span class="o">.</span><span class="n">mounted</span><span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mount</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mount</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="n">mount</span> <span class="o">=</span> <span class="p">[</span><span class="n">mount</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="n">mount</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mount</span><span class="p">:</span>
+                <span class="c1"># Let&#39;s check if mount is provided as &quot;OUTDIR=gs://bucket/dir&quot;</span>
+                <span class="c1"># If so, we mounted it to $DEFAULT_MOUNTED_ROOT/OUTDIR</span>
+                <span class="c1"># and set OUTDIR env variable to the mounted path in self._path_envs</span>
+                <span class="k">if</span> <span class="n">NAMED_MOUNT_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+                    <span class="n">name</span><span class="p">,</span> <span class="n">gcs</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">gcs</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;gs://&quot;</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="s2">&quot;When using named mount, it should be in the format &quot;</span>
+                            <span class="s2">&quot;&#39;NAME=gs://bucket/dir&#39;, where NAME matches &quot;</span>
+                            <span class="s2">&quot;^[A-Za-z][A-Za-z0-9_]*$&quot;</span>
+                        <span class="p">)</span>
+                    <span class="n">gcs_path</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">gcs</span><span class="p">)</span>
+                    <span class="c1"># Check if it is a file path</span>
+                    <span class="k">if</span> <span class="n">gcs_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                        <span class="c1"># Mount the parent directory</span>
+                        <span class="n">gcs</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">gcs_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">_no_prefix</span><span class="p">)</span>
+                        <span class="n">mount_path</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">DEFAULT_MOUNTED_ROOT</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">gcs_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_path_envs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mount_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">gcs_path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">gcs</span> <span class="o">=</span> <span class="n">gcs</span><span class="p">[</span><span class="mi">5</span><span class="p">:]</span>
+                        <span class="n">mount_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">DEFAULT_MOUNTED_ROOT</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_path_envs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mount_path</span>
+
+                    <span class="n">volumes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;gcs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;remotePath&quot;</span><span class="p">:</span> <span class="n">gcs</span><span class="p">},</span>
+                            <span class="s2">&quot;mountPath&quot;</span><span class="p">:</span> <span class="n">mount_path</span><span class="p">,</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Or, we expect a literal mount &quot;gs://bucket/dir:/mount/path&quot;</span>
+                    <span class="n">gcs</span><span class="p">,</span> <span class="n">mount_path</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">gcs</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;gs://&quot;</span><span class="p">):</span>
+                        <span class="n">gcs</span> <span class="o">=</span> <span class="n">gcs</span><span class="p">[</span><span class="mi">5</span><span class="p">:]</span>
+                    <span class="n">volumes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;gcs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;remotePath&quot;</span><span class="p">:</span> <span class="n">gcs</span><span class="p">},</span>
+                            <span class="s2">&quot;mountPath&quot;</span><span class="p">:</span> <span class="n">mount_path</span><span class="p">,</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+
+        <span class="c1"># Add some labels for filtering by `gcloud batch jobs list`</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;labels&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="n">labels</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;xqute&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">())</span>
+
+        <span class="n">allocation_policy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;allocationPolicy&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="k">if</span> <span class="n">service_account</span><span class="p">:</span>
+            <span class="n">allocation_policy</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;serviceAccount&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="n">service_account</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">network</span> <span class="ow">or</span> <span class="n">subnetwork</span> <span class="ow">or</span> <span class="n">no_external_ip_address</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">network_interface</span> <span class="o">=</span> <span class="n">allocation_policy</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="s2">&quot;networkInterfaces&quot;</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">network_interface</span><span class="p">:</span>
+                <span class="n">network_interface</span><span class="o">.</span><span class="n">append</span><span class="p">({})</span>
+            <span class="n">network_interface</span> <span class="o">=</span> <span class="n">network_interface</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">network</span><span class="p">:</span>
+                <span class="n">network_interface</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="n">network</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">subnetwork</span><span class="p">:</span>
+                <span class="n">network_interface</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;subnetwork&quot;</span><span class="p">,</span> <span class="n">subnetwork</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">no_external_ip_address</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">network_interface</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                    <span class="s2">&quot;noExternalIpAddress&quot;</span><span class="p">,</span> <span class="n">no_external_ip_address</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">machine_type</span> <span class="ow">or</span> <span class="n">provisioning_model</span><span class="p">:</span>
+            <span class="n">instances</span> <span class="o">=</span> <span class="n">allocation_policy</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;instances&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">instances</span><span class="p">:</span>
+                <span class="n">instances</span><span class="o">.</span><span class="n">append</span><span class="p">({})</span>
+            <span class="n">policy</span> <span class="o">=</span> <span class="n">instances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;policy&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="n">machine_type</span><span class="p">:</span>
+                <span class="n">policy</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;machineType&quot;</span><span class="p">,</span> <span class="n">machine_type</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">provisioning_model</span><span class="p">:</span>
+                <span class="n">policy</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;provisioningModel&quot;</span><span class="p">,</span> <span class="n">provisioning_model</span><span class="p">)</span>
+
+        <span class="n">email</span> <span class="o">=</span> <span class="n">allocation_policy</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;serviceAccount&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">email</span><span class="p">:</span>
+            <span class="c1"># 63 character limit, &#39;@&#39; is not allowed in labels</span>
+            <span class="c1"># labels.setdefault(&quot;email&quot;, email[:63])</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;sacct&quot;</span><span class="p">,</span> <span class="n">email</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">63</span><span class="p">])</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">job_config_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;job.wrapped.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.json&quot;</span>
+        <span class="n">conf_file</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">metadir</span> <span class="o">/</span> <span class="n">base</span>
+
+        <span class="n">wrapt_script</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_job_script</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">runnable</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;taskGroups&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;taskSpec&quot;</span><span class="p">][</span><span class="s2">&quot;runnables&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">runnable_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;container&quot;</span> <span class="ow">in</span> <span class="n">runnable</span><span class="p">:</span>
+            <span class="n">container</span> <span class="o">=</span> <span class="n">runnable</span><span class="p">[</span><span class="s2">&quot;container&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;entrypoint&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">container</span><span class="p">:</span>
+                <span class="c1"># supports only /bin/bash, but not /bin/bash -u</span>
+                <span class="n">container</span><span class="p">[</span><span class="s2">&quot;entrypoint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">JOBCMD_WRAPPER_LANG</span>
+                <span class="n">container</span><span class="p">[</span><span class="s2">&quot;commands&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">wrapt_script</span><span class="o">.</span><span class="n">mounted</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{script}</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">cmd</span> <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">container</span><span class="p">[</span><span class="s2">&quot;commands&quot;</span><span class="p">]):</span>
+                <span class="c1"># If the entrypoint is already set, we assume it is a script</span>
+                <span class="c1"># that will be executed with the job command.</span>
+                <span class="n">container</span><span class="p">[</span><span class="s2">&quot;commands&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">cmd</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{lang}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">JOBCMD_WRAPPER_LANG</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{script}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">wrapt_script</span><span class="o">.</span><span class="n">mounted</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">container</span><span class="p">[</span><span class="s2">&quot;commands&quot;</span><span class="p">]</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">container</span><span class="p">[</span><span class="s2">&quot;commands&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">JOBCMD_WRAPPER_LANG</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">wrapt_script</span><span class="o">.</span><span class="n">mounted</span><span class="p">)]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Apply commands for script runnables as well</span>
+            <span class="n">stored_commands</span> <span class="o">=</span> <span class="n">runnable</span><span class="p">[</span><span class="s2">&quot;script&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_commands&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stored_commands</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{script}</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">stored_commands</span><span class="p">):</span>
+                    <span class="c1"># Use commands with script placeholder replacement</span>
+                    <span class="n">command_parts</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{lang}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">JOBCMD_WRAPPER_LANG</span><span class="p">))</span>
+                        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{script}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">wrapt_script</span><span class="o">.</span><span class="n">mounted</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">stored_commands</span>
+                    <span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Append script to commands</span>
+                    <span class="n">command_parts</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="o">*</span><span class="p">(</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span> <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">stored_commands</span><span class="p">),</span>
+                        <span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span>
+                            <span class="n">shlex</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                                <span class="p">(</span>
+                                    <span class="o">*</span><span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">JOBCMD_WRAPPER_LANG</span><span class="p">),</span>
+                                    <span class="nb">str</span><span class="p">(</span><span class="n">wrapt_script</span><span class="o">.</span><span class="n">mounted</span><span class="p">),</span>
+                                <span class="p">)</span>
+                            <span class="p">)</span>
+                        <span class="p">),</span>
+                    <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">command_parts</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="o">*</span><span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">JOBCMD_WRAPPER_LANG</span><span class="p">),</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">wrapt_script</span><span class="o">.</span><span class="n">mounted</span><span class="p">),</span>
+                <span class="p">]</span>
+
+            <span class="n">runnable</span><span class="p">[</span><span class="s2">&quot;script&quot;</span><span class="p">][</span><span class="s2">&quot;text&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">command_parts</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="n">conf_file</span><span class="o">.</span><span class="n">a_open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">jsons</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">jsons</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SpecPath</span><span class="p">(</span><span class="n">conf_file</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="k">await</span> <span class="n">conf_file</span><span class="o">.</span><span class="n">get_fspath</span><span class="p">())</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_delete_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Try to delete the job from google cloud&#39;s registry</span>
+
+<span class="sd">        As google doesn&#39;t allow jobs to have the same id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job: The job to delete</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Try deleting job </span><span class="si">%r</span><span class="s2"> on GCP.&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">job</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">status</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_IN_PROGRESS&quot;</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_INTERVAL_GBATCH_STATUS_CHECK</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+        <span class="n">command</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gcloud</span><span class="p">,</span>
+            <span class="s2">&quot;batch&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;jobs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;delete&quot;</span><span class="p">,</span>
+            <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_jid</span><span class="p">(),</span>
+            <span class="s2">&quot;--project&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+            <span class="s2">&quot;--location&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">proc</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_subprocess_exec</span><span class="p">(</span>
+                <span class="o">*</span><span class="n">command</span><span class="p">,</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                <span class="n">stderr</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">proc</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+        <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;DELETION_IN_PROGRESS&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_INTERVAL_GBATCH_STATUS_CHECK</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="s2">&quot;UNKNOWN&quot;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;/Sched-</span><span class="si">%s</span><span class="s2"> Failed to delete job </span><span class="si">%r</span><span class="s2"> on GCP, submision may fail.&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">job</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">submit_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.schedulers.gbatch_scheduler.GbatchScheduler.submit_job"></span><a class="mkapi-docs-link" title="xqute.schedulers.gbatch_scheduler.GbatchScheduler.submit_job" href="../../xqute.schedulers.gbatch_scheduler/#xqute.schedulers.gbatch_scheduler.GbatchScheduler.submit_job">DOCS</a>
+
+        <span class="n">sha</span> <span class="o">=</span> <span class="n">sha256</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workdir</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">8</span><span class="p">]</span>
+        <span class="n">jid</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jobname_prefix</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">sha</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">set_jid</span><span class="p">(</span><span class="n">jid</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delete_job</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+        <span class="n">conf_file</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_config_file</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_subprocess_exec</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gcloud</span><span class="p">,</span>
+            <span class="s2">&quot;batch&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;jobs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;submit&quot;</span><span class="p">,</span>
+            <span class="n">jid</span><span class="p">,</span>
+            <span class="s2">&quot;--config&quot;</span><span class="p">,</span>
+            <span class="n">conf_file</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+            <span class="s2">&quot;--project&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+            <span class="s2">&quot;--location&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Can&#39;t submit job to Google Cloud Batch: </span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;Check the configuration file:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">conf_file</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">jid</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kill_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">):</span><span id="xqute.schedulers.gbatch_scheduler.GbatchScheduler.kill_job"></span><a class="mkapi-docs-link" title="xqute.schedulers.gbatch_scheduler.GbatchScheduler.kill_job" href="../../xqute.schedulers.gbatch_scheduler/#xqute.schedulers.gbatch_scheduler.GbatchScheduler.kill_job">DOCS</a>
+        <span class="n">command</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gcloud</span><span class="p">,</span>
+            <span class="s2">&quot;alpha&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;batch&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;jobs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cancel&quot;</span><span class="p">,</span>
+            <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">get_jid</span><span class="p">(),</span>
+            <span class="s2">&quot;--project&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+            <span class="s2">&quot;--location&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+            <span class="s2">&quot;--quiet&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_subprocess_exec</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">proc</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_get_job_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">jid_file</span><span class="o">.</span><span class="n">a_is_file</span><span class="p">():</span>
+            <span class="k">return</span> <span class="s2">&quot;UNKNOWN&quot;</span>
+
+        <span class="c1"># Do not rely on _jid, as it can be a obolete job.</span>
+        <span class="n">jid</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">jid_file</span><span class="o">.</span><span class="n">a_read_text</span><span class="p">())</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="n">command</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gcloud</span><span class="p">,</span>
+            <span class="s2">&quot;batch&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;jobs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;describe&quot;</span><span class="p">,</span>
+            <span class="n">jid</span><span class="p">,</span>
+            <span class="s2">&quot;--project&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+            <span class="s2">&quot;--location&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">proc</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_subprocess_exec</span><span class="p">(</span>
+                <span class="o">*</span><span class="n">command</span><span class="p">,</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                <span class="n">stderr</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;UNKNOWN&quot;</span>
+
+        <span class="k">if</span> <span class="k">await</span> <span class="n">proc</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;UNKNOWN&quot;</span>
+
+        <span class="n">stdout</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;state: (.+)&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">job_fails_before_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span><span id="xqute.schedulers.gbatch_scheduler.GbatchScheduler.job_fails_before_running"></span><a class="mkapi-docs-link" title="xqute.schedulers.gbatch_scheduler.GbatchScheduler.job_fails_before_running" href="../../xqute.schedulers.gbatch_scheduler/#xqute.schedulers.gbatch_scheduler.GbatchScheduler.job_fails_before_running">DOCS</a>
+        <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;FAILED&quot;</span><span class="p">,</span> <span class="s2">&quot;DELETION_IN_PROGRESS&quot;</span><span class="p">,</span> <span class="s2">&quot;CANCELLED&quot;</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">job_is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="xqute.schedulers.gbatch_scheduler.GbatchScheduler.job_is_running"></span><a class="mkapi-docs-link" title="xqute.schedulers.gbatch_scheduler.GbatchScheduler.job_is_running" href="../../xqute.schedulers.gbatch_scheduler/#xqute.schedulers.gbatch_scheduler.GbatchScheduler.job_is_running">DOCS</a>
+        <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_job_status</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;RUNNING&quot;</span><span class="p">,</span> <span class="s2">&quot;QUEUED&quot;</span><span class="p">,</span> <span class="s2">&quot;SCHEDULED&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">jobcmd_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="xqute.schedulers.gbatch_scheduler.GbatchScheduler.jobcmd_init"></span><a class="mkapi-docs-link" title="xqute.schedulers.gbatch_scheduler.GbatchScheduler.jobcmd_init" href="../../xqute.schedulers.gbatch_scheduler/#xqute.schedulers.gbatch_scheduler.GbatchScheduler.jobcmd_init">DOCS</a>
+        <span class="n">init_cmd</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">jobcmd_init</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="n">path_envs_exports</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;export </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_envs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">path_envs_exports</span><span class="p">:</span>
+            <span class="n">path_envs_exports</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;# Mounted paths&quot;</span><span class="p">)</span>
+            <span class="n">init_cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_envs_exports</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">init_cmd</span>
+
+        <span class="k">return</span> <span class="n">init_cmd</span>
+</code></pre></div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>
