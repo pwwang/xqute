@@ -271,7 +271,7 @@ class Scheduler(ABC):
             # Append error message if provided
             if error_msg is not None:  # pragma: no cover
                 async with job.stderr_file.a_open("a") as f:
-                    f.write(f"\n{error_msg}\n")
+                    await f.write(f"\n{error_msg}\n")
 
             # Call failure hook
             logger.debug("/Job-%s Calling on_job_failed hook ...", job.index)
