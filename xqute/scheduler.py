@@ -463,9 +463,13 @@ class Scheduler(ABC):
             await plugin.hooks.on_job_polling(self, job, polling_counter)
             # Let's make sure the job is really running
             if (
-                not await job.rc_file.a_is_file()
-                and (polling_counter + 1) % self.recheck_interval == 0
+                (polling_counter + 1) % self.recheck_interval == 0
                 and not await self.job_is_running(job)
+                # Check rc_file after job_is_running
+                # job_is_running check takes time, check rc_file before it can
+                # be a false negative, which can cause the job to be marked as
+                # failed incorrectly
+                and not await job.rc_file.a_is_file()
             ):  # pragma: no cover
                 logger.warning(
                     "/Sched-%s Job %s is not running in the scheduler, "
