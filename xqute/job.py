@@ -195,7 +195,11 @@ class Job:
         """The return code of the job"""
         if not await self.rc_file.a_is_file():
             return -9
-        return int(await self.rc_file.a_read_text())
+
+        try:
+            return int(await self.rc_file.a_read_text())
+        except (FileNotFoundError, ValueError, TypeError):  # pragma: no cover
+            return -9
 
     async def set_rc(self, rc: int | str) -> None:
         """Set the return code of the job
