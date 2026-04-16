@@ -8,3 +8,13 @@ from .job import Job
 from .scheduler import Scheduler
 
 __version__ = "2.0.9"
+
+__all__ = [
+    "Xqute",
+    "plugin",
+    "logger",
+    "Job",
+    "Scheduler",
+    "JobStatus",
+    "JobErrorStrategy",
+]
