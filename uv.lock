@@ -3086,7 +3086,7 @@ wheels = [
 
 [[package]]
 name = "xqute"
-version = "2.0.10a1"
+version = "2.0.10"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
