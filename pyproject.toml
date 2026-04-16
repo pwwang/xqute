@@ -1,6 +1,6 @@
 [project]
 name = "xqute"
-version = "2.0.9"
+version = "2.0.10a1"
 description = "A job management system for python"
 authors = [{name = "pwwang", email = "pwwang@pwwang.com"}]
 license = {text = "MIT"}
