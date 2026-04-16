@@ -11,43 +11,43 @@ Xqute is a Python job management system with async-first design, supporting mult
 ### Core Commands
 ```bash
 # Install dependencies
-poetry install
+uv sync
 
 # Run all tests
-poetry run pytest
+uv run pytest
 
 # Run a single test file
-poetry run pytest tests/test_xqute.py
+uv run pytest tests/test_xqute.py
 
 # Run a specific test
-poetry run pytest tests/test_xqute.py::test_xqute_init
+uv run pytest tests/test_xqute.py::test_xqute_init
 
 # Run tests with coverage
-poetry run pytest --cov=xqute --cov-report term-missing
+uv run pytest --cov=xqute --cov-report term-missing
 
 # Run tests in parallel
-poetry run pytest -n auto
+uv run pytest -n auto
 
 # Lint code
-poetry run flake8 xqute
+uv run flake8 xqute
 
 # Format code
-poetry run black xqute
+uv run black xqute
 
 # Run pre-commit hooks
-poetry run pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ### Development Workflow
 ```bash
 # Start development shell
-poetry shell
+uv shell
 
 # Build package
-poetry build
+uv build
 
 # Install in development mode
-pip install -e .
+uv pip install -e .
 ```
 
 ## Code Style Guidelines
