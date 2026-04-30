@@ -1,263 +1,227 @@
-# xqute
+# <img src="xqute.png" width="28" /> xqute
 
-A job management system for Python, designed to simplify job scheduling and execution with support for multiple schedulers and plugins.
+<div align="center">
 
-## Features
+**An async-first job management and scheduling framework for Python.**
 
-- Written in async for high performance
-- Plugin system for extensibility
-- Scheduler adaptor for various backends
-- Job retrying and pipeline halting on failure
-- Support for cloud-based working directories
-- Built-in support for Google Batch Jobs, Slurm, SGE, SSH, and container schedulers
+[![PyPI version](https://img.shields.io/pypi/v/xqute.svg?color=blue)](https://pypi.org/project/xqute/)
+[![Python versions](https://img.shields.io/pypi/pyversions/xqute.svg)](https://pypi.org/project/xqute/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Installation
+</div>
 
-```shell
+---
+
+xqute schedules, submits, monitors, and manages batch jobs across local, HPC, cloud, and container backends — all through a single async Python API. It's built for bioinformatics pipelines, ML hyperparameter sweeps, batch data processing, and any workload that needs to fan out across heterogeneous compute.
+
+## ✨ Features
+
+- **Blazingly fast** — built on `asyncio` with `uvloop`; thousands of jobs, minimal overhead
+- **Six scheduler backends** — local, SGE, Slurm, SSH, Google Cloud Batch, Docker/Podman/Apptainer
+- **Plugin system** — 14 lifecycle hooks let you add logging, notifications, or custom logic without touching core code
+- **Error strategies** — automatic retry with configurable limits, or halt-the-world on first failure
+- **File-based status tracking** — jobs self-report via status files; survives network failures and scheduler quirks
+- **Daemon mode** — `keep_feeding` lets you add jobs dynamically at any point
+- **Cloud storage** — workdirs on GCS (`gs://`), Azure (`az://`), or S3 (`s3://`)
+- **Path translation** — seamless SpecPath / MountedPath duality for cross-machine execution
+- **Timeouts** — per-job timeout enforcement via `coreutils timeout`
+
+## 📦 Installation
+
+```bash
 pip install xqute
 ```
 
-## A Toy Example
+With optional extras:
+
+```bash
+pip install 'xqute[gs]'      # Google Cloud Storage support
+pip install 'xqute[cloudsh]'  # Cloud shell support
+```
+
+## 🚀 Quick start
+
+### Default (local scheduler)
 
 ```python
 import asyncio
 from xqute import Xqute
 
 async def main():
-    # Initialize Xqute with 3 jobs allowed to run concurrently
     xqute = Xqute(forks=3)
     for _ in range(10):
-        await xqute.feed(['sleep', '1'])
+        await xqute.feed(["sleep", "1"])
     await xqute.run_until_complete()
 
-if __name__ == '__main__':
-    asyncio.run(main())
+asyncio.run(main())
 ```
 
-### Daemon Mode (Keep Feeding)
-
-You can also run Xqute in daemon mode, where jobs can be added continuously after starting:
+### Daemon mode — add jobs while running
 
 ```python
-import asyncio
-from xqute import Xqute
+xqute = Xqute(forks=3)
 
-async def main():
-    xqute = Xqute(forks=3)
-
-    # Add initial job
-    await xqute.feed(['echo', 'Job 1'])
-
-    # Start in keep_feeding mode (returns immediately)
-    await xqute.run_until_complete(keep_feeding=True)
-
-    # Continue adding jobs dynamically
-    for i in range(2, 11):
-        await xqute.feed(['sleep', '1'])
-        await asyncio.sleep(0.1)  # Jobs can be added over time
-
-    # Signal completion and wait for all jobs to finish
-    await xqute.stop_feeding()
-
-if __name__ == '__main__':
-    asyncio.run(main())
-```
-
-**Tip:** Use `xqute.is_feeding()` to check if you need to call `stop_feeding()`.
-
-![xqute](./xqute.png)
-
-## API Documentation
-
-Full API documentation is available at: <https://pwwang.github.io/xqute/>
-
-## Usage
-
-### Xqute Object
-
-An `Xqute` object is initialized as follows:
-
-```python
-xqute = Xqute(...)
-```
-
-Available arguments are:
-
-- `scheduler`: The scheduler class or name (default: `local`)
-- `plugins`: Plugins to enable/disable for this session
-- `workdir`: Directory for job metadata (default: `./.xqute/`)
-- `forks`: Number of jobs allowed to run concurrently
-- `error_strategy`: Strategy for handling errors (e.g., `halt`, `retry`)
-- `num_retries`: Maximum number of retries when `error_strategy` is set to `retry`
-- `submission_batch`: Number of jobs to submit in a batch
-- `scheduler_opts`: Additional keyword arguments for the scheduler
-- `jobname_prefix`: Prefix for job names
-- `recheck_interval`: Interval to recheck job status. The actual interval will be `<recheck_interval> * <xqute.defaults.SLEEP_INTERVAL_POLLING_JOBS>`
-
-**Note:** The producer must be initialized within an event loop.
-
-To add a job to the queue:
-
-```python
-await xqute.feed(['echo', 'Hello, World!'])
-```
-
-To run until all jobs complete:
-
-```python
-# Traditional mode - wait for all jobs to complete
-await xqute.run_until_complete()
-
-# Or daemon mode - add jobs continuously
+# Start — returns immediately
 await xqute.run_until_complete(keep_feeding=True)
-# ... add more jobs ...
-await xqute.stop_feeding()  # Signal completion and wait
+
+# Feed jobs dynamically
+for i in range(100):
+    await xqute.feed(["python", "train.py", str(i)])
+    await asyncio.sleep(0.1)
+
+# Signal done and wait for everything to finish
+await xqute.stop_feeding()
 ```
 
-### Using SGE Scheduler
+## 🎯 Scheduler backends
+
+xqute ships with six schedulers. Swap the `scheduler` argument to switch.
+
+### Slurm
 
 ```python
 xqute = Xqute(
-    scheduler='sge',
+    scheduler="slurm",
     forks=100,
     scheduler_opts={
-        'qsub': '/path/to/qsub',
-        'qdel': '/path/to/qdel',
-        'qstat': '/path/to/qstat',
-        'q': '1-day',  # or qsub_q='1-day'
-    }
+        "partition": "gpu",
+        "time": "24:00:00",
+        "mem": "8G",
+        "gres": "gpu:1",
+    },
 )
 ```
 
-Keyword arguments starting with `sge_` are interpreted as `qsub` options. For example:
-
-```python
-'l': ['h_vmem=2G', 'gpu=1']
-```
-will be expanded in the job script as:
-
-```shell
-#$ -l h_vmem=2G
-#$ -l gpu=1
-```
-
-### Using Slurm Scheduler
+### SGE (Sun Grid Engine)
 
 ```python
 xqute = Xqute(
-    scheduler='slurm',
+    scheduler="sge",
     forks=100,
     scheduler_opts={
-        'sbatch': '/path/to/sbatch',
-        'scancel': '/path/to/scancel',
-        'squeue': '/path/to/squeue',
-        'partition': '1-day',
-        'time': '01:00:00',
-    }
+        "q": "1-day",
+        "l": ["h_vmem=4G", "gpu=1"],
+    },
 )
 ```
 
-### Using SSH Scheduler
+### SSH (multi-server)
 
 ```python
 xqute = Xqute(
-    scheduler='ssh',
+    scheduler="ssh",
     forks=100,
     scheduler_opts={
-        'ssh': '/path/to/ssh',
-        'servers': {
-            'server1': {
-                'user': 'username',
-                'port': 22,
-                'keyfile': '/path/to/keyfile',
-                'ctrl_persist': 600,
-                'ctrl_dir': '/tmp',
-            }
+        "servers": {
+            "node1": {"user": "alice", "host": "node1.example.com", "keyfile": "/home/alice/.ssh/id_rsa"},
+            "node2": {"user": "alice", "host": "node2.example.com", "keyfile": "/home/alice/.ssh/id_rsa"},
         }
-    }
+    },
 )
 ```
 
-**Note:** SSH servers must share the same filesystem and use keyfile authentication.
+> **Note:** SSH servers must share the same filesystem and use key-based auth.
 
-### Using Google Batch Jobs Scheduler
+### Google Cloud Batch
 
 ```python
 xqute = Xqute(
-    scheduler='gbatch',
+    scheduler="gbatch",
     forks=100,
     scheduler_opts={
-        'project': 'your-gcp-project-id',
-        'location': 'us-central1',
-        'gcloud': '/path/to/gcloud',
-        'taskGroups': [ ... ],
-    }
+        "project": "my-gcp-project",
+        "location": "us-central1",
+        "taskGroups": [{
+            "taskSpec": {
+                "runnables": [{
+                    "container": {"imageUri": "ubuntu", "entrypoint": "bash", "commands": ["-c", "..."]}
+                }]
+            },
+            "taskCount": 500,
+            "parallelism": 100,
+        }],
+    },
 )
 ```
 
-### Using Container Scheduler
+### Container (Docker / Podman / Apptainer)
 
 ```python
 xqute = Xqute(
-    scheduler='container',
-    forks=100,
+    scheduler="container",
+    forks=10,
     scheduler_opts={
-        'image': 'docker://bash:latest',
-        'entrypoint': '/usr/local/bin/bash',
-        'bin': 'docker',
-        'volumes': '/host/path:/container/path',
-        'envs': {'MY_ENV_VAR': 'value'},
-        'remove': True,
-        'bin_args': ['--hostname', 'xqute-container'],
-    }
+        "image": "docker://python:3.12",
+        "entrypoint": "/bin/bash",
+        "bin": "docker",
+        "volumes": ["/data:/data"],
+        "envs": {"TF_CPP_MIN_LOG_LEVEL": "2"},
+    },
 )
 ```
 
-### Plugins
+## 🔌 Plugins
 
-To create a plugin for `xqute`, implement the following hooks:
-
-- `def on_init(scheduler)`: Called after the scheduler is initialized
-- `def on_shutdown(scheduler, sig)`: Called when the scheduler shuts down
-- `async def on_job_init(scheduler, job)`: Called when a job is initialized
-- `async def on_job_queued(scheduler, job)`: Called when a job is queued
-- `async def on_job_submitted(scheduler, job)`: Called when a job is submitted
-- `async def on_job_started(scheduler, job)`: Called when a job starts running
-- `async def on_job_polling(scheduler, job, counter)`: Called during job status polling
-- `async def on_job_killing(scheduler, job)`: Called when a job is being killed
-- `async def on_job_killed(scheduler, job)`: Called when a job is killed
-- `async def on_job_failed(scheduler, job)`: Called when a job fails
-- `async def on_job_succeeded(scheduler, job)`: Called when a job succeeds
-- `def on_jobcmd_init(scheduler, job) -> str`: Called during job command initialization
-- `def on_jobcmd_prep(scheduler, job) -> str`: Called before the job command runs
-- `def on_jobcmd_end(scheduler, job) -> str`: Called after the job command completes
-
-To implement a hook, use the `simplug` plugin manager:
+14 lifecycle hooks via `simplug`. Example — send Slack notifications on failures:
 
 ```python
 from xqute import simplug as pm
 
 @pm.impl
-def on_init(scheduler):
-    ...
+async def on_job_failed(scheduler, job):
+    import requests
+    requests.post(WEBHOOK, json={"text": f"Job {job.index} failed"})
 ```
 
-### Implementing a Scheduler
+See the [Plugins](https://pwwang.github.io/xqute/plugins/) page for the full list of hooks and more examples.
 
-To create a custom scheduler, subclass the `Scheduler` abstract class and implement the following methods:
+## 📖 Documentation
+
+Full documentation is at **[pwwang.github.io/xqute](https://pwwang.github.io/xqute/)**:
+
+- [Quick Start](https://pwwang.github.io/xqute/quickstart/) — get running in minutes
+- [User Guide](https://pwwang.github.io/xqute/user-guide/) — initialization, error handling, monitoring
+- [Schedulers](https://pwwang.github.io/xqute/schedulers/) — all six backends with config reference
+- [Plugins](https://pwwang.github.io/xqute/plugins/) — lifecycle hooks and plugin authoring
+- [Advanced](https://pwwang.github.io/xqute/advanced/) — custom schedulers, Dask/Airflow integration, perf tuning
+- [API Reference](https://pwwang.github.io/xqute/api/xqute/) — auto-generated from source
+
+## 🛠️ Custom scheduler
+
+Implement three async methods to add your own backend:
 
 ```python
 from xqute import Scheduler
 
 class MyScheduler(Scheduler):
-    name = 'mysched'
+    name = "mycluster"
 
     async def submit_job(self, job):
-        """Submit a job and return its unique ID."""
+        """Submit and return a unique job ID."""
 
     async def kill_job(self, job):
-        """Kill a job."""
+        """Kill the job given its JID."""
 
     async def job_is_running(self, job):
-        """Check if a job is running."""
+        """Return True if the job is still running."""
 ```
+
+Then pass it directly: `Xqute(scheduler=MyScheduler, ...)`.
+
+## 📊 Architecture
+
+Jobs are wrapped in a bash template with an `EXIT` trap that writes status files (`job.status`, `job.rc`, `job.stdout`, `job.stderr`) into a per-job `metadir`. The polling loop reads these files — no scheduler API calls for status. This design makes xqute resilient to network hiccups and scheduler oddities.
+
+```
+INIT → QUEUED → SUBMITTED → RUNNING → FINISHED
+                              ↓           ↓
+                          KILLING →   FAILED
+```
+
+## 🤝 Contributing
+
+Issues and PRs welcome on [GitHub](https://github.com/pwwang/xqute). See [AGENTS.md](AGENTS.md) for dev setup and conventions.
+
+## 📝 License
+
+MIT — see [LICENSE](LICENSE).

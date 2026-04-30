@@ -1,22 +1,101 @@
 site_name: xqute
+site_description: An async-first job management and scheduling framework for Python
+site_author: pwwang
+repo_url: https://github.com/pwwang/xqute
+repo_name: pwwang/xqute
+edit_uri: edit/main/docs/
+
 theme:
-    name: 'material'
+  name: material
+  logo: xqute.png
+  favicon: xqute.png
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - announce.dismiss
+
 markdown_extensions:
-    - markdown.extensions.admonition
-    - pymdownx.superfences:
-        preserve_tabs: true
-    - toc:
-        baselevel: 2
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      preserve_tabs: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - attr_list
+  - md_in_html
+
 plugins:
-    - search # necessary for search to work
-    - mkapi
+  - search
+  - mkapi
+
 extra_css:
-    - style.css
+  - style.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/pwwang/xqute
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/xqute/
+  consent:
+    title: Cookie consent
+    description: >-
+      This site uses cookies to recognize your repeated visits and preferences,
+      as well as to measure the effectiveness of our documentation and whether
+      users find what they're searching for. With your consent, you're helping
+      us to make our documentation better.
+
 nav:
-    - 'Home': 'index.md'
-    - 'Quick Start': 'quickstart.md'
-    - 'User Guide': 'user-guide.md'
-    - 'Schedulers': 'schedulers.md'
-    - 'Plugins': 'plugins.md'
-    - 'Advanced Usage': 'advanced.md'
-    - 'API': mkapi/api/xqute
+  - Home: index.md
+  - Quick Start: quickstart.md
+  - User Guide: user-guide.md
+  - Schedulers: schedulers.md
+  - Plugins: plugins.md
+  - Advanced Usage: advanced.md
+  - API Reference: mkapi/api/xqute
