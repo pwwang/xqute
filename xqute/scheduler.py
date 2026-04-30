@@ -264,6 +264,8 @@ class Scheduler(ABC):
                     new_status,
                     old_status=JobStatus.RUNNING,
                     flush=False,
+                    rc=rc,
+                    error_msg=error_msg,
                 )
                 return
 
@@ -306,6 +308,8 @@ class Scheduler(ABC):
                     new_status,
                     old_status=JobStatus.RUNNING,
                     flush=False,
+                    rc=rc,
+                    error_msg=error_msg,
                 )
                 return
 
@@ -614,7 +618,8 @@ class Scheduler(ABC):
     def jobcmd_wrapper_init(self) -> str:
         """The init script for the job command wrapper"""
         wrapper_init = get_jobcmd_wrapper_init(
-            not isinstance(self.workdir.mounted, CloudPath)
+            not isinstance(self.workdir.mounted, CloudPath),
+            self.timeout,
         )
         if self.cwd:
             # Some schedulers (e.g. Google Cloud Batch) doesn't support changing the
@@ -662,13 +667,6 @@ class Scheduler(ABC):
         codes = [code for code in codes if code]
         return "\n".join(codes)
 
-    @property
-    def run_command(self) -> str:
-        """The command to run in the wrapper script, with optional timeout"""
-        if self.timeout and self.timeout > 0:
-            return f'timeout {self.timeout} bash -c "$cmd"'
-        return 'eval "$cmd"'
-
     def wrap_job_script(self, job: Job) -> str:
         """Wrap the job script
 
@@ -687,7 +685,6 @@ class Scheduler(ABC):
             jobcmd_init=self.jobcmd_init(job),
             jobcmd_prep=self.jobcmd_prep(job),
             jobcmd_end=self.jobcmd_end(job),
-            run_command=self.run_command,
         )
 
     async def wrapped_job_script(self, job: Job) -> SpecPath:

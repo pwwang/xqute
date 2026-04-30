@@ -16,7 +16,7 @@ async def test_timeout_wrapper_script():
     job = await xqute.scheduler.create_job(0, ["sleep", "1"])
     script = xqute.scheduler.wrap_job_script(job)
 
-    assert 'timeout 30 bash -c "$cmd"' in script
+    assert 'timeout 30 bash -c \\"$cmd\\"' in script
 
 
 @pytest.mark.asyncio

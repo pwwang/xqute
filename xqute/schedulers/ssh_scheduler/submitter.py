@@ -15,7 +15,7 @@ import sys
 import time
 import subprocess
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     server, cwd, *cmds = sys.argv[1:]
 
     proc = subprocess.Popen(
@@ -25,8 +25,7 @@ if __name__ == "__main__":
         stderr=subprocess.PIPE,
         preexec_fn=os.setpgrp,
     )
-    stdout = proc.stdout.read().decode()
-    stderr = proc.stderr.read().decode()
+    stdout, stderr = proc.communicate()
     sys.stdout.write(f"{proc.pid}@{server}")
     # wait for a while to make sure the process is running
     time.sleep(0.1)
@@ -35,5 +34,7 @@ if __name__ == "__main__":
         # still running or already finished
         sys.exit(0)
     else:
-        sys.stderr.write(f"STDOUT: {stdout}\nSTDERR: {stderr}")
+        sys.stderr.write(
+            f"STDOUT: {stdout.decode()}\nSTDERR: {stderr.decode()}"
+        )
         sys.exit(rc)

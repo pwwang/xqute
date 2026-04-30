@@ -139,6 +139,17 @@ cleanup() {{
         update_metafile "{status.FINISHED}" "{job.status_file.mounted}"
     else
         update_metafile "{status.FAILED}" "{job.status_file.mounted}"
+        if [[ $rc -eq 124 ]]; then
+            update_metafile "!! Job timed out after {scheduler.timeout} seconds" "{job.stderr_file.mounted}" append
+        elif [[ $rc -eq 125 ]]; then
+            update_metafile "!! The timeout command itself failed" "{job.stderr_file.mounted}" append
+        elif [[ $rc -eq 126 ]]; then
+            update_metafile "!! Command invoked cannot execute" "{job.stderr_file.mounted}" append
+        elif [[ $rc -eq 127 ]]; then
+            update_metafile "!! Command not found" "{job.stderr_file.mounted}" append
+        elif [[ $rc -eq 137 ]]; then
+            update_metafile "!! Job killed" "{job.stderr_file.mounted}" append
+        fi
     fi
 
     remove_metafile "{job.jid_file.mounted}"
@@ -164,21 +175,27 @@ cmd=$(compose_cmd "{cmd}" "{job.stdout_file.mounted}" "{job.stderr_file.mounted}
 {jobcmd_prep}
 
 # Run the command, the real job
-{run_command}
+eval "$cmd"
 """  # noqa: E501
 
 
-def get_jobcmd_wrapper_init(local: bool) -> str:
+def get_jobcmd_wrapper_init(local: bool, timeout: int) -> str:
     """Get the job command wrapper initialization script
 
     Args:
         local: Whether the job is running locally
+        timeout: The timeout for the job command
 
     Returns:
         The job command wrapper initialization script
     """
     if local:
         rm_file = 'mv "$file" "${file}.used"'
+        if timeout > 0:
+            cmd = f'timeout {timeout} bash -c \\"$cmd\\" 1>$stdout_file 2>$stderr_file'
+        else:
+            cmd = '$cmd 1>$stdout_file 2>$stderr_file'
+
         return textwrap.dedent(
             f"""
             export META_ON_CLOUD=0
@@ -186,7 +203,12 @@ def get_jobcmd_wrapper_init(local: bool) -> str:
             update_metafile() {{
                 local content=$1
                 local file=$2
-                echo "$content" > "$file"
+                if [[ "${{3:-}}" == "append" ]]; then
+                    echo -e "\\n" >> "$file"
+                    echo "$content" >> "$file"
+                else
+                    echo "$content" > "$file"
+                fi
             }}
 
             remove_metafile() {{
@@ -198,12 +220,17 @@ def get_jobcmd_wrapper_init(local: bool) -> str:
                 local cmd=$1
                 local stdout_file=$2
                 local stderr_file=$3
-                echo "$cmd 1>$stdout_file 2>$stderr_file"
+                echo "{cmd}"
             }}
             """
         )
     else:
         rm_file = 'cloudsh mv "$file" "${file}_used"'
+        if timeout > 0:  # pragma: no cover
+            cmd = f'timeout {timeout} bash -c \\"$cmd\\" 2>$stderrtmp'
+        else:
+            cmd = '$cmd 2>$stderrtmp'
+
         return textwrap.dedent(
             f"""
             export META_ON_CLOUD=1
@@ -217,7 +244,12 @@ def get_jobcmd_wrapper_init(local: bool) -> str:
             update_metafile() {{
                 local content=$1
                 local file=$2
-                echo "$content" | cloudsh sink "$file"
+                if [[ "${{3:-}}" == "append" ]]; then
+                    echo -e "\\n" | cloudsh sink -a "$file"
+                    echo "$content" | cloudsh sink -a "$file"
+                else
+                    echo "$content" | cloudsh sink "$file"
+                fi
             }}
 
             remove_metafile() {{
@@ -231,7 +263,7 @@ def get_jobcmd_wrapper_init(local: bool) -> str:
                 local stderr_file=$3
                 # create temp files to save stderr
                 stderrtmp=$(mktemp)
-                echo "$cmd 2>$stderrtmp | cloudsh sink $stdout_file; \\
+                echo "{cmd} | cloudsh sink $stdout_file; \\
                     rc=\\$?; \\
                     cloudsh mv $stderrtmp $stderr_file; \\
                     exit \\$rc"
