@@ -10,6 +10,7 @@ from panpath import CloudPath
 from ...schedulers.local_scheduler import LocalScheduler
 from ...job import Job
 from ...defaults import SLEEP_INTERVAL_CLOUD_FILE_CHECK
+from ...utils import logger
 
 from .client import SSHClient
 
@@ -92,7 +93,11 @@ class SshScheduler(LocalScheduler):
                 not await job.stdout_file.a_exists()
                 and not await job.stderr_file.a_exists()
             ):
-                print(f"Checking if SSH job #{job.index} is running...")
+                logger.debug(
+                    "/Sched-%s Checking if SSH job %s is running...",
+                    self.name,
+                    job.index,
+                )
                 if not await self.servers[srvname].is_running(pid):
                     # job.stdout_file.write_bytes(stdout)
                     # job.stderr_file.write_bytes(stderr)
