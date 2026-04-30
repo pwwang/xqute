@@ -521,7 +521,8 @@ class GbatchScheduler(Scheduler):
             return "UNKNOWN"
 
         stdout = (await proc.stdout.read()).decode()
-        return re.search(r"state: (.+)", stdout).group(1)
+        match = re.search(r"state: (.+)", stdout)
+        return match.group(1) if match else "UNKNOWN"
 
     async def job_fails_before_running(self, job: Job) -> bool:  # pragma: no cover
         status = await self._get_job_status(job)
