@@ -164,7 +164,7 @@ cmd=$(compose_cmd "{cmd}" "{job.stdout_file.mounted}" "{job.stderr_file.mounted}
 {jobcmd_prep}
 
 # Run the command, the real job
-eval "$cmd"
+{run_command}
 """  # noqa: E501
 
 

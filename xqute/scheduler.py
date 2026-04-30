@@ -74,6 +74,7 @@ class Scheduler(ABC):
         "recheck_interval",
         "subm_batch",
         "cwd",
+        "timeout",
     )
 
     # The name of the scheduler
@@ -94,6 +95,7 @@ class Scheduler(ABC):
         submission_batch: int | None = None,
         recheck_interval: int = DEFAULT_RECHECK_INTERVAL,
         cwd: str | Path = None,
+        timeout: int = 0,
         **kwargs,
     ):
         self.forks = forks
@@ -108,6 +110,7 @@ class Scheduler(ABC):
         self.subm_batch = submission_batch or self.__class__.submission_batch
         self.recheck_interval = recheck_interval
         self.cwd = None if cwd is None else str(cwd)
+        self.timeout = timeout
 
         self.config = Diot(**kwargs)
 
@@ -659,6 +662,13 @@ class Scheduler(ABC):
         codes = [code for code in codes if code]
         return "\n".join(codes)
 
+    @property
+    def run_command(self) -> str:
+        """The command to run in the wrapper script, with optional timeout"""
+        if self.timeout and self.timeout > 0:
+            return f'timeout {self.timeout} bash -c "$cmd"'
+        return 'eval "$cmd"'
+
     def wrap_job_script(self, job: Job) -> str:
         """Wrap the job script
 
@@ -677,6 +687,7 @@ class Scheduler(ABC):
             jobcmd_init=self.jobcmd_init(job),
             jobcmd_prep=self.jobcmd_prep(job),
             jobcmd_end=self.jobcmd_end(job),
+            run_command=self.run_command,
         )
 
     async def wrapped_job_script(self, job: Job) -> SpecPath:

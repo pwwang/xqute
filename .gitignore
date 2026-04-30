@@ -165,3 +165,4 @@ gha-creds-*.json
 *.sif
 # apptainer cache
 /cache/
+/plan/
