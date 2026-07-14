@@ -131,9 +131,21 @@ update_metafile "" "{job.stdout_file.mounted}"
 # plugins.on_jobcmd_init
 {jobcmd_init}
 
+if [[ $META_ON_CLOUD -eq 0 ]]; then
+    # Write a 20KB file as a space holder in case the job stuffs the entire disk
+    # Write data to job.spaceholder
+    spaceholder_file=$(echo "{job.rc_file.mounted}" | sha256sum | cut -d ' ' -f1)
+    spaceholder_file="/tmp/xqute_spaceholder_$spaceholder_file.tmp"
+    dd if=/dev/zero of="$spaceholder_file" bs=1K count=20
+fi
 
 cleanup() {{
     rc=$?
+    # Remove the space holder file
+    if [[ $META_ON_CLOUD -eq 0 ]]; then
+        rm -f "$spaceholder_file"
+    fi
+
     update_metafile "$rc" "{job.rc_file.mounted}"
     if [[ $rc -eq 0 ]]; then
         update_metafile "{status.FINISHED}" "{job.status_file.mounted}"
