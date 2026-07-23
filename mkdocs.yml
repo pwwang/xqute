@@ -7,8 +7,8 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
-  logo: xqute.png
-  favicon: xqute.png
+  logo: logo.png
+  favicon: favicon.png
   icon:
     repo: fontawesome/brands/github
   palette:

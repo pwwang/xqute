@@ -1,6 +1,6 @@
-# <img src="xqute.png" width="28" /> xqute
-
 <div align="center">
+
+<img src="docs/logo.png" width="128" />
 
 **An async-first job management and scheduling framework for Python.**
 

@@ -166,3 +166,4 @@ gha-creds-*.json
 # apptainer cache
 /cache/
 /plan/
+.superpowers/

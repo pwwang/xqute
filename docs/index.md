@@ -1,27 +1,226 @@
-# <img src="../xqute.png" width="32" /> Xqute
+---
+hide:
+  - toc
+  - navigation
+---
 
-**Async-first job management and scheduling framework for Python.** Xqute gives you a single, clean API to schedule, submit, monitor, and manage batch jobs across any backend — local processes, HPC clusters, cloud batch services, or containers.
+<div class="hero-wrapper" markdown="0">
+<div class="hero-bg"></div>
+<div class="hero-content">
+
+<img src="logo.png" width="160" alt="xqute" style="vertical-align:middle;margin-right:12px" />
+
+<div class="hero-tagline"><br />The async job scheduler that scales from your laptop to a 10,000‑core cluster</div>
+
+<div class="hero-cta">
+<a href="quickstart/" class="md-button md-button--primary hero-btn-primary">Quick Start →</a>
+<code class="hero-install">$ pip install xqute</code>
+</div>
+
+<div class="hero-badges">
+<img src="https://img.shields.io/pypi/v/xqute?color=blue&style=flat-square" alt="PyPI">
+<img src="https://img.shields.io/pypi/pyversions/xqute?style=flat-square" alt="Python">
+<img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT">
+<img src="https://img.shields.io/github/stars/pwwang/xqute?style=flat-square" alt="Stars">
+</div>
+
+<div class="hero-schedulers">
+<span>🖥️&nbsp;local</span>
+<span>🎯&nbsp;slurm</span>
+<span>📐&nbsp;sge</span>
+<span>🔗&nbsp;ssh</span>
+<span>☁️&nbsp;gbatch</span>
+<span>📦&nbsp;container</span>
+</div>
+
+</div>
+</div>
 
 ---
 
-## Why Xqute?
+## Why xqute?
 
 You're running a computational pipeline — hundreds or thousands of jobs. Each job might take minutes or hours. They need to fan out across a Slurm cluster, a pool of SSH servers, or a container farm. You need retries on failure, status tracking, and plugins for logging and notifications.
 
-Xqute handles all of this so you can focus on your actual work — your commands.
+**Xqute handles all of this so you can focus on your actual work — your commands.**
 
-- **One API, six backends** — write your pipeline once; swap `scheduler="local"` for `"slurm"`, `"sge"`, `"ssh"`, `"gbatch"`, or `"container"` when you're ready for production.
-- **Resilient by design** — jobs self-report status through files on disk. Network hiccups and scheduler quirks won't lose your results.
-- **Plays well with others** — plugin hooks for Slack, email, databases, and anything else you can think of.
-- **Async all the way down** — built on `asyncio` + `uvloop`; thousands of concurrent jobs with minimal overhead.
+<div class="feature-grid" markdown>
 
-## Install
+<div class="feature-card feature-purple" markdown>
 
-```bash
-pip install xqute
+#### :material-sync: Six Schedulers
+
+Local, Slurm, SGE, SSH, Google Cloud Batch, Containers — **one API, swap the `scheduler` argument.**
+
+</div>
+
+<div class="feature-card feature-green" markdown>
+
+#### :material-reload: Error Strategies
+
+`retry` with configurable limits, `halt` on first failure, or `ignore` — **per-job overrides included.**
+
+</div>
+
+<div class="feature-card feature-amber" markdown>
+
+#### :material-puzzle: Plugin System
+
+14 lifecycle hooks via `simplug`. Slack, email, databases — **hook into any point.**
+
+</div>
+
+<div class="feature-card feature-sky" markdown>
+
+#### :material-lightning-bolt: Async + uvloop
+
+Built on `asyncio` with `uvloop`. **Thousands of concurrent jobs with minimal overhead.**
+
+</div>
+
+<div class="feature-card feature-rose" markdown>
+
+#### :material-cloud: Cloud Storage
+
+Workdirs on `gs://`, `az://`, or `s3://`. **Files auto-download to a local cache on access.**
+
+</div>
+
+<div class="feature-card feature-teal" markdown>
+
+#### :material-timer: Job Timeouts
+
+Per-job timeout via `coreutils timeout`. **No runaway jobs chewing your quota.**
+
+</div>
+
+</div>
+
+---
+
+## :material-rocket-launch: Scheduler backends
+
+<div class="scheduler-strip" markdown>
+
+<div class="sched-card" markdown>
+
+### :material-laptop: Local
+
+```python
+xqute = Xqute(forks=4)
 ```
 
-## 30-second example
+Subprocesses on the same machine. *Zero config.*
+
+</div>
+
+<div class="sched-card" markdown>
+
+### :material-server: Slurm
+
+```python
+xqute = Xqute(
+    scheduler="slurm",
+    forks=100,
+    scheduler_opts={
+        "partition": "gpu",
+        "gres": "gpu:1",
+    },
+)
+```
+
+Modern HPC clusters with `sbatch`.
+
+</div>
+
+<div class="sched-card" markdown>
+
+### :material-grid: SGE
+
+```python
+xqute = Xqute(
+    scheduler="sge",
+    forks=100,
+    scheduler_opts={
+        "q": "1-day",
+        "l": ["h_vmem=4G"],
+    },
+)
+```
+
+Traditional Grid Engine with `qsub`.
+
+</div>
+
+<div class="sched-card" markdown>
+
+### :material-console-network: SSH
+
+```python
+xqute = Xqute(
+    scheduler="ssh",
+    forks=100,
+    scheduler_opts={
+        "servers": {
+            "node1": {
+                "user": "alice",
+                "host": "node1.example.com",
+                "keyfile": "...",
+            },
+        },
+    },
+)
+```
+
+Pool of Linux servers. Key-based auth.
+
+</div>
+
+<div class="sched-card" markdown>
+
+### :material-google-cloud: GBatch
+
+```python
+xqute = Xqute(
+    scheduler="gbatch",
+    forks=100,
+    scheduler_opts={
+        "project": "my-gcp-project",
+        "location": "us-central1",
+    },
+)
+```
+
+Auto-scaling Google Cloud Batch.
+
+</div>
+
+<div class="sched-card" markdown>
+
+### :material-docker: Container
+
+```python
+xqute = Xqute(
+    scheduler="container",
+    forks=10,
+    scheduler_opts={
+        "image": "docker://python:3.12",
+        "bin": "docker",
+    },
+)
+```
+
+Docker, Podman, or Apptainer.
+
+</div>
+
+</div>
+
+---
+
+## :material-play-circle: 30 seconds to your first pipeline
+
+<div class="quickstart-block" markdown>
 
 ```python
 import asyncio
@@ -30,100 +229,29 @@ from xqute import Xqute
 async def main():
     xqute = Xqute(forks=4)
     for i in range(20):
-        await xqute.feed(["python", "train.py", str(i)])
+        await xqute.feed(f"python train.py --model-id {i}")
     await xqute.run_until_complete()
 
 asyncio.run(main())
 ```
 
-<small>*20 models, 4 at a time. That's it.*</small>
+<div class="quickstart-meta">
 
-## Feature tour
+### That's it :tada:
 
-=== "Scheduler backends"
+**20 models, 4 at a time.** Add `scheduler="slurm"` and `forks=100` to hit the cluster. Switch to `keep_feeding=True` for daemon mode — feed jobs dynamically from a queue, an API, or user input.
 
-    Six schedulers ship with xqute. Each handles the nuances of its backend — you just set `scheduler="..."`:
+[Full user guide →](user-guide.md)
 
-    | Scheduler | Best for |
-    |---|---|
-    | `local` | Development, a single beefy machine |
-    | `slurm` | Modern HPC / GPU clusters |
-    | `sge` | Traditional Sun Grid Engine (university clusters) |
-    | `ssh` | Pool of Linux servers behind SSH |
-    | `gbatch` | Google Cloud Batch — auto-scaling cloud compute |
-    | `container` | Docker, Podman, or Apptainer isolation |
+</div>
 
-    ```python
-    xqute = Xqute(
-        scheduler="slurm",
-        forks=100,
-        scheduler_opts={"partition": "gpu", "gres": "gpu:1"},
-    )
-    ```
+</div>
 
-=== "Error strategies"
+---
 
-    Two built-in strategies, plus per-job overrides:
+## :material-state-machine: Job lifecycle
 
-    ```python
-    # Retry up to 3 times (default)
-    xqute = Xqute(error_strategy="retry", num_retries=3)
-
-    # Or stop the world on first failure
-    xqute = Xqute(error_strategy="halt")
-    ```
-
-    Per-job control:
-
-    ```python
-    await xqute.feed(["fragile-command"], num_retries=5)
-    ```
-
-=== "Plugin system"
-
-    14 lifecycle hooks via `simplug`. Hook into any point in a job's lifecycle:
-
-    | Phase | Hooks |
-    |---|---|
-    | Scheduler | `on_init`, `on_shutdown` |
-    | Job lifecycle | `on_job_init`, `on_job_queued`, `on_job_submitting`, `on_job_submitted`, `on_job_started`, `on_job_polling`, `on_job_killing`, `on_job_killed`, `on_job_failed`, `on_job_succeeded` |
-    | Bash wrapper | `on_jobcmd_init`, `on_jobcmd_prep`, `on_jobcmd_end` |
-
-    ```python
-    from xqute import simplug as pm
-
-    @pm.impl
-    async def on_job_succeeded(scheduler, job):
-        print(f"Job {job.index} finished!")
-    ```
-
-=== "Daemon mode"
-
-    Don't know all jobs upfront? Start in daemon mode and feed as you go:
-
-    ```python
-    await xqute.run_until_complete(keep_feeding=True)
-
-    # Jobs arrive from a queue, an API, user input...
-    for cmd in dynamic_source():
-        await xqute.feed(cmd)
-
-    await xqute.stop_feeding()
-    ```
-
-=== "Cloud storage"
-
-    Work directories on cloud object storage — metadata lands where your compute can see it:
-
-    ```python
-    Xqute(workdir="gs://my-bucket/jobs", scheduler_opts={"mounted_workdir": "/mnt/gs"})
-    ```
-
-    Supports `gs://`, `az://`, and `s3://` paths. Files auto-download to a local cache on first access.
-
-## Status lifecycle
-
-Every job travels through a well-defined state machine. The wrapper script's `EXIT` trap writes status files — xqute's polling loop picks them up:
+Every job travels through this state machine. The wrapper script's `EXIT` trap writes status files — xqute's polling loop reads them. No network round-trips for status.
 
 ```mermaid
 stateDiagram-v2
@@ -138,7 +266,11 @@ stateDiagram-v2
     INIT --> CANCELLED
 ```
 
-## What's inside
+---
+
+## :material-file-tree: What's inside
+
+<div class="tree-block" markdown>
 
 ```
 xqute/
@@ -158,19 +290,17 @@ xqute/
     └── container_scheduler.py  # Docker/Podman/Apptainer
 ```
 
-## Use cases
+</div>
 
-- **Bioinformatics pipelines** — fan out thousands of alignment/fastqc/variant-calling jobs across a cluster
-- **ML hyperparameter sweeps** — train N models in parallel, each with different configs
-- **Batch data processing** — process terabytes of log files, images, or documents
-- **Scientific computing** — run simulations on HPC with queue management and retry logic
-- **Cloud orchestration** — burst to Google Cloud Batch when on-prem capacity is maxed out
+## :material-bookshelf: Next pages
 
-## Next pages
+<div class="next-pages" markdown>
 
-- [Quick Start](quickstart.md) — get running in minutes with every scheduler
-- [User Guide](user-guide.md) — initialization, error handling, job output, best practices
-- [Schedulers](schedulers.md) — full reference for all six backends
-- [Plugins](plugins.md) — write your own lifecycle hooks
-- [Advanced Usage](advanced.md) — custom schedulers, Airflow/Dask integration, perf tuning
-- [API Reference](api/xqute.md) — auto-generated from source
+- [:material-rocket-launch: **Quick Start**](quickstart.md) — get running in minutes with every scheduler
+- [:material-book-open-variant: **User Guide**](user-guide.md) — initialization, error handling, job output, best practices
+- [:material-server: **Schedulers**](schedulers.md) — full reference for all six backends
+- [:material-puzzle: **Plugins**](plugins.md) — write your own lifecycle hooks
+- [:material-cog: **Advanced Usage**](advanced.md) — custom schedulers, Dask/Airflow integration, perf tuning
+- [:material-code-braces: **API Reference**](mkapi/api/xqute) — auto-generated from source
+
+</div>
