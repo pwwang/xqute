@@ -7,7 +7,7 @@ from .utils import logger
 from .job import Job
 from .scheduler import Scheduler
 
-__version__ = "2.1.1"
+__version__ = "2.1.2"
 
 __all__ = [
     "Xqute",
