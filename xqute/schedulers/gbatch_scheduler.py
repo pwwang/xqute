@@ -322,7 +322,7 @@ class GbatchScheduler(Scheduler):
         runnable = config["taskGroups"][0]["taskSpec"]["runnables"][self.runnable_index]
         if "container" in runnable:
             container = runnable["container"]
-            if "entrypoint" not in container:
+            if "entrypoint" not in container or not container["entrypoint"]:
                 # supports only /bin/bash, but not /bin/bash -u
                 container["entrypoint"] = JOBCMD_WRAPPER_LANG
                 container["commands"].append(str(wrapt_script.mounted))
