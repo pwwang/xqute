@@ -27,10 +27,12 @@ async def test_scheduler(tmp_path):
 async def test_immediate_submission_failure(tmp_path):
 
     class BadLocalScheduler(LocalScheduler):
+        SUBMIT_JOB_SLEEP = 1
+
         async def wrapped_job_script(self, job, _mounted=False):
-            wrapt_script = job.metadir / f"job.wrapped.{self.name}"
-            await wrapt_script.a_write_text("bad_non_existent_command")
-            return wrapt_script
+            wrapped_script = job.metadir / f"job.wrapped.{self.name}"
+            await wrapped_script.a_write_text("bad_non_existent_command")
+            return wrapped_script
 
     scheduler = BadLocalScheduler(tmp_path)
     job = await scheduler.create_job(0, ["echo", 1])

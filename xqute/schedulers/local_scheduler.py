@@ -26,6 +26,7 @@ class LocalScheduler(Scheduler):
     """
 
     name = "local"
+    SUBMIT_JOB_SLEEP = 0.1
 
     async def submit_job(self, job: Job) -> int:
         """Submit a job locally
@@ -57,7 +58,7 @@ class LocalScheduler(Scheduler):
         # wait for a while to make sure the process is running
         # this is to avoid the real command is not run when proc is recycled too early
         # this happens for python < 3.12
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(self.SUBMIT_JOB_SLEEP)
 
         if await job.stdout_file.a_exists():  # pragma: no cover
             # job submitted successfully and already started very soon
