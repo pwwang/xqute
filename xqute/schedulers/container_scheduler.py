@@ -106,13 +106,16 @@ class ContainerScheduler(LocalScheduler):
                 if host_path_obj.is_file():
                     host_path = str(host_path_obj.parent)
                     mount_path = (
-                        f"{DEFAULT_MOUNTED_ROOT}/{name}/{host_path_obj.parent.name}"
+                        f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/"
+                        f"{name}/{host_path_obj.parent.name}"
                     )
                     self._path_envs[name] = f"{mount_path}/{host_path_obj.name}"
                     self.volumes[i] = f"{host_path}:{mount_path}"
                 else:
                     host_path = str(host_path_obj)
-                    mount_path = f"{DEFAULT_MOUNTED_ROOT}/{name}"
+                    mount_path = (
+                        f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/{name}"
+                    )
                     self._path_envs[name] = mount_path
                     self.volumes[i] = f"{host_path}:{mount_path}"
 

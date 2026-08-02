@@ -9,10 +9,7 @@ from panpath import PanPath
 from unittest.mock import patch, MagicMock
 from xqute.defaults import JobStatus
 
-from xqute.schedulers.container_scheduler import (
-    ContainerScheduler,
-    DEFAULT_MOUNTED_ROOT,
-)
+from xqute.schedulers.container_scheduler import ContainerScheduler
 
 
 @pytest.fixture(scope="module")
@@ -80,13 +77,22 @@ async def test_named_volume_handling(temp_workdir):
         volumes=[f"DIR={host_dir}", f"FILE={host_file}"],
     )
     assert len(scheduler.volumes) == 3
-    assert scheduler.volumes[0] == f"{str(host_dir)}:{DEFAULT_MOUNTED_ROOT}/DIR"
     assert (
-        scheduler.volumes[1]
-        == f"{str(host_file.parent)}:{DEFAULT_MOUNTED_ROOT}/FILE/dir2"
+        scheduler.volumes[0]
+        == f"{str(host_dir)}:{ContainerScheduler.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/DIR"
     )
-    assert scheduler._path_envs["DIR"] == f"{DEFAULT_MOUNTED_ROOT}/DIR"
-    assert scheduler._path_envs["FILE"] == f"{DEFAULT_MOUNTED_ROOT}/FILE/dir2/file.txt"
+    assert scheduler.volumes[1] == (
+        f"{str(host_file.parent)}:{ContainerScheduler.DEFAULT_MOUNTED_ROOT}/"
+        "NAMED_MOUNTS/FILE/dir2"
+    )
+    assert (
+        scheduler._path_envs["DIR"]
+        == f"{ContainerScheduler.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/DIR"
+    )
+    assert (
+        scheduler._path_envs["FILE"]
+        == f"{ContainerScheduler.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/FILE/dir2/file.txt"
+    )
 
     job = await scheduler.create_job(0, ["echo", "Hello"])
     init_cmd = scheduler.jobcmd_init(job)
