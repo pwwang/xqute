@@ -73,9 +73,9 @@ class Job:
         self.index = index
         self.envs = envs or {}
         self.envs["XQUTE_JOB_INDEX"] = str(self.index)
-        self.envs["XQUTE_METADIR"] = str(workdir)
+        self.envs["XQUTE_METADIR"] = str(workdir.mounted)
         self.metadir = workdir / str(self.index)  # type: ignore
-        self.envs["XQUTE_JOB_METADIR"] = str(self.metadir)
+        self.envs["XQUTE_JOB_METADIR"] = str(self.metadir.mounted)
         # For cloud paths, this requires cloud client
         # self.metadir.mkdir(exist_ok=True, parents=True)
         # Let Scheduler.create_job handle metadir creation
