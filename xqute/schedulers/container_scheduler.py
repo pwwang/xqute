@@ -39,6 +39,11 @@ class ContainerScheduler(LocalScheduler):
             You can use environment variable `MOUNTED` in your job scripts to
             refer to the mounted path.
         mount: Alias for `volumes`
+        volume_as_cwd: If set, the container will be run with this volume as the
+            working directory. This is useful for running jobs in a specific
+            directory inside the container. The volume will be mounted to
+            `<DEFAULT_MOUNTED_ROOT>/.cwd` in the container.
+        mount_as_cwd: Alias for `volume_as_cwd`
         user: User to run the container as (only for Docker/Podman)
             By default, it runs as the current user (os.getuid() and os.getgid())
         remove: Whether to remove the container after execution.
@@ -70,7 +75,9 @@ class ContainerScheduler(LocalScheduler):
         entrypoint: str | List[str] = JOBCMD_WRAPPER_LANG,
         bin: str = "docker",
         volumes: str | Sequence[str] | None = None,
+        volume_as_cwd: str | None = None,
         mount: str | Sequence[str] | None = None,
+        mount_as_cwd: str | None = None,
         # envs: Dict[str, str] | None = None,
         remove: bool = True,
         user: str | None = None,
@@ -83,12 +90,46 @@ class ContainerScheduler(LocalScheduler):
                 "Use only one of them."
             )
 
-        volumes = volumes or mount
+        if mount_as_cwd and volume_as_cwd:
+            raise ValueError(
+                "You can't specify both 'mount_as_cwd' and 'volume_as_cwd' arguments. "
+                "Use only one of them."
+            )
 
-        kwargs.setdefault(
-            "mounted_workdir",
-            f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}",
-        )
+        volumes = volumes or mount
+        volume_as_cwd = volume_as_cwd or mount_as_cwd
+
+        if volume_as_cwd and kwargs.get("cwd"):
+            raise ValueError(
+                "You can't specify both 'volume_as_cwd' and 'cwd' arguments. "
+                "Use only one of them."
+            )
+
+        if kwargs.get("workdir"):
+            workdir_path = Path(kwargs["workdir"])
+        else:
+            workdir_path = Path(DEFAULT_WORKDIR_NAME)
+
+        if volume_as_cwd:
+            kwargs["cwd"] = f"{self.DEFAULT_MOUNTED_ROOT}/.cwd"
+
+            workdir_mount_needed = workdir_path.is_absolute()
+            if not workdir_mount_needed:
+                kwargs["workdir"] = f"{volume_as_cwd}/{workdir_path}"
+                kwargs.setdefault("mounted_workdir", f"{kwargs['cwd']}/{workdir_path}")
+
+                # If mounted_workdir is set, and it is not under cwd,
+                # we need to mount the workdir as well
+                if not Path(kwargs["mounted_workdir"]).is_relative_to(kwargs["cwd"]):
+                    workdir_mount_needed = True
+        else:
+            workdir_mount_needed = True
+
+        if workdir_mount_needed:
+            kwargs.setdefault(
+                "mounted_workdir",
+                f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}",
+            )
 
         super().__init__(**kwargs)
 
@@ -131,7 +172,12 @@ class ContainerScheduler(LocalScheduler):
         self.remove = remove
         self.user = user or f"{os.getuid()}:{os.getgid()}"
         self.bin_args = bin_args or []
-        self.volumes.append(f"{self.workdir}:{self.workdir.mounted}")
+
+        if volume_as_cwd:
+            self.volumes.append(f"{volume_as_cwd}:{self.DEFAULT_MOUNTED_ROOT}/.cwd")
+
+        if workdir_mount_needed:
+            self.volumes.append(f"{self.workdir}:{self.workdir.mounted}")
 
         self._container_type = CONTAINER_TYPES.get(
             Path(self.bin).name.lower(),

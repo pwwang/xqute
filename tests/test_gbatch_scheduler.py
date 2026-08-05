@@ -341,6 +341,97 @@ async def test_named_mount_handling_in_gbatch(workdir):
         assert "export FILE=/mnt/disks/NAMED_MOUNTS/FILE/dir2/file.txt" in init_cmd
 
 
+def test_mount_as_cwd_no_workdir():
+    """Test that the job script uses the correct working directory"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        mount_as_cwd="gs://my-bucket",
+    )
+    assert scheduler.cwd == "/mnt/disks/.cwd"
+    assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
+    assert scheduler.workdir == PanPath("gs://my-bucket/.xqute")
+    assert str(scheduler.workdir.mounted) == "/mnt/disks/.cwd/.xqute"
+    volumes = scheduler.config["taskGroups"][0]["taskSpec"]["volumes"]
+    assert len(volumes) == 1
+    assert volumes[0] == {
+        "gcs": {"remotePath": "my-bucket"},
+        "mountPath": "/mnt/disks/.cwd",
+    }
+
+
+def test_mount_as_cwd_with_workdir(workdir):
+    """Test that the job script uses the correct working directory"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        workdir=workdir,
+        mount_as_cwd="gs://my-bucket",
+    )
+    assert scheduler.cwd == "/mnt/disks/.cwd"
+    assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
+    assert scheduler.workdir == workdir
+    assert str(scheduler.workdir.mounted) == "/mnt/disks/.xqute"
+    volumes = scheduler.config["taskGroups"][0]["taskSpec"]["volumes"]
+    assert volumes[0] == {
+        "gcs": {"remotePath": "my-bucket"},
+        "mountPath": "/mnt/disks/.cwd",
+    }
+    assert volumes[1] == {
+        "gcs": {"remotePath": str(workdir)[5:]},
+        "mountPath": "/mnt/disks/.xqute",
+    }
+
+
+def test_mount_as_cwd_with_mounted_workdir():
+    """Test that the job script uses the correct working directory"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        mounted_workdir="/mnt/disks/.mounted",
+        mount_as_cwd="gs://my-bucket",
+    )
+    assert scheduler.cwd == "/mnt/disks/.cwd"
+    assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
+    assert str(scheduler.workdir) == "gs://my-bucket/.xqute"
+    assert str(scheduler.workdir.mounted) == "/mnt/disks/.mounted"
+    volumes = scheduler.config["taskGroups"][0]["taskSpec"]["volumes"]
+    assert len(volumes) == 2
+    assert volumes[0] == {
+        "gcs": {"remotePath": "my-bucket"},
+        "mountPath": "/mnt/disks/.cwd",
+    }
+    assert volumes[1] == {
+        "gcs": {"remotePath": "my-bucket/.xqute"},
+        "mountPath": "/mnt/disks/.mounted",
+    }
+
+
+def test_mount_as_cwd_is_not_gs_path(workdir):
+    """Test error is raised if named mount is not a gs:// path"""
+    expected_msg = "'mount_as_cwd' should be a GCS path"
+    with pytest.raises(ValueError, match=expected_msg):
+        GbatchScheduler(
+            project="test-project",
+            location="us-central1",
+            workdir=workdir,
+            mount_as_cwd="/local/path",
+        )
+
+
+def test_mount_as_cwd_and_cwd_are_given(workdir):
+    """Test error is raised if named mount is not a gs:// path"""
+    expected_msg = "'mount_as_cwd' and 'cwd' cannot be specified at the same time"
+    with pytest.raises(ValueError, match=expected_msg):
+        GbatchScheduler(
+            project="test-project",
+            location="us-central1",
+            workdir=workdir,
+            mount_as_cwd="gs://my-bucket",
+            cwd="/custom/cwd",
+        )
+
+
 def test_named_mount_is_not_gs_path(workdir):
     """Test error is raised if named mount is not a gs:// path"""
     expected_msg = "When using named mount"
@@ -364,6 +455,18 @@ def test_init_scheduler_using_mount_and_volumes():
             location="us-central1",
             mount="gs://my-bucket:/mnt/my-bucket",
             volumes=["gs://my-bucket:/mnt/my-bucket"],
+        )
+
+    expected_msg = (
+        "You can't specify both 'mount_as_cwd' and 'volume_as_cwd' arguments. "
+        "Use only one of them."
+    )
+    with pytest.raises(ValueError, match=expected_msg):
+        GbatchScheduler(
+            project="test-project",
+            location="us-central1",
+            mount_as_cwd="gs://my-bucket",
+            volume_as_cwd="gs://my-bucket",
         )
 
 

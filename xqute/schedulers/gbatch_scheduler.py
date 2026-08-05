@@ -5,6 +5,7 @@ import json
 import re
 import shlex
 import getpass
+from pathlib import Path
 from typing import Sequence
 from copy import deepcopy
 from hashlib import sha256
@@ -57,6 +58,14 @@ class GbatchScheduler(Scheduler):
             You can use environment variable `NAME` in your job scripts to
             refer to the mounted path.
         mount: Alias for `volumes`
+        volume_as_cwd: GCS path to mount as the working directory (e.g. gs://my-bucket)
+            If specified, the working directory will be set to this path,
+            and the job script will be executed in this directory (cwd).
+            The `workdir` will default to `mount_as_cwd/.xqute`,
+             and the `cwd` will default to `<DEFAULT_MOUNTED_ROOT>/.cwd/.xqute`.
+            You can also specify `workdir` explicitly, but `cwd` will always be set to
+            `<DEFAULT_MOUNTED_ROOT>/.xqute`.
+        mount_as_cwd: Alias for `volume_as_cwd`
         service_account: GCP service account email (e.g. test-account@example.com)
         network: GCP network (e.g. default-network)
         subnetwork: GCP subnetwork (e.g. regions/us-central1/subnetworks/default)
@@ -108,6 +117,8 @@ class GbatchScheduler(Scheduler):
         location: str,
         volumes: str | Sequence[str] | None = None,  # type: ignore
         mount: str | Sequence[str] | None = None,
+        volume_as_cwd: str | None = None,
+        mount_as_cwd: str | None = None,
         service_account: str | None = None,
         network: str | None = None,
         subnetwork: str | None = None,
@@ -128,16 +139,55 @@ class GbatchScheduler(Scheduler):
                 "Use only one of them."
             )
 
+        if mount_as_cwd and volume_as_cwd:
+            raise ValueError(
+                "You can't specify both 'mount_as_cwd' and 'volume_as_cwd' arguments. "
+                "Use only one of them."
+            )
+
         mount = mount or volumes
+        mount_as_cwd = mount_as_cwd or volume_as_cwd
 
         self.gcloud = kwargs.pop("gcloud", "gcloud")
         self.project = project
         self.location = location
 
-        kwargs.setdefault(
-            "mounted_workdir",
-            f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}",
-        )
+        if mount_as_cwd and not mount_as_cwd.startswith("gs://"):
+            raise ValueError(
+                "'mount_as_cwd' should be a GCS path starting with 'gs://', "
+                f"got '{mount_as_cwd}'."
+            )
+
+        if mount_as_cwd and kwargs.get("cwd"):
+            raise ValueError(
+                "'mount_as_cwd' and 'cwd' cannot be specified at the same time."
+            )
+
+        if kwargs.get("workdir"):
+            workdir_path = PanPath(kwargs["workdir"])
+        else:
+            workdir_path = Path(DEFAULT_WORKDIR_NAME)
+
+        if mount_as_cwd:
+            kwargs["cwd"] = f"{self.DEFAULT_MOUNTED_ROOT}/.cwd"
+
+            workdir_mount_needed = workdir_path.is_absolute()
+            if not workdir_mount_needed:
+                kwargs["workdir"] = f"{mount_as_cwd}/{workdir_path}"
+                kwargs.setdefault("mounted_workdir", f"{kwargs['cwd']}/{workdir_path}")
+
+                # If mounted_workdir is set, and it is not under cwd,
+                # we need to mount the workdir as well
+                if not Path(kwargs["mounted_workdir"]).is_relative_to(kwargs["cwd"]):
+                    workdir_mount_needed = True
+        else:
+            workdir_mount_needed = True
+
+        if workdir_mount_needed:
+            kwargs.setdefault(
+                "mounted_workdir",
+                f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}",
+            )
 
         super().__init__(*args, **kwargs)
 
@@ -229,13 +279,24 @@ class GbatchScheduler(Scheduler):
                 "gbatch configuration."
             )
 
-        volumes.insert(
-            0,
-            {
-                "gcs": {"remotePath": str(self.workdir).split("://", 1)[1]},
-                "mountPath": str(self.workdir.mounted),
-            },
-        )
+        if workdir_mount_needed:
+            volumes.insert(
+                0,
+                {
+                    "gcs": {"remotePath": str(self.workdir).split("://", 1)[1]},
+                    "mountPath": str(self.workdir.mounted),
+                },
+            )
+
+        if mount_as_cwd:
+            # Mount the specified GCS path as the working directory
+            volumes.insert(
+                0,
+                {
+                    "gcs": {"remotePath": str(mount_as_cwd).split("://", 1)[1]},
+                    "mountPath": str(f"{self.DEFAULT_MOUNTED_ROOT}/.cwd"),
+                },
+            )
 
         if mount and not isinstance(mount, (tuple, list)):
             mount = [mount]  # type: ignore

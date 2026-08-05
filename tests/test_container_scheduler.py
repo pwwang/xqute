@@ -65,6 +65,30 @@ def test_init_scheduler_using_mount_and_volumes():
             volumes=["/host/path:/container/path"],  # type: ignore
         )
 
+    expected_msg = (
+        "You can't specify both 'mount_as_cwd' and 'volume_as_cwd' arguments. "
+        "Use only one of them."
+    )
+    with pytest.raises(ValueError, match=expected_msg):
+        ContainerScheduler(
+            image="ubuntu:20.04",
+            workdir="/tmp",
+            mount_as_cwd="/host/path",  # type: ignore
+            volume_as_cwd="/host/path",  # type: ignore
+        )
+
+    expected_msg = (
+        "You can't specify both 'volume_as_cwd' and 'cwd' arguments. "
+        "Use only one of them."
+    )
+    with pytest.raises(ValueError, match=expected_msg):
+        ContainerScheduler(
+            image="ubuntu:20.04",
+            workdir="/tmp",
+            volume_as_cwd="/host/path",
+            cwd="/container/path"
+        )
+
 
 async def test_named_volume_handling(temp_workdir):
     """Test handling of named volumes"""
@@ -107,6 +131,55 @@ async def test_named_volume_handling(temp_workdir):
             workdir=temp_workdir,
             volumes=["DATA=/non/existent/path"],
         )
+
+
+def test_volume_as_cwd_no_workdir():
+    """Test that volume_as_cwd without workdir"""
+    scheduler = ContainerScheduler(
+        image="ubuntu:20.04",
+        volume_as_cwd="/host/cwd",
+    )
+    assert scheduler.cwd == "/mnt/disks/.cwd"
+    assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
+    assert str(scheduler.workdir) == "/host/cwd/.xqute"
+    assert str(scheduler.workdir.mounted) == "/mnt/disks/.cwd/.xqute"
+    volumes = scheduler.volumes
+    assert len(volumes) == 1
+    assert volumes[0] == "/host/cwd:/mnt/disks/.cwd"
+
+
+def test_volume_as_cwd_and_workdir(temp_workdir):
+    """Test that volume_as_cwd and workdir are handled correctly"""
+    scheduler = ContainerScheduler(
+        image="ubuntu:20.04",
+        workdir=temp_workdir,
+        volume_as_cwd="/host/cwd",
+    )
+    assert scheduler.cwd == "/mnt/disks/.cwd"
+    assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
+    assert scheduler.workdir == temp_workdir
+    assert str(scheduler.workdir.mounted) == "/mnt/disks/.xqute"
+    volumes = scheduler.volumes
+    assert len(volumes) == 2
+    assert f"{temp_workdir}:/mnt/disks/.xqute" in volumes
+    assert "/host/cwd:/mnt/disks/.cwd" in volumes
+
+
+def test_volume_as_cwd_and_mounted_workdir(temp_workdir):
+    """Test that volume_as_cwd and mounted_workdir are handled correctly"""
+    scheduler = ContainerScheduler(
+        image="ubuntu:20.04",
+        mounted_workdir="/container/workdir",
+        volume_as_cwd="/host/cwd",
+    )
+    assert scheduler.cwd == "/mnt/disks/.cwd"
+    assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
+    assert str(scheduler.workdir) == "/host/cwd/.xqute"
+    assert str(scheduler.workdir.mounted) == "/container/workdir"
+    volumes = scheduler.volumes
+    assert len(volumes) == 2
+    assert "/host/cwd/.xqute:/container/workdir" in volumes
+    assert "/host/cwd:/mnt/disks/.cwd" in volumes
 
 
 def test_init_binary_not_found(temp_workdir):
