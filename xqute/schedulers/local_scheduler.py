@@ -68,7 +68,7 @@ class LocalScheduler(Scheduler):
             # The process has already finished and no stdout/stderr files are
             # generated
             # Something went wrong with the wrapper script?
-            stderr = await proc.stdout.read()
+            stderr = await proc.stdout.read()  # type: ignore
             raise RuntimeError(
                 f"Failed to submit job #{job.index} (rc={proc.returncode}): "
                 f"{stderr.decode()}\n"
@@ -86,7 +86,7 @@ class LocalScheduler(Scheduler):
             job: The job
         """
         try:
-            os.killpg(int(await job.get_jid()), 9)
+            os.killpg(int(await job.get_jid()), 9)  # type: ignore
         except Exception:  # pragma: no cover
             pass
 

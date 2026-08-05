@@ -94,7 +94,7 @@ class Scheduler(ABC):
         jobname_prefix: str | None = None,
         submission_batch: int | None = None,
         recheck_interval: int = DEFAULT_RECHECK_INTERVAL,
-        cwd: str | Path = None,
+        cwd: str | Path | None = None,
         timeout: int = 0,
         **kwargs,
     ):
@@ -518,7 +518,7 @@ class Scheduler(ABC):
         if (
             status == JobStatus.FAILED
             and job._error_retry
-            and job.trial_count < job._num_retries
+            and job.trial_count < job._num_retries  # type: ignore
         ):
             logger.debug(
                 "/Sched-%s Job %s is retrying ...",
@@ -652,19 +652,19 @@ class Scheduler(ABC):
             )
 
         codes = plugin.hooks.on_jobcmd_init(self, job)
-        init_code.extend([code for code in codes if code])
+        init_code.extend([code for code in codes if code])  # type: ignore
         return "\n".join(init_code)
 
     def jobcmd_prep(self, job) -> str:
         """The job command preparation"""
         codes = plugin.hooks.on_jobcmd_prep(self, job)
-        codes = [code for code in codes if code]
+        codes = [code for code in codes if code]  # type: ignore
         return "\n".join(codes)
 
     def jobcmd_end(self, job) -> str:
         """The job command end"""
         codes = plugin.hooks.on_jobcmd_end(self, job)
-        codes = [code for code in codes if code]
+        codes = [code for code in codes if code]  # type: ignore
         return "\n".join(codes)
 
     def wrap_job_script(self, job: Job) -> str:

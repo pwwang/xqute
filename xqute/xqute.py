@@ -9,7 +9,7 @@ from collections import deque
 from typing import TYPE_CHECKING, Any, List, Mapping, Type
 
 from .defaults import (
-    DEFAULT_WORKDIR,
+    DEFAULT_WORKDIR_NAME,
     DEFAULT_ERROR_STRATEGY,
     DEFAULT_NUM_RETRIES,
     DEFAULT_SCHEDULER_FORKS,
@@ -78,7 +78,7 @@ class Xqute:
         scheduler: str | Type[Scheduler] = "local",
         *,
         plugins: List[Any] | None = None,
-        workdir: str | PathType = DEFAULT_WORKDIR,
+        workdir: str | PathType = f"./{DEFAULT_WORKDIR_NAME}",
         submission_batch: int | None = None,
         error_strategy: str = DEFAULT_ERROR_STRATEGY,
         num_retries: int = DEFAULT_NUM_RETRIES,
@@ -225,7 +225,11 @@ class Xqute:
         except asyncio.CancelledError:
             logger.warning("/Consumer-%s Cancelled while submitting ...", index)
 
-    async def feed(self, cmd: CommandType | Job, envs: dict[str, Any] = None) -> None:
+    async def feed(
+        self,
+        cmd: CommandType | Job,
+        envs: dict[str, Any] | None = None,
+    ) -> None:
         """Put a command into the buffer
 
         Args:
@@ -263,7 +267,7 @@ class Xqute:
             hasattr(self, "_keep_feeding")
             and self._keep_feeding
             and hasattr(self, "_completion_task")
-            and self._completion_task
+            and bool(self._completion_task)
         )
 
     async def stop_feeding(self) -> None:
@@ -290,13 +294,14 @@ class Xqute:
         self._keep_feeding = False
 
         # Wait for completion if we started in keep_feeding mode
-        try:
-            await self._completion_task
-        except asyncio.CancelledError:  # pragma: no cover
-            if self._tasks:
-                self._tasks.cancel()
+        if self._completion_task:
+            try:
+                await self._completion_task
+            except asyncio.CancelledError:  # pragma: no cover
+                if self._tasks:
+                    self._tasks.cancel()
 
-        self._completion_task = None
+            self._completion_task = None
 
     async def _polling_jobs(self) -> None:
         """Polling the jobs to see if they are all done.
@@ -367,13 +372,13 @@ class Xqute:
 
     async def _run_completion_tasks(self) -> None:
         """Run the completion tasks (polling and await)"""
-        self._tasks = asyncio.gather(
+        self._tasks = asyncio.gather(  # type: ignore
             self._producer(),
             *(self._consumer(i) for i in range(self.scheduler.subm_batch)),
             self._polling_jobs(),
         )
         try:
-            await self._tasks
+            await self._tasks  # type: ignore
         except asyncio.CancelledError:
             logger.debug("/%s Completion tasks cancelled ...", self.name)
         finally:
