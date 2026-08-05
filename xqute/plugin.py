@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from .job import Job
     from .scheduler import Scheduler
 
+# pyright: reportReturnType=false
 
 plugin = Simplug("xqute")
 

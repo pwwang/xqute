@@ -71,7 +71,7 @@ class Xqute:
     """
 
     name: str = "Xqute"
-    EMPTY_BUFFER_SLEEP_TIME: int = 1
+    EMPTY_BUFFER_SLEEP_TIME: float = 1
 
     def __init__(
         self,

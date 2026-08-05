@@ -13,13 +13,13 @@ MOCKS = Path(__file__).parent / "mocks"
 async def test_with_cloud_workdir():
     scheduler = LocalScheduler(workdir=f"{BUCKET}/xqute_local_test")
     assert scheduler.subm_batch == 8
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     assert str(job.metadir) == f"{BUCKET}/xqute_local_test/0"
 
 
 async def test_scheduler(tmp_path):
     scheduler = LocalScheduler(tmp_path)
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     pid = await scheduler.submit_job(job)
     assert isinstance(pid, int)
 
@@ -35,7 +35,7 @@ async def test_immediate_submission_failure(tmp_path):
             return wrapped_script
 
     scheduler = BadLocalScheduler(tmp_path)
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     await job.stderr_file.a_unlink(missing_ok=True)
     await job.stdout_file.a_unlink(missing_ok=True)
 

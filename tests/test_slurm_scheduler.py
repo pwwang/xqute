@@ -26,7 +26,7 @@ async def test_job(tmp_path):
         p="gpu",
         workdir=tmp_path,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     assert (
         await scheduler.wrapped_job_script(job)
         == tmp_path / "0" / "job.wrapped.slurm"
@@ -45,7 +45,7 @@ async def test_cwd(tmp_path):
         workdir=tmp_path,
         cwd="/tmp/cwd",
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
 
     script = scheduler.wrap_job_script(job)
     assert "#SBATCH --chdir=/tmp/cwd" in script
@@ -57,7 +57,7 @@ async def test_scheduler(tmp_path):
     squeue = str(MOCKS / "squeue")
 
     scheduler = SlurmScheduler(tmp_path, sbatch=sbatch, scancel=scancel, squeue=squeue)
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     assert await scheduler.submit_job(job) == "613815"
     await job.set_jid("613815")
     await scheduler.kill_job(job)
@@ -79,7 +79,7 @@ async def test_submission_failure(tmp_path):
     squeue = str(MOCKS / "squeue")
 
     scheduler = SlurmScheduler(tmp_path, sbatch=sbatch, scancel=scancel, squeue=squeue)
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False

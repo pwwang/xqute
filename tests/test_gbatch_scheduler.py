@@ -80,7 +80,7 @@ async def test_labels(workdir):
         labels={"key1": "value1", "key2": "value2"},
         allocationPolicy={"serviceAccount": {"email": "test-account"}},
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
     assert conf["labels"]["key1"] == "value1"
@@ -107,7 +107,7 @@ async def test_config_shortcuts(workdir):
         commands=["-c"],
         labels={"key1": "value1"},
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
     assert conf["taskGroups"][0]["taskSpec"]["volumes"][-1] == {
@@ -216,7 +216,7 @@ async def test_shortcuts_not_overwrite_config(workdir):
             }
         ],
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
     assert conf["taskGroups"][0]["taskSpec"]["volumes"][-2] == {
@@ -335,7 +335,7 @@ async def test_named_mount_handling_in_gbatch(workdir):
             == "/mnt/disks/NAMED_MOUNTS/FILE/dir2/file.txt"
         )
 
-        job = await scheduler.create_job(0, ["echo", 1])
+        job = await scheduler.create_job(0, ["echo", "1"])
         init_cmd = scheduler.jobcmd_init(job)
         assert "export DIR=/mnt/disks/NAMED_MOUNTS/DIR" in init_cmd
         assert "export FILE=/mnt/disks/NAMED_MOUNTS/FILE/dir2/file.txt" in init_cmd
@@ -376,7 +376,7 @@ async def test_job(workdir):
         submission_batch=1,
     )
     assert scheduler.subm_batch == 1
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     assert (
         await scheduler.wrapped_job_script(job)
         == scheduler.workdir / "0" / "job.wrapped.gbatch"
@@ -397,7 +397,7 @@ async def test_sched_with_container(workdir):
             {"taskSpec": {"runnables": [{"container": {"image_uri": "ubuntu"}}]}}
         ],
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     assert conf_file.name == "job.wrapped.gbatch.json"
     conf = json.loads(await conf_file.a_read_text())
@@ -429,7 +429,7 @@ async def test_sched_with_container_entrypoint(workdir):
             }
         ],
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     assert conf_file.name == "job.wrapped.gbatch.json"
     conf = json.loads(await conf_file.a_read_text())
@@ -464,7 +464,7 @@ async def test_sched_with_container_command_template(workdir):
             }
         ],
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     assert conf_file.name == "job.wrapped.gbatch.json"
     conf = json.loads(await conf_file.a_read_text())
@@ -485,7 +485,7 @@ async def test_sched_with_script_runnable(workdir):
         jobname_prefix="jobprefix",
         workdir=workdir,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
 
@@ -505,7 +505,7 @@ async def test_sched_with_script_commands(workdir):
         workdir=workdir,
         commands=["-c", "echo starting"],
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
 
@@ -526,7 +526,7 @@ async def test_sched_with_script_commands_template(workdir):
         workdir=workdir,
         commands=["{lang}", "-u {script}"],
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
 
@@ -550,7 +550,7 @@ async def test_additional_runnables_basic(workdir):
         workdir=workdir,
         runnables=runnables,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
 
@@ -578,7 +578,7 @@ async def test_additional_runnables_with_ordering(workdir):
         workdir=workdir,
         runnables=runnables,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
 
@@ -613,7 +613,7 @@ async def test_additional_runnables_with_container(workdir):
         commands=["-c"],
         runnables=runnables,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
 
@@ -654,7 +654,7 @@ async def test_additional_runnables_complex_ordering(workdir):
         workdir=workdir,
         runnables=runnables,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
 
@@ -689,7 +689,7 @@ async def test_additional_runnables_no_order_key(workdir):
         workdir=workdir,
         runnables=runnables,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
 
@@ -726,7 +726,7 @@ async def test_existing_runnable_with_additional(workdir):
             {"script": {"text": "echo cleanup"}, "order": 1},
         ],
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     conf_file = await scheduler.job_config_file(job)
     conf = json.loads(await conf_file.a_read_text())
 
@@ -748,7 +748,7 @@ async def test_scheduler(gcloud, workdir):
         gcloud=gcloud,
         workdir=workdir,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     assert (await scheduler.submit_job(job)).startswith("gbatch-")
     await job.set_jid("gbatch-36760976-0")
     await scheduler.kill_job(job)
@@ -775,7 +775,7 @@ async def test_submission_failure(workdir):
         gcloud=gcloud,
         workdir=workdir,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False

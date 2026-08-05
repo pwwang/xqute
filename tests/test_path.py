@@ -1,3 +1,4 @@
+# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
 import pytest  # noqa: F401
 
 from pathlib import Path

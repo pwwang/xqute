@@ -612,7 +612,7 @@ class Scheduler(ABC):
         Returns:
             True if the job fails before running, otherwise False.
         """
-        return False
+        return False  # pragma: no cover
 
     @property
     def jobcmd_wrapper_init(self) -> str:

@@ -41,7 +41,7 @@ async def test_job(tmp_path):
         m="abe",
         workdir=tmp_path,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     assert await scheduler.wrapped_job_script(job) == tmp_path / "0" / "job.wrapped.sge"
 
     script = scheduler.wrap_job_script(job)
@@ -60,7 +60,7 @@ async def test_cwd(tmp_path):
         workdir=tmp_path,
         cwd="/tmp/cwd",
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
 
     script = scheduler.wrap_job_script(job)
     assert "#$ -notify" in script
@@ -74,7 +74,7 @@ async def test_cwd(tmp_path):
 async def test_scheduler(tmpdir, qsub, qdel, qstat):
 
     scheduler = SgeScheduler(qsub=qsub, qdel=qdel, qstat=qstat, workdir=tmpdir)
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     assert await scheduler.submit_job(job) == "613815"
     await job.set_jid("613815")
     await scheduler.kill_job(job)
@@ -95,7 +95,7 @@ async def test_submission_failure(tmp_path, qdel, qstat):
     scheduler = SgeScheduler(
         qsub="no_such_qsub", qdel=qdel, qstat=qstat, workdir=tmp_path
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False
