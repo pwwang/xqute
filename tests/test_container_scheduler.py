@@ -31,7 +31,7 @@ def test_init_docker(mock_bin_path, temp_workdir):
         bin=mock_bin_path + "/docker",
     )
     assert scheduler.image == "ubuntu:20.04"
-    assert scheduler.bin.endswith("docker")
+    assert scheduler.bin.endswith("docker")  # type: ignore
     assert isinstance(scheduler.entrypoint, list)
     assert isinstance(scheduler.volumes, list)
     # assert isinstance(scheduler.envs, dict)
@@ -51,16 +51,18 @@ def test_init_docker(mock_bin_path, temp_workdir):
     assert "--network=host" in scheduler.bin_args
 
 
-def test_init_scheduler_using_mount_instead_of_volumes():
-    """Test initialization with 'mount' instead of 'volumes'"""
+def test_init_scheduler_using_mount_and_volumes():
+    """Test initialization with 'mount' and 'volumes'"""
     expected_msg = (
-        "You used 'mount' argument for container scheduler, did you mean 'volumes'?"
+        "You can't specify both 'mount' and 'volumes' arguments. "
+        "Use only one of them."
     )
     with pytest.raises(ValueError, match=expected_msg):
         ContainerScheduler(
             image="ubuntu:20.04",
             workdir="/tmp",
             mount=["/host/path:/container/path"],  # type: ignore
+            volumes=["/host/path:/container/path"],  # type: ignore
         )
 
 
@@ -217,7 +219,7 @@ async def test_scheduler(mock_bin_path, temp_workdir):
         workdir=host_dir,
         mounted_workdir=mounted_dir,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     wrapt_script = str((await scheduler.wrapped_job_script(job)).mounted)
     assert wrapt_script == str(mounted_dir / "0" / "job.wrapped.container-docker")
 
@@ -238,7 +240,7 @@ async def test_submission_failure(temp_workdir):
         workdir=host_dir,
         mounted_workdir=mounted_dir,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False

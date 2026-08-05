@@ -11,9 +11,9 @@ from typing import List, Sequence
 
 from ..job import Job
 from ..path import SpecPath
-from ..defaults import JOBCMD_WRAPPER_LANG
+from ..defaults import DEFAULT_WORKDIR_NAME, JOBCMD_WRAPPER_LANG
 from .local_scheduler import LocalScheduler
-from .gbatch_scheduler import NAMED_MOUNT_RE, DEFAULT_MOUNTED_ROOT
+from .gbatch_scheduler import NAMED_MOUNT_RE, GbatchScheduler
 
 CONTAINER_TYPES = {
     "docker": "docker",
@@ -38,6 +38,7 @@ class ContainerScheduler(LocalScheduler):
             then it will be mounted to `/mnt/disks/MOUNTED` in the container.
             You can use environment variable `MOUNTED` in your job scripts to
             refer to the mounted path.
+        mount: Alias for `volumes`
         user: User to run the container as (only for Docker/Podman)
             By default, it runs as the current user (os.getuid() and os.getgid())
         remove: Whether to remove the container after execution.
@@ -47,6 +48,8 @@ class ContainerScheduler(LocalScheduler):
     """
 
     name = "container"
+    DEFAULT_MOUNTED_ROOT = GbatchScheduler.DEFAULT_MOUNTED_ROOT
+    SUBMIT_JOB_SLEEP = 1
 
     __slots__ = (
         "image",
@@ -67,19 +70,26 @@ class ContainerScheduler(LocalScheduler):
         entrypoint: str | List[str] = JOBCMD_WRAPPER_LANG,
         bin: str = "docker",
         volumes: str | Sequence[str] | None = None,
+        mount: str | Sequence[str] | None = None,
         # envs: Dict[str, str] | None = None,
         remove: bool = True,
         user: str | None = None,
         bin_args: List[str] | None = None,
         **kwargs,
     ):
-        if "mount" in kwargs:
+        if mount and volumes:
             raise ValueError(
-                "You used 'mount' argument for container scheduler, "
-                "did you mean 'volumes'?"
+                "You can't specify both 'mount' and 'volumes' arguments. "
+                "Use only one of them."
             )
 
-        kwargs.setdefault("mounted_workdir", f"{DEFAULT_MOUNTED_ROOT}/xqute_workdir")
+        volumes = volumes or mount
+
+        kwargs.setdefault(
+            "mounted_workdir",
+            f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}",
+        )
+
         super().__init__(**kwargs)
 
         self.bin = shutil.which(bin)
@@ -113,9 +123,7 @@ class ContainerScheduler(LocalScheduler):
                     self.volumes[i] = f"{host_path}:{mount_path}"
                 else:
                     host_path = str(host_path_obj)
-                    mount_path = (
-                        f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/{name}"
-                    )
+                    mount_path = f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/{name}"
                     self._path_envs[name] = mount_path
                     self.volumes[i] = f"{host_path}:{mount_path}"
 
@@ -191,14 +199,22 @@ class ContainerScheduler(LocalScheduler):
         Returns:
             The process id
         """
-        wrapt_script_path = (await self.wrapped_job_script(job)).mounted
+        wrapt_script_path = await self.wrapped_job_script(job)
         # In case the process exits very quickly
         if not await job.jid_file.a_exists():
             await job.jid_file.a_write_text("0")
 
-        proc = await asyncio.create_subprocess_exec(
+        command_file = wrapt_script_path.with_name(
+            f"{wrapt_script_path.name}.submission"
+        )
+        command = [
             *shlex.split(self.jobcmd_shebang(job)),
-            wrapt_script_path,
+            str(wrapt_script_path.mounted),
+        ]
+        await command_file.a_write_text(" \\\n  ".join(command))
+
+        proc = await asyncio.create_subprocess_exec(
+            *command,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
             start_new_session=True,
@@ -221,12 +237,11 @@ class ContainerScheduler(LocalScheduler):
             # The process has already finished and no stdout/stderr files are
             # generated
             # Something went wrong with the wrapper script?
-            stderr = await proc.stdout.read()
+            stderr = await proc.stdout.read()  # type: ignore
             raise RuntimeError(
                 f"Failed to submit job #{job.index} (rc={proc.returncode}): "
                 f"{stderr.decode()}\n"
-                f"Command: {self.jobcmd_shebang(job)} "
-                f"{wrapt_script_path}\n"
+                f"Command: {shlex.join(command)}\n"
             )
 
         # don't await for the results, as this will run the real command
