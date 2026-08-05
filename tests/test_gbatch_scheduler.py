@@ -151,7 +151,7 @@ async def test_config_shortcuts(workdir):
         "commands"
     ] == [
         "-c",
-        "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+        "/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch",
     ]
     assert conf["labels"]["key1"] == "value1"
     assert conf["labels"]["xqute"] == "true"
@@ -263,7 +263,7 @@ async def test_shortcuts_not_overwrite_config(workdir):
         "commands"
     ] == [
         "-c",
-        "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+        "/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch",
     ]
     assert conf["labels"]["key1"] == "value1"
     assert conf["labels"]["xqute"] == "true"
@@ -323,19 +323,22 @@ async def test_named_mount_handling_in_gbatch(workdir):
         assert len(volumes) == 3
         assert volumes[1] == {
             "gcs": {"remotePath": "my-bucket/dir1"},
-            "mountPath": "/mnt/disks/DIR",
+            "mountPath": "/mnt/disks/NAMED_MOUNTS/DIR",
         }
         assert volumes[2] == {
             "gcs": {"remotePath": "my-bucket/dir2"},
-            "mountPath": "/mnt/disks/FILE/dir2",
+            "mountPath": "/mnt/disks/NAMED_MOUNTS/FILE/dir2",
         }
-        assert scheduler._path_envs["DIR"] == "/mnt/disks/DIR"
-        assert scheduler._path_envs["FILE"] == "/mnt/disks/FILE/dir2/file.txt"
+        assert scheduler._path_envs["DIR"] == "/mnt/disks/NAMED_MOUNTS/DIR"
+        assert (
+            scheduler._path_envs["FILE"]
+            == "/mnt/disks/NAMED_MOUNTS/FILE/dir2/file.txt"
+        )
 
         job = await scheduler.create_job(0, ["echo", 1])
         init_cmd = scheduler.jobcmd_init(job)
-        assert 'export DIR=/mnt/disks/DIR' in init_cmd
-        assert 'export FILE=/mnt/disks/FILE/dir2/file.txt' in init_cmd
+        assert "export DIR=/mnt/disks/NAMED_MOUNTS/DIR" in init_cmd
+        assert "export FILE=/mnt/disks/NAMED_MOUNTS/FILE/dir2/file.txt" in init_cmd
 
 
 def test_named_mount_is_not_gs_path(workdir):
@@ -347,6 +350,20 @@ def test_named_mount_is_not_gs_path(workdir):
             location="us-central1",
             workdir=workdir,
             mount=["DIR=/local/path"],
+        )
+
+
+def test_init_scheduler_using_mount_and_volumes():
+    expected_msg = (
+        "You can't specify both 'mount' and 'volumes' arguments. "
+        "Use only one of them."
+    )
+    with pytest.raises(ValueError, match=expected_msg):
+        GbatchScheduler(
+            project="test-project",
+            location="us-central1",
+            mount="gs://my-bucket:/mnt/my-bucket",
+            volumes=["gs://my-bucket:/mnt/my-bucket"],
         )
 
 
@@ -364,10 +381,10 @@ async def test_job(workdir):
         await scheduler.wrapped_job_script(job)
         == scheduler.workdir / "0" / "job.wrapped.gbatch"
     )
-    assert job.metadir.mounted == Path("/mnt/disks/xqute_workdir/0")
+    assert job.metadir.mounted == Path("/mnt/disks/.xqute/0")
 
     script = scheduler.wrap_job_script(job)
-    assert "/mnt/disks/xqute_workdir/0/job.status" in script
+    assert "/mnt/disks/.xqute/0/job.status" in script
 
 
 async def test_sched_with_container(workdir):
@@ -386,7 +403,7 @@ async def test_sched_with_container(workdir):
     conf = json.loads(await conf_file.a_read_text())
     container = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]
     assert container["image_uri"] == "ubuntu"
-    assert container["commands"] == ["/mnt/disks/xqute_workdir/0/job.wrapped.gbatch"]
+    assert container["commands"] == ["/mnt/disks/.xqute/0/job.wrapped.gbatch"]
     assert container["entrypoint"] == "/bin/bash"
 
 
@@ -420,7 +437,7 @@ async def test_sched_with_container_entrypoint(workdir):
     assert container["image_uri"] == "ubuntu"
     assert container["commands"] == [
         "-c",
-        "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+        "/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch",
     ]
     assert container["entrypoint"] == "/bin/bash2"
 
@@ -455,7 +472,7 @@ async def test_sched_with_container_command_template(workdir):
     assert container["image_uri"] == "ubuntu"
     assert container["commands"] == [
         "-c",
-        "/bin/bash3 /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+        "/bin/bash3 /mnt/disks/.xqute/0/job.wrapped.gbatch",
     ]
     assert container["entrypoint"] == "/bin/bash2"
 
@@ -473,7 +490,7 @@ async def test_sched_with_script_runnable(workdir):
     conf = json.loads(await conf_file.a_read_text())
 
     script_runnable = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]
-    expected_text = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    expected_text = "/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch"
     assert script_runnable["text"] == expected_text
     # Ensure _commands is removed after text composition
     assert "_commands" not in script_runnable
@@ -494,8 +511,7 @@ async def test_sched_with_script_commands(workdir):
 
     script_runnable = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]
     expected_text = (
-        "-c 'echo starting' "
-        "'/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch'"
+        "-c 'echo starting' " "'/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch'"
     )
     assert script_runnable["text"] == expected_text
     assert "_commands" not in script_runnable
@@ -515,7 +531,7 @@ async def test_sched_with_script_commands_template(workdir):
     conf = json.loads(await conf_file.a_read_text())
 
     script_runnable = conf["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]
-    expected_text = "'/bin/bash' '-u /mnt/disks/xqute_workdir/0/job.wrapped.gbatch'"
+    expected_text = "'/bin/bash' '-u /mnt/disks/.xqute/0/job.wrapped.gbatch'"
     assert script_runnable["text"] == expected_text
     assert "_commands" not in script_runnable
 
@@ -543,7 +559,7 @@ async def test_additional_runnables_basic(workdir):
 
     # Check that the main job runnable is at the expected index
     assert scheduler.runnable_index == 0
-    expected_script = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    expected_script = "/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch"
     assert task_runnables[scheduler.runnable_index]["script"]["text"] == expected_script
 
 
@@ -571,7 +587,7 @@ async def test_additional_runnables_with_ordering(workdir):
 
     # Check ordering: before (-1), main job, middle (0), after (1)
     assert task_runnables[0]["script"]["text"] == "echo before"
-    expected_script = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    expected_script = "/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch"
     assert task_runnables[1]["script"]["text"] == expected_script
     assert task_runnables[2]["script"]["text"] == "echo middle"
     assert task_runnables[3]["script"]["text"] == "echo after"
@@ -613,7 +629,7 @@ async def test_additional_runnables_with_container(workdir):
     assert container["entrypoint"] == "/bin/bash"
     expected_commands = [
         "-c",
-        "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch",
+        "/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch",
     ]
     assert container["commands"] == expected_commands
 
@@ -648,7 +664,7 @@ async def test_additional_runnables_complex_ordering(workdir):
     # Check ordering: -2, -1, main job, 1, 2, 3
     assert task_runnables[0]["script"]["text"] == "echo step-2"
     assert task_runnables[1]["script"]["text"] == "echo step-1"
-    expected_script = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    expected_script = "/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch"
     assert task_runnables[2]["script"]["text"] == expected_script
     assert task_runnables[3]["script"]["text"] == "echo step1"
     assert task_runnables[4]["script"]["text"] == "echo step2"
@@ -682,7 +698,7 @@ async def test_additional_runnables_no_order_key(workdir):
 
     # Check ordering: before (-1), main job, no-order-1 (0), no-order-2 (0)
     assert task_runnables[0]["script"]["text"] == "echo before"
-    expected_script = "/bin/bash /mnt/disks/xqute_workdir/0/job.wrapped.gbatch"
+    expected_script = "/bin/bash /mnt/disks/.xqute/0/job.wrapped.gbatch"
     assert task_runnables[1]["script"]["text"] == expected_script
     assert task_runnables[2]["script"]["text"] == "echo no-order-1"
     assert task_runnables[3]["script"]["text"] == "echo no-order-2"
@@ -721,7 +737,7 @@ async def test_existing_runnable_with_additional(workdir):
     container = task_runnables[1]["container"]
     assert container["image_uri"] == "existing-image"
     assert container["entrypoint"] == "/bin/bash"
-    assert container["commands"] == ["/mnt/disks/xqute_workdir/0/job.wrapped.gbatch"]
+    assert container["commands"] == ["/mnt/disks/.xqute/0/job.wrapped.gbatch"]
 
 
 async def test_scheduler(gcloud, workdir):

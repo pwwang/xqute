@@ -13,6 +13,7 @@ from panpath import GSPath, PanPath
 from ..job import Job
 from ..scheduler import Scheduler
 from ..defaults import (
+    DEFAULT_WORKDIR_NAME,
     JOBCMD_WRAPPER_LANG,
     # get_jobcmd_wrapper_init,
     # JOBCMD_WRAPPER_TEMPLATE,
@@ -22,10 +23,8 @@ from ..defaults import (
 from ..utils import logger
 from ..path import SpecPath
 
-
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")
 NAMED_MOUNT_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*=.+$")
-DEFAULT_MOUNTED_ROOT = "/mnt/disks"
 
 
 class GbatchScheduler(Scheduler):
@@ -51,12 +50,13 @@ class GbatchScheduler(Scheduler):
     Args:
         project: GCP project ID
         location: GCP location (e.g. us-central1)
-        mount: GCS path to mount (e.g. gs://my-bucket:/mnt/my-bucket)
+        volumes: GCS path to mount (e.g. gs://my-bucket:/mnt/my-bucket)
             You can pass a list of mounts.
             You can also use named mount like `NAME=gs://bucket/dir`
             then it will be mounted to `/mnt/disks/NAME` in the container.
             You can use environment variable `NAME` in your job scripts to
             refer to the mounted path.
+        mount: Alias for `volumes`
         service_account: GCP service account email (e.g. test-account@example.com)
         network: GCP network (e.g. default-network)
         subnetwork: GCP subnetwork (e.g. regions/us-central1/subnetworks/default)
@@ -91,6 +91,7 @@ class GbatchScheduler(Scheduler):
     """  # noqa: E501
 
     name = "gbatch"
+    DEFAULT_MOUNTED_ROOT = "/mnt/disks"
 
     __slots__ = Scheduler.__slots__ + (
         "gcloud",
@@ -105,6 +106,7 @@ class GbatchScheduler(Scheduler):
         *args,
         project: str,
         location: str,
+        volumes: str | Sequence[str] | None = None,  # type: ignore
         mount: str | Sequence[str] | None = None,
         service_account: str | None = None,
         network: str | None = None,
@@ -113,16 +115,30 @@ class GbatchScheduler(Scheduler):
         machine_type: str | None = None,
         provisioning_model: str | None = None,
         image_uri: str | None = None,
-        entrypoint: str = None,
+        entrypoint: str | None = None,
         commands: str | Sequence[str] | None = None,
         runnables: Sequence[dict] | None = None,
         **kwargs,
     ):
         """Construct the gbatch scheduler"""
+
+        if mount and volumes:
+            raise ValueError(
+                "You can't specify both 'mount' and 'volumes' arguments. "
+                "Use only one of them."
+            )
+
+        mount = mount or volumes
+
         self.gcloud = kwargs.pop("gcloud", "gcloud")
         self.project = project
         self.location = location
-        kwargs.setdefault("mounted_workdir", f"{DEFAULT_MOUNTED_ROOT}/xqute_workdir")
+
+        kwargs.setdefault(
+            "mounted_workdir",
+            f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}",
+        )
+
         super().__init__(*args, **kwargs)
 
         if not isinstance(self.workdir, GSPath):
@@ -206,7 +222,7 @@ class GbatchScheduler(Scheduler):
         logs_policy = self.config.setdefault("logsPolicy", {})
         logs_policy.setdefault("destination", "CLOUD_LOGGING")
 
-        volumes = task_spec.setdefault("volumes", [])
+        volumes: list[dict] = task_spec.setdefault("volumes", [])
         if not isinstance(volumes, list):
             raise ValueError(
                 "'taskGroups[0].taskSpec.volumes' should be a list for "
@@ -226,7 +242,7 @@ class GbatchScheduler(Scheduler):
         if mount:
             for m in mount:
                 # Let's check if mount is provided as "OUTDIR=gs://bucket/dir"
-                # If so, we mounted it to $DEFAULT_MOUNTED_ROOT/OUTDIR
+                # If so, we mounted it to $DEFAULT_MOUNTED_ROOT/NAMED_MOUNTS/OUTDIR
                 # and set OUTDIR env variable to the mounted path in self._path_envs
                 if NAMED_MOUNT_RE.match(m):
                     name, gcs = m.split("=", 1)
@@ -240,14 +256,15 @@ class GbatchScheduler(Scheduler):
                     # Check if it is a file path
                     if gcs_path.is_file():
                         # Mount the parent directory
-                        gcs = str(gcs_path.parent._no_prefix)
+                        gcs = str(gcs_path.parent._no_prefix)  # type: ignore
                         mount_path = (
-                            f"{DEFAULT_MOUNTED_ROOT}/{name}/{gcs_path.parent.name}"
+                            f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/"
+                            f"{name}/{gcs_path.parent.name}"
                         )
                         self._path_envs[name] = f"{mount_path}/{gcs_path.name}"
                     else:
                         gcs = gcs[5:]
-                        mount_path = f"{DEFAULT_MOUNTED_ROOT}/{name}"
+                        mount_path = f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/{name}"
                         self._path_envs[name] = mount_path
 
                     volumes.append(
@@ -520,7 +537,7 @@ class GbatchScheduler(Scheduler):
         if await proc.wait() != 0:
             return "UNKNOWN"
 
-        stdout = (await proc.stdout.read()).decode()
+        stdout = (await proc.stdout.read()).decode()  # type: ignore
         match = re.search(r"state: (.+)", stdout)
         return match.group(1) if match else "UNKNOWN"
 

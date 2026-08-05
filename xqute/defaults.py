@@ -1,7 +1,7 @@
 """Default settings and utilities for xqute
 
 Attributes:
-    DEFAULT_WORKDIR: The default work directory for jobs to save the metadata
+    DEFAULT_WORKDIR_NAME: The default work directory name for jobs to save the metadata
     DEFAULT_ERROR_STRATEGY: The default strategy when there is
         error happened
     DEFAULT_NUM_RETRIES: Default number of retries when
@@ -87,14 +87,14 @@ class JobStatus:
         ret_tuple = tuple(ret_dict[status] for status in statuses)
         if len(ret_tuple) > 1:
             return ret_tuple
-        return ret_tuple[0]
+        return ret_tuple[0]  # type: ignore
 
 
 LOGGER_NAME = "XQUTE"
 LOGGER_LEVEL = "INFO"
 
 DEFAULT_SCHEDULER_FORKS: int = 1
-DEFAULT_WORKDIR = "./.xqute"
+DEFAULT_WORKDIR_NAME = ".xqute"
 DEFAULT_ERROR_STRATEGY: str = JobErrorStrategy.IGNORE
 DEFAULT_NUM_RETRIES: int = 3
 DEFAULT_SUBMISSION_BATCH: int = 8

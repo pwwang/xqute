@@ -26,7 +26,7 @@ contexts.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Union
 
 import os
 from pathlib import Path
@@ -34,7 +34,9 @@ from panpath import PanPath, LocalPath, CloudPath, GSPath, AzurePath, S3Path
 
 from .defaults import DEFAULT_CLOUD_FSPATH
 
-__all__ = ["SpecPath", "MountedPath"]
+__all__ = ["SpecPath", "MountedPath", "PathType"]
+
+PathType = Union["MountedPath", "SpecPath", Path, str]
 
 
 class MountedPath(PanPath):
