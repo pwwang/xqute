@@ -153,11 +153,15 @@ class Job:
         if not refresh:
             return self._status
 
-        if await self.status_file.a_is_file() and self._status in (
+        # Check the status first before any await, so that a concurrent
+        # status change (e.g. the consumer transitioning the job to SUBMITTED
+        # while we are waiting on a slow filesystem) cannot sneak into the
+        # guard and cause a duplicate transition in the poller.
+        if self._status in (
             JobStatus.SUBMITTED,
             JobStatus.RUNNING,
             JobStatus.KILLING,
-        ):
+        ) and await self.status_file.a_is_file():
             try:
                 status_text = await self.status_file.a_read_text()
                 self._status = int(status_text)
