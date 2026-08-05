@@ -74,3 +74,45 @@ async def test_cwd(tmp_path):
         await asyncio.sleep(0.1)
 
     assert (await job.stdout_file.a_read_text()).strip() == str(cwd)
+
+
+async def test_job_fails_before_running_no_jid(tmp_path):
+    scheduler = LocalScheduler(tmp_path)
+    job = await scheduler.create_job(0, ["echo", "1"])
+    assert await scheduler.job_fails_before_running(job) is False
+
+
+async def test_job_fails_before_running_invalid_jid(tmp_path):
+    scheduler = LocalScheduler(tmp_path)
+    job = await scheduler.create_job(0, ["echo", "1"])
+    await job.set_jid("not-a-number")
+    assert await scheduler.job_fails_before_running(job) is False
+
+
+async def _dead_pid() -> int:
+    proc = await asyncio.create_subprocess_exec("sleep", "0.01")
+    await proc.wait()
+    return proc.pid
+
+
+async def test_job_fails_before_running_missing_status(tmp_path):
+    scheduler = LocalScheduler(tmp_path)
+    job = await scheduler.create_job(0, ["echo", "1"])
+    await job.set_jid(await _dead_pid())
+    assert await scheduler.job_fails_before_running(job) is True
+
+
+async def test_job_fails_before_running_status_submitted(tmp_path):
+    scheduler = LocalScheduler(tmp_path)
+    job = await scheduler.create_job(0, ["echo", "1"])
+    await job.set_jid(await _dead_pid())
+    await job.status_file.a_write_text(str(JobStatus.SUBMITTED))
+    assert await scheduler.job_fails_before_running(job) is True
+
+
+async def test_job_fails_before_running_status_running(tmp_path):
+    scheduler = LocalScheduler(tmp_path)
+    job = await scheduler.create_job(0, ["echo", "1"])
+    await job.set_jid(await _dead_pid())
+    await job.status_file.a_write_text(str(JobStatus.RUNNING))
+    assert await scheduler.job_fails_before_running(job) is False
