@@ -4,6 +4,7 @@ import asyncio
 import os
 import shlex
 
+from ..defaults import JobStatus
 from ..job import Job
 from ..scheduler import Scheduler
 
@@ -110,6 +111,42 @@ class LocalScheduler(Scheduler):
             return False
 
         return _pid_exists(jid)
+
+    async def job_fails_before_running(self, job: Job) -> bool:
+        """Check if the job fails before running.
+
+        The wrapped script is executed as a local process. If the process
+        is already dead but the job is still SUBMITTED (i.e. the wrapped
+        script never wrote the RUNNING status), the job must have failed
+        before running, e.g. the wrapper script crashed at startup.
+
+        Args:
+            job: The job
+
+        Returns:
+            True if the job fails before running, otherwise False.
+        """
+        jid = await job.get_jid()
+        if jid is None:
+            return False
+
+        try:
+            jid_int = int(jid)
+        except (ValueError, TypeError):
+            return False
+
+        if jid_int <= 0 or _pid_exists(jid_int):
+            return False
+
+        # The process is dead. Check the status file: if it was never
+        # updated beyond SUBMITTED (i.e. the wrapped script never wrote
+        # RUNNING), the job must have failed before running.
+        try:
+            status = int(await job.status_file.a_read_text())
+        except (FileNotFoundError, ValueError, TypeError):
+            return True
+
+        return status < JobStatus.RUNNING
 
     @property
     def jobcmd_wrapper_init(self) -> str:
