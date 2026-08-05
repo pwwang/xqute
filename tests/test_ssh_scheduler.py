@@ -18,8 +18,13 @@ def setup_module():
 
 
 async def test_job(tmp_path):
-    scheduler = SshScheduler(tmp_path, servers={"myserver": {"keyfile": "id_rsa"}})
-    job = await scheduler.create_job(0, ["echo", 1])
+    # each test uses its own ctrl_dir to avoid races on shared control
+    # files between parallel xdist workers
+    scheduler = SshScheduler(
+        tmp_path,
+        servers={"myserver": {"keyfile": "id_rsa", "ctrl_dir": tmp_path}},
+    )
+    job = await scheduler.create_job(0, ["echo", "1"])
     assert (
         await scheduler.wrapped_job_script(job)
         == tmp_path / "0" / "job.wrapped.ssh"
@@ -34,10 +39,10 @@ async def test_scheduler(tmp_path):
 
     scheduler = SshScheduler(
         ssh=ssh,
-        servers={"myserver": {"keyfile": "id_rsa", "user": "me"}},
+        servers={"myserver": {"keyfile": "id_rsa", "user": "me", "ctrl_dir": tmp_path}},
         workdir=tmp_path,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     assert (await scheduler.submit_job(job)).endswith("@me@myserver:22")
     # trigger skipping re-connect
     assert (await scheduler.submit_job(job)).endswith("@me@myserver:22")
@@ -58,8 +63,10 @@ async def test_scheduler(tmp_path):
 async def test_submission_failure(tmp_path):
     ssh = str(MOCKS / "nosuch_ssh")
 
-    scheduler = SshScheduler(tmp_path, ssh=ssh, servers={"myserver": {}})
-    job = await scheduler.create_job(0, ["echo", 1])
+    scheduler = SshScheduler(
+        tmp_path, ssh=ssh, servers={"myserver": {"ctrl_dir": tmp_path}}
+    )
+    job = await scheduler.create_job(0, ["echo", "1"])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False
@@ -71,7 +78,7 @@ async def test_submission_failure_with_server_list(tmp_path):
     ssh = str(MOCKS / "nosuch_ssh")
 
     scheduler = SshScheduler(tmp_path, ssh=ssh, servers=["myserver"])
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
 
     assert await scheduler.submit_job_and_update_status(job) is None
     assert await scheduler.job_is_running(job) is False
@@ -84,10 +91,17 @@ async def test_connection_failure(tmp_path):
 
     scheduler = SshScheduler(
         ssh=ssh,
-        servers={"myserverx": {"port": 44, "keyfile": "id_rsa", "user": "me"}},
+        servers={
+            "myserverx": {
+                "port": 44,
+                "keyfile": "id_rsa",
+                "user": "me",
+                "ctrl_dir": tmp_path,
+            }
+        },
         workdir=tmp_path,
     )
-    job = await scheduler.create_job(0, ["echo", 1])
+    job = await scheduler.create_job(0, ["echo", "1"])
     server = scheduler.servers["me@myserverx:44"]
     # in case previous connection file exists
     await scheduler.servers["me@myserverx:44"].disconnect()
@@ -113,8 +127,10 @@ async def test_immediate_submission_failure(tmp_path):
             await wrapt_script.a_write_text("sleep 1; bad_non_existent_command")
             return wrapt_script
 
-    scheduler = BadSshScheduler(tmp_path, ssh=ssh, servers=["myserver"])
-    job = await scheduler.create_job(0, ["echo", 1])
+    scheduler = BadSshScheduler(
+        tmp_path, ssh=ssh, servers={"myserver": {"ctrl_dir": tmp_path}}
+    )
+    job = await scheduler.create_job(0, ["echo", "1"])
     await job.stderr_file.a_unlink(missing_ok=True)
     await job.stdout_file.a_unlink(missing_ok=True)
 
@@ -132,8 +148,10 @@ async def test_immediate_submission_failure2(tmp_path):
             await wrapt_script.a_write_text("echo 1")
             return wrapt_script
 
-    scheduler = BadSshScheduler(tmp_path, ssh=ssh, servers=["myserver"])
-    job = await scheduler.create_job(0, ["echo", 1])
+    scheduler = BadSshScheduler(
+        tmp_path, ssh=ssh, servers={"myserver": {"ctrl_dir": tmp_path}}
+    )
+    job = await scheduler.create_job(0, ["echo", "1"])
     await job.stderr_file.a_unlink(missing_ok=True)
     await job.stdout_file.a_unlink(missing_ok=True)
 
