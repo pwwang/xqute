@@ -346,11 +346,27 @@ wheels = [
 
 [[package]]
 name = "argcomplete"
-version = "3.7.0"
+version = "3.6.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/95/c0/c8e94135e66fabf89a120d9b4b123fe6993506beca6c1938a74c24cfa5fd/argcomplete-3.7.0.tar.gz", hash = "sha256:afde224f753f874807b1dc1414e883ab8fe0cda9c04807b6047dcb8e1ac23913", size = 73284, upload-time = "2026-06-30T22:28:22.249Z" }
+resolution-markers = [
+    "python_full_version < '3.10'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/61/0b9ae6399dd4a58d8c1b1dc5a27d6f2808023d0b5dd3104bb99f45a33ff6/argcomplete-3.6.3.tar.gz", hash = "sha256:62e8ed4fd6a45864acc8235409461b72c9a28ee785a2011cc5eb78318786c89c", size = 73754, upload-time = "2025-10-20T03:33:34.741Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/12/f6/5b8ec087cd9cfa9449491ec83f76fb6b7006b4dff57d2ba8aaab330fe8e4/argcomplete-3.7.0-py3-none-any.whl", hash = "sha256:d8f0f22d2a8a7caa383be1e22b6caf1ecaf0ebd10d8f83cc125e36540c95830c", size = 42575, upload-time = "2026-06-30T22:28:20.547Z" },
+    { url = "https://files.pythonhosted.org/packages/74/f5/9373290775639cb67a2fce7f629a1c240dce9f12fe927bc32b2736e16dfc/argcomplete-3.6.3-py3-none-any.whl", hash = "sha256:f5007b3a600ccac5d25bbce33089211dfd49eab4a7718da3f10e3082525a92ce", size = 43846, upload-time = "2025-10-20T03:33:33.021Z" },
+]
+
+[[package]]
+name = "argcomplete"
+version = "3.7.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.11'",
+    "python_full_version == '3.10.*'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d1/40/8a867253c9b8afa296ac22e426a157eebbe41dcac66f7f50bbbef931afed/argcomplete-3.7.1.tar.gz", hash = "sha256:6926a3a70ae70dce1f3dfb5cf1fc984278cd163e78ec18ad2ed7fa4fabd8f281", size = 74457, upload-time = "2026-08-04T15:03:59.399Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/56/1935d0692656f0bfc0c2336d4ce599dcf166abe4ec786ce1abdaefa19589/argcomplete-3.7.1-py3-none-any.whl", hash = "sha256:0bed095030f295599b1018a622a53ea22f4f253e134b87be396b51e59ee00954", size = 43301, upload-time = "2026-08-04T15:03:58.02Z" },
 ]
 
 [[package]]
@@ -865,19 +881,20 @@ wheels = [
 
 [[package]]
 name = "cloudsh"
-version = "0.3.9"
+version = "0.3.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
-    { name = "argcomplete" },
+    { name = "argcomplete", version = "3.6.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "argcomplete", version = "3.7.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "argx" },
     { name = "panpath" },
     { name = "python-dateutil" },
     { name = "python-simpleconf", extra = ["toml"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4f/18/2c237e032bdd7badc6e00e7b96e8b781dda0300742a7f0e3c7668efb49fa/cloudsh-0.3.9.tar.gz", hash = "sha256:a66eae729abb05f99f15cc57793afa4eb42b56b08feb9d6cfa1f6f174bd414d9", size = 56772, upload-time = "2026-04-16T22:26:22.982Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/3a/571618dc13fb7ea9d9b749fd84e1562867fdab6bad45b95e35f84eb66a96/cloudsh-0.3.10.tar.gz", hash = "sha256:c6b61d98a637332de6e92744f789854cea1d6195f06433223fb4c34e9f1bb2ab", size = 253505, upload-time = "2026-08-05T06:53:19.213Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8e/29/23fd62ff3e6b6b7528506c4215cc8f7a75e5a697dadb319a342fe09d8620/cloudsh-0.3.9-py3-none-any.whl", hash = "sha256:5ecc5b62a729d27a126beeca13fb96019c2378aa120074399da5aeaed194d4c8", size = 42709, upload-time = "2026-04-16T22:26:24.23Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/b4/b18a08918590e8de7b3da1bed4aeec7cd01c6fa91c19f9c81c88d045233b/cloudsh-0.3.10-py3-none-any.whl", hash = "sha256:7727e3de54757231753fd05529d61d0d057d535864bc698998a955d039c5242e", size = 42513, upload-time = "2026-08-05T06:53:17.948Z" },
 ]
 
 [[package]]
@@ -2350,11 +2367,11 @@ wheels = [
 
 [[package]]
 name = "packaging"
-version = "26.2"
+version = "26.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d7/f1/e7a6dd94a8d4a5626c03e4e99c87f241ba9e350cd9e6d75123f992427270/packaging-26.2.tar.gz", hash = "sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661", size = 228134, upload-time = "2026-04-24T20:15:23.917Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7d/fa/3944b40b07da9ce895c0e6303a5ab7d53da063554f534556b134a54d6093/packaging-26.3.tar.gz", hash = "sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79", size = 313412, upload-time = "2026-08-04T18:15:28.737Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/df/b2/87e62e8c3e2f4b32e5fe99e0b86d576da1312593b39f47d8ceef365e95ed/packaging-26.2-py3-none-any.whl", hash = "sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e", size = 100195, upload-time = "2026-04-24T20:15:22.081Z" },
+    { url = "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl", hash = "sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c", size = 129956, upload-time = "2026-08-04T18:15:27.159Z" },
 ]
 
 [[package]]
