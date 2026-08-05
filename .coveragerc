@@ -3,6 +3,8 @@ omit =
     # need plugins to be installed to test
     tests/*
     setup.py
+    # runs only as a remote subprocess via ssh, never measured in-process
+    xqute/schedulers/ssh_scheduler/submitter.py
 
 [report]
 exclude_lines =
