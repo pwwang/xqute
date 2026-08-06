@@ -202,7 +202,7 @@ def get_jobcmd_wrapper_init(local: bool, timeout: int) -> str:
         The job command wrapper initialization script
     """
     if local:
-        rm_file = 'mv "$file" "${file}.used"'
+        rm_file = 'mv -f "$file" "${file}.used"'
         if timeout > 0:
             cmd = f'timeout {timeout} bash -c \\"$cmd\\" 1>$stdout_file 2>$stderr_file'
         else:
