@@ -13,7 +13,7 @@ from ..job import Job
 from ..path import SpecPath
 from ..defaults import DEFAULT_WORKDIR_NAME, JOBCMD_WRAPPER_LANG
 from .local_scheduler import LocalScheduler
-from .gbatch_scheduler import NAMED_MOUNT_RE, GbatchScheduler
+from .gbatch_scheduler import GbatchScheduler, sanitize_mounts
 
 CONTAINER_TYPES = {
     "docker": "docker",
@@ -67,10 +67,12 @@ class ContainerScheduler(LocalScheduler):
         "bin_args",
         "_container_type",
         "_path_envs",
+        "_kwargs",
     )
 
     def __init__(
         self,
+        *args,
         image: str,
         entrypoint: str | List[str] = JOBCMD_WRAPPER_LANG,
         bin: str = "docker",
@@ -96,42 +98,14 @@ class ContainerScheduler(LocalScheduler):
                 "Use only one of them."
             )
 
-        volumes = volumes or mount
         volume_as_cwd = volume_as_cwd or mount_as_cwd
 
-        if volume_as_cwd and kwargs.get("cwd"):
+        cwd = kwargs.get("cwd")
+        if volume_as_cwd and cwd:
             raise ValueError(
                 "You can't specify both 'volume_as_cwd' and 'cwd' arguments. "
                 "Use only one of them."
             )
-
-        if kwargs.get("workdir"):
-            workdir_path = Path(kwargs["workdir"])
-        else:
-            workdir_path = Path(DEFAULT_WORKDIR_NAME)
-
-        if volume_as_cwd:
-            kwargs["cwd"] = f"{self.DEFAULT_MOUNTED_ROOT}/.cwd"
-
-            workdir_mount_needed = workdir_path.is_absolute()
-            if not workdir_mount_needed:
-                kwargs["workdir"] = f"{volume_as_cwd}/{workdir_path}"
-                kwargs.setdefault("mounted_workdir", f"{kwargs['cwd']}/{workdir_path}")
-
-                # If mounted_workdir is set, and it is not under cwd,
-                # we need to mount the workdir as well
-                if not Path(kwargs["mounted_workdir"]).is_relative_to(kwargs["cwd"]):
-                    workdir_mount_needed = True
-        else:
-            workdir_mount_needed = True
-
-        if workdir_mount_needed:
-            kwargs.setdefault(
-                "mounted_workdir",
-                f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}",
-            )
-
-        super().__init__(**kwargs)
 
         self.bin = shutil.which(bin)
         if not self.bin:
@@ -141,44 +115,10 @@ class ContainerScheduler(LocalScheduler):
         self.entrypoint = (
             list(entrypoint) if isinstance(entrypoint, (list, tuple)) else [entrypoint]
         )
-        self._path_envs = {}
-        self.volumes = volumes or []
-        self.volumes = (
-            [self.volumes] if isinstance(self.volumes, str) else list(self.volumes)
-        )
-        for i, vol in enumerate(self.volumes):
-            if NAMED_MOUNT_RE.match(vol):
-                name, host_path = vol.split("=", 1)
-                host_path_obj = Path(host_path).expanduser().resolve()
-                if not host_path_obj.exists():
-                    raise FileNotFoundError(
-                        f"Volume host path '{host_path}' does not exist"
-                    )
-                if host_path_obj.is_file():
-                    host_path = str(host_path_obj.parent)
-                    mount_path = (
-                        f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/"
-                        f"{name}/{host_path_obj.parent.name}"
-                    )
-                    self._path_envs[name] = f"{mount_path}/{host_path_obj.name}"
-                    self.volumes[i] = f"{host_path}:{mount_path}"
-                else:
-                    host_path = str(host_path_obj)
-                    mount_path = f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/{name}"
-                    self._path_envs[name] = mount_path
-                    self.volumes[i] = f"{host_path}:{mount_path}"
-
-        # self.envs = envs or {}
         self.remove = remove
         self.user = user or f"{os.getuid()}:{os.getgid()}"
         self.bin_args = bin_args or []
-
-        if volume_as_cwd:
-            self.volumes.append(f"{volume_as_cwd}:{self.DEFAULT_MOUNTED_ROOT}/.cwd")
-
-        if workdir_mount_needed:
-            self.volumes.append(f"{self.workdir}:{self.workdir.mounted}")
-
+        self.volumes = []
         self._container_type = CONTAINER_TYPES.get(
             Path(self.bin).name.lower(),
             "docker",
@@ -188,6 +128,107 @@ class ContainerScheduler(LocalScheduler):
         ):
             # Convert docker://image to image name
             self.image = self.image[9:]
+
+        if not args:
+            kwargs.setdefault("workdir", DEFAULT_WORKDIR_NAME)
+        super().__init__(*args, **kwargs)
+
+        self._kwargs = {
+            "volumes": volumes or mount,
+            "volume_as_cwd": volume_as_cwd or mount_as_cwd,
+            "workdir": kwargs.get("workdir"),
+            "mounted_workdir": kwargs.get("mounted_workdir"),
+        }
+
+    async def post_init(self):
+        """Post initialization to handle mounts and workdir"""
+        volumes: list[str] = self._kwargs["volumes"] or []
+        if not isinstance(volumes, Sequence) or isinstance(volumes, str):
+            volumes = [volumes]
+        else:
+            volumes = list(volumes)
+
+        volume_as_cwd = self._kwargs["volume_as_cwd"]
+        if volume_as_cwd:
+            volumes.insert(0, f"{volume_as_cwd}:{self.DEFAULT_MOUNTED_ROOT}/.cwd")
+
+        mounts, self._path_envs = await sanitize_mounts(
+            volumes,
+            self.DEFAULT_MOUNTED_ROOT,
+            check_host_existence=True,
+        )
+
+        workdir_path = Path(self._kwargs["workdir"] or DEFAULT_WORKDIR_NAME)
+
+        if volume_as_cwd:
+            self.cwd = f"{self.DEFAULT_MOUNTED_ROOT}/.cwd"
+
+            workdir_mount_needed = workdir_path.is_absolute()
+            if not workdir_mount_needed:
+                self._kwargs["workdir"] = f"{volume_as_cwd}/{workdir_path}"
+                self._kwargs["mounted_workdir"] = (
+                    self._kwargs["mounted_workdir"]
+                    or f"{self.cwd}/{workdir_path}"
+                )
+
+                # If mounted_workdir is set, and it is not under cwd,
+                # we need to mount the workdir as well
+                if not any(
+                    Path(self._kwargs["mounted_workdir"]).is_relative_to(mounted)
+                    for _, mounted in mounts
+                ):
+                    workdir_mount_needed = True
+        elif self.cwd:
+            cwd = Path(self.cwd)
+            workdir_mount_needed = workdir_path.is_absolute()
+            if not workdir_mount_needed:
+                cwd_mount = None
+                for host, mounted in mounts:
+                    if cwd.is_relative_to(mounted):
+                        cwd_mount = (
+                            host / cwd.relative_to(mounted),
+                            mounted / cwd.relative_to(mounted),
+                        )
+                        break
+
+                if cwd_mount is None:
+                    raise ValueError(
+                        "cwd is not under any of the mounted volumes. "
+                        "Please use `volume_as_cwd` or ensure `cwd` "
+                        "is under a mounted volume."
+                    )
+
+                self._kwargs["workdir"] = f"{cwd_mount[0]}/{workdir_path}"
+                self._kwargs["mounted_workdir"] = (
+                    self._kwargs["mounted_workdir"]
+                    or f"{cwd_mount[1]}/{workdir_path}"
+                )
+
+                if not any(
+                    Path(self._kwargs["mounted_workdir"]).is_relative_to(mounted)
+                    for _, mounted in mounts
+                ):
+                    workdir_mount_needed = True
+        else:
+            self._kwargs["workdir"] = str(workdir_path.resolve())
+            workdir_mount_needed = True
+
+        if workdir_mount_needed:
+            self._kwargs["mounted_workdir"] = (
+                self._kwargs["mounted_workdir"]
+                or f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}"
+            )
+
+        self.workdir = SpecPath(
+            self._kwargs["workdir"],
+            mounted=self._kwargs["mounted_workdir"],
+        )
+
+        for host, mounted in mounts:
+            self.volumes.append(f"{host}:{mounted}")
+
+        if workdir_mount_needed:
+            self.volumes.append(f"{self.workdir}:{self.workdir.mounted}")
 
     async def wrapped_job_script(self, job: Job) -> SpecPath:
         """Get the wrapped job script

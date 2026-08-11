@@ -22,7 +22,6 @@ from ..utils import logger, sanitize_mounts
 from ..path import SpecPath
 
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")
-NAMED_MOUNT_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*=.+$")
 
 
 class GbatchScheduler(Scheduler):
@@ -317,16 +316,16 @@ class GbatchScheduler(Scheduler):
             mount = list(mount)
 
         mount_as_cwd = self._kwargs["mount_as_cwd"]
-
         if mount_as_cwd:
             mount.insert(0, f"{mount_as_cwd}:{self.DEFAULT_MOUNTED_ROOT}/.cwd")
 
         mounts, self._path_envs = await sanitize_mounts(
             mount,
             self.DEFAULT_MOUNTED_ROOT,
+            check_host_existence=False,
         )
 
-        workdir_path = PanPath(self._kwargs.get("workdir") or DEFAULT_WORKDIR_NAME)
+        workdir_path = PanPath(self._kwargs["workdir"] or DEFAULT_WORKDIR_NAME)
         if mount_as_cwd:
             self.cwd = f"{self.DEFAULT_MOUNTED_ROOT}/.cwd"
 

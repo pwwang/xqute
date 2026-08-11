@@ -23,7 +23,7 @@ def mock_bin_path():
     return str(p)
 
 
-def test_init_docker(mock_bin_path, temp_workdir):
+async def test_init_docker(mock_bin_path, temp_workdir):
     """Test initialization with docker"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
@@ -39,12 +39,13 @@ def test_init_docker(mock_bin_path, temp_workdir):
     scheduler = ContainerScheduler(
         image="docker://ubuntu:20.04",
         workdir=temp_workdir,
-        volumes=["/host/path:/container/path"],
+        volumes=["/tmp:/container/path"],
         # envs={"VAR1": "value1", "VAR2": "value2"},
         bin_args=["--privileged", "--network=host"],
     )
+    await scheduler.post_init()
     assert scheduler.image == "ubuntu:20.04"
-    assert "/host/path:/container/path" in scheduler.volumes
+    assert "/tmp:/container/path" in scheduler.volumes
     # assert scheduler.envs["VAR1"] == "value1"
     # assert scheduler.envs["VAR2"] == "value2"
     assert "--privileged" in scheduler.bin_args
@@ -102,6 +103,7 @@ async def test_named_volume_handling(temp_workdir):
         workdir=temp_workdir,
         volumes=[f"DIR={host_dir}", f"FILE={host_file}"],
     )
+    await scheduler.post_init()
     assert len(scheduler.volumes) == 3
     assert (
         scheduler.volumes[0]
@@ -125,36 +127,39 @@ async def test_named_volume_handling(temp_workdir):
     assert f"export DIR={shlex.quote(scheduler._path_envs['DIR'])}" in init_cmd
     assert f"export FILE={shlex.quote(scheduler._path_envs['FILE'])}" in init_cmd
 
+    sched = ContainerScheduler(
+        image="ubuntu:20.04",
+        workdir=temp_workdir,
+        volumes=["DATA=/non/existent/path"],
+    )
     with pytest.raises(FileNotFoundError):
-        ContainerScheduler(
-            image="ubuntu:20.04",
-            workdir=temp_workdir,
-            volumes=["DATA=/non/existent/path"],
-        )
+        await sched.post_init()
 
 
-def test_volume_as_cwd_no_workdir():
+async def test_volume_as_cwd_no_workdir():
     """Test that volume_as_cwd without workdir"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
-        volume_as_cwd="/host/cwd",
+        volume_as_cwd="/tmp",
     )
+    await scheduler.post_init()
     assert scheduler.cwd == "/mnt/disks/.cwd"
     assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
-    assert str(scheduler.workdir) == "/host/cwd/.xqute"
+    assert str(scheduler.workdir) == "/tmp/.xqute"
     assert str(scheduler.workdir.mounted) == "/mnt/disks/.cwd/.xqute"
     volumes = scheduler.volumes
     assert len(volumes) == 1
-    assert volumes[0] == "/host/cwd:/mnt/disks/.cwd"
+    assert volumes[0] == "/tmp:/mnt/disks/.cwd"
 
 
-def test_volume_as_cwd_and_workdir(temp_workdir):
+async def test_volume_as_cwd_and_workdir(temp_workdir):
     """Test that volume_as_cwd and workdir are handled correctly"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
         workdir=temp_workdir,
-        volume_as_cwd="/host/cwd",
+        volume_as_cwd="/tmp",
     )
+    await scheduler.post_init()
     assert scheduler.cwd == "/mnt/disks/.cwd"
     assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
     assert scheduler.workdir == temp_workdir
@@ -162,24 +167,25 @@ def test_volume_as_cwd_and_workdir(temp_workdir):
     volumes = scheduler.volumes
     assert len(volumes) == 2
     assert f"{temp_workdir}:/mnt/disks/.xqute" in volumes
-    assert "/host/cwd:/mnt/disks/.cwd" in volumes
+    assert "/tmp:/mnt/disks/.cwd" in volumes
 
 
-def test_volume_as_cwd_and_mounted_workdir(temp_workdir):
+async def test_volume_as_cwd_and_mounted_workdir(temp_workdir):
     """Test that volume_as_cwd and mounted_workdir are handled correctly"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
         mounted_workdir="/container/workdir",
-        volume_as_cwd="/host/cwd",
+        volume_as_cwd="/tmp",
     )
+    await scheduler.post_init()
     assert scheduler.cwd == "/mnt/disks/.cwd"
     assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
-    assert str(scheduler.workdir) == "/host/cwd/.xqute"
+    assert str(scheduler.workdir) == "/tmp/.xqute"
     assert str(scheduler.workdir.mounted) == "/container/workdir"
     volumes = scheduler.volumes
     assert len(volumes) == 2
-    assert "/host/cwd/.xqute:/container/workdir" in volumes
-    assert "/host/cwd:/mnt/disks/.cwd" in volumes
+    assert "/tmp/.xqute:/container/workdir" in volumes
+    assert "/tmp:/mnt/disks/.cwd" in volumes
 
 
 def test_init_binary_not_found(temp_workdir):
@@ -193,11 +199,12 @@ def test_init_binary_not_found(temp_workdir):
         )
 
 
-def test_jobcmd_shebang_docker(temp_workdir):
+async def test_jobcmd_shebang_docker(temp_workdir):
     """Test job command shebang generation for docker"""
     scheduler = ContainerScheduler(
-        image="ubuntu:20.04", volumes=["/host:/container"], workdir=temp_workdir
+        image="ubuntu:20.04", volumes=["/tmp:/container"], workdir=temp_workdir
     )
+    await scheduler.post_init()
 
     job = MagicMock(envs={"TEST_ENV": "test_value"})
     job.workdir = temp_workdir
@@ -207,12 +214,12 @@ def test_jobcmd_shebang_docker(temp_workdir):
     assert "docker" in shebang
     assert "run --rm" in shebang
     assert "-e TEST_ENV=test_value" in shebang
-    assert "-v /host:/container" in shebang
+    assert "-v /tmp:/container" in shebang
     assert "--workdir" in shebang
     assert "ubuntu:20.04" in shebang
 
 
-def test_jobcmd_shebang_apptainer(mock_bin_path, temp_workdir):
+async def test_jobcmd_shebang_apptainer(mock_bin_path, temp_workdir):
     """Test job command shebang generation for apptainer"""
     apptainer_bin = PanPath(mock_bin_path) / "apptainer"
 
@@ -220,10 +227,10 @@ def test_jobcmd_shebang_apptainer(mock_bin_path, temp_workdir):
         image="ubuntu:20.04",
         bin=str(apptainer_bin),
         # envs={"TEST_ENV": "test_value"},
-        volumes=["/host:/container"],
+        volumes=["/tmp:/container"],
         workdir=temp_workdir,
     )
-
+    await scheduler.post_init()
     job = MagicMock(envs={"TEST_ENV": "test_value"})
     job.workdir = temp_workdir
 
@@ -231,7 +238,7 @@ def test_jobcmd_shebang_apptainer(mock_bin_path, temp_workdir):
 
     assert "apptainer run " in shebang
     assert "--env TEST_ENV=test_value" in shebang
-    assert "--bind /host:/container" in shebang
+    assert "--bind /tmp:/container" in shebang
     assert "--pwd" in shebang
     assert "ubuntu:20.04" in shebang
 
@@ -319,3 +326,33 @@ async def test_submission_failure(temp_workdir):
     assert await scheduler.job_is_running(job) is False
     assert await job.get_status(True) == JobStatus.FAILED
     assert "Failed to submit job" in await job.stderr_file.a_read_text()
+
+
+async def test_using_cwd():
+    """Test that using cwd is handled correctly"""
+    scheduler = ContainerScheduler(
+        image="ubuntu:20.04",
+        mounted_workdir="/tmp/workdir",
+        mount="/tmp:/container",
+        cwd="/container/cwd",
+    )
+    await scheduler.post_init()
+    assert scheduler.cwd == "/container/cwd"
+    assert "cd /container/cwd" in scheduler.jobcmd_wrapper_init
+    assert str(scheduler.workdir) == "/tmp/cwd/.xqute"
+    assert str(scheduler.workdir.mounted) == "/tmp/workdir"
+    volumes = scheduler.volumes
+    assert len(volumes) == 2
+    assert volumes[0] == "/tmp:/container"
+    assert volumes[1] == "/tmp/cwd/.xqute:/tmp/workdir"
+
+
+async def test_using_cwd_but_mount_not_found():
+    """Test that using cwd with a non-existent mount raises an error"""
+    scheduler = ContainerScheduler(
+        image="ubuntu:20.04",
+        mount="/tmp:/container",
+        cwd="/nonexisting/cwd",
+    )
+    with pytest.raises(ValueError):
+        await scheduler.post_init()

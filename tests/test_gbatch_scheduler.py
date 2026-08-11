@@ -279,7 +279,8 @@ async def test_named_mount_handling_in_gbatch(workdir):
     # PanPath._no_prefix should return the path without the "gs://" prefix
     # PanPath.name should return the name of the path
     # PanPath.__str__ should return the full path
-    # isinstance should return True for GSPath if path_str starts with "gs://", otherwise False
+    # isinstance should return True for GSPath if path_str starts with "gs://",
+    # otherwise False
     # Create a simple mock class that behaves like PanPath
     class MockAnyPathMeta(type):
         def __instancecheck__(cls, obj):

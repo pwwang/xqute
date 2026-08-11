@@ -78,7 +78,7 @@ async def test_sanitize_mounts_duplicate_mounts_conflicting():
         await sanitize_mounts(
             [
                 f"{Path(__file__).parent}:{Path(__file__).parent}",
-                f"{Path(__file__).parent}/subdir:{Path(__file__).parent}",
+                f"{Path(__file__).parent}/mocks:{Path(__file__).parent}",
             ],
             "/mnt/disks",
         )
@@ -89,7 +89,7 @@ async def test_sanitize_mounts_relative_mounts():
     sans_mounts, named_mounts_dict = await sanitize_mounts(
         [
             f"{Path(__file__).parent}:/mnt/disks/tests",
-            f"{Path(__file__).parent}/subdir:/mnt/disks/tests/subdir",
+            f"{Path(__file__).parent}/mocks:/mnt/disks/tests/mocks",
         ],
         "/mnt/disks",
     )
@@ -97,3 +97,19 @@ async def test_sanitize_mounts_relative_mounts():
     assert sans_mounts[0][0] == Path(__file__).parent
     assert str(sans_mounts[0][1]) == "/mnt/disks/tests"
     assert len(named_mounts_dict) == 0
+
+
+async def test_sanitize_mounts_named_source_not_exist():
+    with pytest.raises(FileNotFoundError):
+        await sanitize_mounts(
+            ["nonexistent=/mnt/disks/nonexistent"],
+            "/mnt/disks",
+        )
+
+
+async def test_sanitize_mounts_source_not_exist():
+    with pytest.raises(FileNotFoundError):
+        await sanitize_mounts(
+            ["/nonexistent:/mnt/disks/nonexistent"],
+            "/mnt/disks",
+        )

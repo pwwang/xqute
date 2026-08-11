@@ -27,6 +27,7 @@ async def sanitize_mounts(
     mounts: Union[str, Sequence[str], None],
     mount_root: str,
     named_mounts: str = "NAMED_MOUNTS",
+    check_host_existence: bool = True,
 ) -> Tuple[List[Tuple[PanPath, Path]], dict[str, str]]:
     """Sanitize the mounts
 
@@ -47,6 +48,10 @@ async def sanitize_mounts(
         if NAMED_MOUNT_RE.match(mount):
             name, host_path = mount.split("=", 1)
             host_path = PanPath(host_path)
+            if check_host_existence and not await host_path.a_exists():
+                raise FileNotFoundError(
+                    f"Host path does not exist for named mount '{name}': {host_path}"
+                )
             if await host_path.a_is_file():
                 sanitized_mounts.append(
                     (
@@ -73,6 +78,12 @@ async def sanitize_mounts(
                     f"Invalid mount format: {mount}. Must be in the format of "
                     "host_path:mount_path or name=host_path"
                 )
+            host_path = PanPath(host_path)
+            if check_host_existence and not await host_path.a_exists():
+                raise FileNotFoundError(
+                    f"Host path does not exist for mount '{mount_path}': {host_path}"
+                )
+
             sanitized_mounts.append((PanPath(host_path), Path(mount_path)))
 
     # Check if there are duplicate mount paths
