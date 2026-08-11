@@ -34,9 +34,10 @@ def gcloud():
     return cmd
 
 
-def test_error_with_non_gs_workdir(tmp_path):
+async def test_error_with_non_gs_workdir(tmp_path):
+    sched = GbatchScheduler(tmp_path, location="us-central1", project="test-project")
     with pytest.raises(ValueError):
-        GbatchScheduler(tmp_path, location="us-central1", project="test-project")
+        await sched.post_init()
 
 
 def test_error_with_invalid_jobname_prefix(workdir):
@@ -278,8 +279,15 @@ async def test_named_mount_handling_in_gbatch(workdir):
     # PanPath._no_prefix should return the path without the "gs://" prefix
     # PanPath.name should return the name of the path
     # PanPath.__str__ should return the full path
+    # isinstance should return True for GSPath if path_str starts with "gs://", otherwise False
     # Create a simple mock class that behaves like PanPath
-    class MockAnyPath:
+    class MockAnyPathMeta(type):
+        def __instancecheck__(cls, obj):
+            # isinstance should return True if path_str starts with "gs://",
+            # otherwise False
+            return str(obj).startswith("gs://")
+
+    class MockAnyPath(metaclass=MockAnyPathMeta):
         def __init__(self, path_str):
             self.path_str = str(path_str)
             self._path_obj = Path(self.path_str.replace("gs://", ""))
@@ -290,6 +298,15 @@ async def test_named_mount_handling_in_gbatch(workdir):
         def is_file(self):
             return self.path_str.endswith("file.txt")
 
+        async def a_is_file(self):
+            return self.is_file()
+
+        @property
+        def parts(self):
+            if self.path_str.startswith("gs://"):
+                return ("gs:",) + self._path_obj.parts
+            return self._path_obj.parts
+
         @property
         def parent(self):
             if self.path_str.startswith("gs://"):
@@ -299,19 +316,17 @@ async def test_named_mount_handling_in_gbatch(workdir):
             return MockAnyPath(parent_path)
 
         @property
-        def _no_prefix(self):
-            if self.path_str.startswith("gs://"):
-                return self.path_str[5:]
-            return self.path_str
-
-        @property
         def name(self):
             return self._path_obj.name
 
-    with patch("xqute.schedulers.gbatch_scheduler.PanPath", MockAnyPath):
+    with patch("xqute.utils.PanPath", MockAnyPath), patch(
+        "xqute.schedulers.gbatch_scheduler.GSPath", MockAnyPath
+    ):
         bucket = "gs://my-bucket"
         bucket_dir = f"{bucket}/dir1"
         bucket_file = f"{bucket}/dir2/file.txt"
+
+        assert await MockAnyPath(bucket_file).a_is_file()
 
         scheduler = GbatchScheduler(
             project="test-project",
@@ -319,6 +334,7 @@ async def test_named_mount_handling_in_gbatch(workdir):
             workdir=workdir,
             mount=[f"DIR={bucket_dir}", f"FILE={bucket_file}"],
         )
+        await scheduler.post_init()
         volumes = scheduler.config["taskGroups"][0]["taskSpec"]["volumes"]
         assert len(volumes) == 3
         assert volumes[1] == {
@@ -341,13 +357,14 @@ async def test_named_mount_handling_in_gbatch(workdir):
         assert "export FILE=/mnt/disks/NAMED_MOUNTS/FILE/dir2/file.txt" in init_cmd
 
 
-def test_mount_as_cwd_no_workdir():
+async def test_mount_as_cwd_no_workdir():
     """Test that the job script uses the correct working directory"""
     scheduler = GbatchScheduler(
         project="test-project",
         location="us-central1",
         mount_as_cwd="gs://my-bucket",
     )
+    await scheduler.post_init()
     assert scheduler.cwd == "/mnt/disks/.cwd"
     assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
     assert scheduler.workdir == PanPath("gs://my-bucket/.xqute")
@@ -360,7 +377,7 @@ def test_mount_as_cwd_no_workdir():
     }
 
 
-def test_mount_as_cwd_with_workdir(workdir):
+async def test_mount_as_cwd_with_workdir(workdir):
     """Test that the job script uses the correct working directory"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -368,6 +385,7 @@ def test_mount_as_cwd_with_workdir(workdir):
         workdir=workdir,
         mount_as_cwd="gs://my-bucket",
     )
+    await scheduler.post_init()
     assert scheduler.cwd == "/mnt/disks/.cwd"
     assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
     assert scheduler.workdir == workdir
@@ -383,7 +401,7 @@ def test_mount_as_cwd_with_workdir(workdir):
     }
 
 
-def test_mount_as_cwd_with_mounted_workdir():
+async def test_mount_as_cwd_with_mounted_workdir():
     """Test that the job script uses the correct working directory"""
     scheduler = GbatchScheduler(
         project="test-project",
@@ -391,6 +409,7 @@ def test_mount_as_cwd_with_mounted_workdir():
         mounted_workdir="/mnt/disks/.mounted",
         mount_as_cwd="gs://my-bucket",
     )
+    await scheduler.post_init()
     assert scheduler.cwd == "/mnt/disks/.cwd"
     assert "cd /mnt/disks/.cwd" in scheduler.jobcmd_wrapper_init
     assert str(scheduler.workdir) == "gs://my-bucket/.xqute"
@@ -405,6 +424,46 @@ def test_mount_as_cwd_with_mounted_workdir():
         "gcs": {"remotePath": "my-bucket/.xqute"},
         "mountPath": "/mnt/disks/.mounted",
     }
+
+
+async def test_using_cwd():
+    """Test that the job script uses the correct working directory"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        workdir="workdir",
+        mounted_workdir="/mnt/disks/workdir",
+        mount="gs://my-bucket:/custom",
+        cwd="/custom/cwd",
+    )
+    await scheduler.post_init()
+    assert scheduler.cwd == "/custom/cwd"
+    assert "cd /custom/cwd" in scheduler.jobcmd_wrapper_init
+    assert str(scheduler.workdir) == "gs://my-bucket/cwd/workdir"
+    assert str(scheduler.workdir.mounted) == "/mnt/disks/workdir"
+    volumes = scheduler.config["taskGroups"][0]["taskSpec"]["volumes"]
+    assert len(volumes) == 2
+    assert volumes[0] == {
+        "gcs": {"remotePath": "my-bucket/cwd/workdir"},
+        "mountPath": "/mnt/disks/workdir",
+    }
+    assert volumes[1] == {
+        "gcs": {"remotePath": "my-bucket"},
+        "mountPath": "/custom",
+    }
+
+
+async def test_using_cwd_but_mount_not_found():
+    """Test using cwd but mount not found"""
+    scheduler = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        workdir="workdir",
+        mount="gs://my-bucket:/custom",
+        cwd="/other/cwd",
+    )
+    with pytest.raises(ValueError):
+        await scheduler.post_init()
 
 
 def test_mount_as_cwd_is_not_gs_path(workdir):
@@ -432,16 +491,17 @@ def test_mount_as_cwd_and_cwd_are_given(workdir):
         )
 
 
-def test_named_mount_is_not_gs_path(workdir):
+async def test_named_mount_is_not_gs_path(workdir):
     """Test error is raised if named mount is not a gs:// path"""
-    expected_msg = "When using named mount"
+    expected_msg = "Mount source '/local/path' is not a GCS path"
+    sched = GbatchScheduler(
+        project="test-project",
+        location="us-central1",
+        workdir=workdir,
+        mount=["DIR=/local/path"],
+    )
     with pytest.raises(ValueError, match=expected_msg):
-        GbatchScheduler(
-            project="test-project",
-            location="us-central1",
-            workdir=workdir,
-            mount=["DIR=/local/path"],
-        )
+        await sched.post_init()
 
 
 def test_init_scheduler_using_mount_and_volumes():
@@ -467,6 +527,17 @@ def test_init_scheduler_using_mount_and_volumes():
             location="us-central1",
             mount_as_cwd="gs://my-bucket",
             volume_as_cwd="gs://my-bucket",
+        )
+
+
+def test_cwd_not_local():
+    """Test that cwd is not a local path"""
+    expected_msg = "'cwd' should be a local path"
+    with pytest.raises(ValueError, match=expected_msg):
+        GbatchScheduler(
+            project="test-project",
+            location="us-central1",
+            cwd="gs://my-bucket",
         )
 
 

@@ -9,19 +9,16 @@ from pathlib import Path
 from typing import Sequence
 from copy import deepcopy
 from hashlib import sha256
-from panpath import GSPath, PanPath
+from panpath import GSPath, PanPath, LocalPath
 
 from ..job import Job
 from ..scheduler import Scheduler
 from ..defaults import (
     DEFAULT_WORKDIR_NAME,
     JOBCMD_WRAPPER_LANG,
-    # get_jobcmd_wrapper_init,
-    # JOBCMD_WRAPPER_TEMPLATE,
-    # JobStatus,
     SLEEP_INTERVAL_GBATCH_STATUS_CHECK,
 )
-from ..utils import logger
+from ..utils import logger, sanitize_mounts
 from ..path import SpecPath
 
 JOBNAME_PREFIX_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9-]{0,47}$")
@@ -108,6 +105,7 @@ class GbatchScheduler(Scheduler):
         "location",
         "runnable_index",
         "_path_envs",
+        "_kwargs",
     )
 
     def __init__(
@@ -145,56 +143,35 @@ class GbatchScheduler(Scheduler):
                 "Use only one of them."
             )
 
-        mount = mount or volumes
-        mount_as_cwd = mount_as_cwd or volume_as_cwd
-
         self.gcloud = kwargs.pop("gcloud", "gcloud")
         self.project = project
         self.location = location
+        self._path_envs: dict[str, str] = {}
 
+        mount_as_cwd = mount_as_cwd or volume_as_cwd
         if mount_as_cwd and not mount_as_cwd.startswith("gs://"):
             raise ValueError(
                 "'mount_as_cwd' should be a GCS path starting with 'gs://', "
                 f"got '{mount_as_cwd}'."
             )
 
-        if mount_as_cwd and kwargs.get("cwd"):
+        cwd = kwargs.get("cwd")
+        if mount_as_cwd and cwd:
             raise ValueError(
                 "'mount_as_cwd' and 'cwd' cannot be specified at the same time."
             )
 
-        if kwargs.get("workdir"):
-            workdir_path = PanPath(kwargs["workdir"])
-        else:
-            workdir_path = Path(DEFAULT_WORKDIR_NAME)
+        if cwd:
+            cwd = PanPath(cwd)
+            if not isinstance(cwd, LocalPath):
+                raise ValueError(
+                    "'cwd' should be a local path from inside the VM, got "
+                    f"'{cwd}' of type '{type(cwd).__name__}'."
+                )
 
-        if mount_as_cwd:
-            kwargs["cwd"] = f"{self.DEFAULT_MOUNTED_ROOT}/.cwd"
-
-            workdir_mount_needed = workdir_path.is_absolute()
-            if not workdir_mount_needed:
-                kwargs["workdir"] = f"{mount_as_cwd}/{workdir_path}"
-                kwargs.setdefault("mounted_workdir", f"{kwargs['cwd']}/{workdir_path}")
-
-                # If mounted_workdir is set, and it is not under cwd,
-                # we need to mount the workdir as well
-                if not Path(kwargs["mounted_workdir"]).is_relative_to(kwargs["cwd"]):
-                    workdir_mount_needed = True
-        else:
-            workdir_mount_needed = True
-
-        if workdir_mount_needed:
-            kwargs.setdefault(
-                "mounted_workdir",
-                f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}",
-            )
-
+        if not args:
+            kwargs.setdefault("workdir", DEFAULT_WORKDIR_NAME)
         super().__init__(*args, **kwargs)
-
-        if not isinstance(self.workdir, GSPath):
-            raise ValueError(
-                "'gbatch' scheduler requires google cloud storage 'workdir'."
-            )
 
         if not JOBNAME_PREFIX_RE.match(self.jobname_prefix):
             raise ValueError(
@@ -202,7 +179,6 @@ class GbatchScheduler(Scheduler):
                 f"'^[a-zA-Z][a-zA-Z0-9-]{{0,47}}$', got '{self.jobname_prefix}'."
             )
 
-        self._path_envs = {}
         task_groups = self.config.setdefault("taskGroups", [])
         if not task_groups:
             task_groups.append({})
@@ -210,6 +186,13 @@ class GbatchScheduler(Scheduler):
             task_groups[0] = {}
 
         task_spec = task_groups[0].setdefault("taskSpec", {})
+        volumes: list[dict] = task_spec.setdefault("volumes", [])
+        if not isinstance(volumes, list):
+            raise ValueError(
+                "'taskGroups[0].taskSpec.volumes' should be a list for "
+                "gbatch configuration."
+            )
+
         task_runnables = task_spec.setdefault("runnables", [])
 
         # Process additional runnables with ordering
@@ -272,83 +255,8 @@ class GbatchScheduler(Scheduler):
         logs_policy = self.config.setdefault("logsPolicy", {})
         logs_policy.setdefault("destination", "CLOUD_LOGGING")
 
-        volumes: list[dict] = task_spec.setdefault("volumes", [])
-        if not isinstance(volumes, list):
-            raise ValueError(
-                "'taskGroups[0].taskSpec.volumes' should be a list for "
-                "gbatch configuration."
-            )
-
-        if workdir_mount_needed:
-            volumes.insert(
-                0,
-                {
-                    "gcs": {"remotePath": str(self.workdir).split("://", 1)[1]},
-                    "mountPath": str(self.workdir.mounted),
-                },
-            )
-
-        if mount_as_cwd:
-            # Mount the specified GCS path as the working directory
-            volumes.insert(
-                0,
-                {
-                    "gcs": {"remotePath": str(mount_as_cwd).split("://", 1)[1]},
-                    "mountPath": str(f"{self.DEFAULT_MOUNTED_ROOT}/.cwd"),
-                },
-            )
-
-        if mount and not isinstance(mount, (tuple, list)):
-            mount = [mount]  # type: ignore
-        if mount:
-            for m in mount:
-                # Let's check if mount is provided as "OUTDIR=gs://bucket/dir"
-                # If so, we mounted it to $DEFAULT_MOUNTED_ROOT/NAMED_MOUNTS/OUTDIR
-                # and set OUTDIR env variable to the mounted path in self._path_envs
-                if NAMED_MOUNT_RE.match(m):
-                    name, gcs = m.split("=", 1)
-                    if not gcs.startswith("gs://"):
-                        raise ValueError(
-                            "When using named mount, it should be in the format "
-                            "'NAME=gs://bucket/dir', where NAME matches "
-                            "^[A-Za-z][A-Za-z0-9_]*$"
-                        )
-                    gcs_path = PanPath(gcs)
-                    # Check if it is a file path
-                    if gcs_path.is_file():
-                        # Mount the parent directory
-                        gcs = str(gcs_path.parent._no_prefix)  # type: ignore
-                        mount_path = (
-                            f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/"
-                            f"{name}/{gcs_path.parent.name}"
-                        )
-                        self._path_envs[name] = f"{mount_path}/{gcs_path.name}"
-                    else:
-                        gcs = gcs[5:]
-                        mount_path = f"{self.DEFAULT_MOUNTED_ROOT}/NAMED_MOUNTS/{name}"
-                        self._path_envs[name] = mount_path
-
-                    volumes.append(
-                        {
-                            "gcs": {"remotePath": gcs},
-                            "mountPath": mount_path,
-                        }
-                    )
-                else:
-                    # Or, we expect a literal mount "gs://bucket/dir:/mount/path"
-                    gcs, mount_path = m.rsplit(":", 1)
-                    if gcs.startswith("gs://"):
-                        gcs = gcs[5:]
-                    volumes.append(
-                        {
-                            "gcs": {"remotePath": gcs},
-                            "mountPath": mount_path,
-                        }
-                    )
-
         # Add some labels for filtering by `gcloud batch jobs list`
         labels = self.config.setdefault("labels", {})
-
         labels.setdefault("xqute", "true")
         labels.setdefault("user", getpass.getuser())
 
@@ -366,6 +274,9 @@ class GbatchScheduler(Scheduler):
             if not network_interface:
                 network_interface.append({})
             network_interface = network_interface[0]
+            network = network
+            subnetwork = subnetwork
+            no_external_ip_address = no_external_ip_address
             if network:
                 network_interface.setdefault("network", network)
             if subnetwork:
@@ -390,6 +301,125 @@ class GbatchScheduler(Scheduler):
             # 63 character limit, '@' is not allowed in labels
             # labels.setdefault("email", email[:63])
             labels.setdefault("sacct", email.split("@", 1)[0][:63])
+
+        self._kwargs = {
+            "mount": mount or volumes,
+            "mount_as_cwd": mount_as_cwd,
+            "workdir": kwargs.get("workdir"),
+            "mounted_workdir": kwargs.get("mounted_workdir"),
+        }
+
+    async def post_init(self):
+        mount: list[str] = self._kwargs["mount"] or []
+        if not isinstance(mount, Sequence) or isinstance(mount, str):
+            mount = [mount]
+        else:
+            mount = list(mount)
+
+        mount_as_cwd = self._kwargs["mount_as_cwd"]
+
+        if mount_as_cwd:
+            mount.insert(0, f"{mount_as_cwd}:{self.DEFAULT_MOUNTED_ROOT}/.cwd")
+
+        mounts, self._path_envs = await sanitize_mounts(
+            mount,
+            self.DEFAULT_MOUNTED_ROOT,
+        )
+
+        workdir_path = PanPath(self._kwargs.get("workdir") or DEFAULT_WORKDIR_NAME)
+        if mount_as_cwd:
+            self.cwd = f"{self.DEFAULT_MOUNTED_ROOT}/.cwd"
+
+            workdir_mount_needed = workdir_path.is_absolute()
+            if not workdir_mount_needed:
+                self._kwargs["workdir"] = f"{mount_as_cwd}/{workdir_path}"
+                self._kwargs["mounted_workdir"] = (
+                    self._kwargs["mounted_workdir"]
+                    or f"{self.cwd}/{workdir_path}"
+                )
+
+                # If mounted_workdir is set, and it is not under any mounted paths,
+                # we need to mount the workdir as well
+                if not any(
+                    Path(self._kwargs["mounted_workdir"]).is_relative_to(mounted)
+                    for _, mounted in mounts
+                ):
+                    workdir_mount_needed = True
+        elif self.cwd:
+            cwd = Path(self.cwd)
+            workdir_mount_needed = workdir_path.is_absolute()
+            if not workdir_mount_needed:
+                # get the cloud cwd
+                cloud_cwd = None
+                for host, mounted in mounts:
+                    if cwd.is_relative_to(mounted):
+                        cloud_cwd = (
+                            host / cwd.relative_to(mounted),
+                            mounted / cwd.relative_to(mounted),
+                        )
+                        break
+
+                if cloud_cwd is None:
+                    raise ValueError(
+                        "'cwd' is not under any of the mounted paths. "
+                        "Please specify 'mount_as_cwd' or ensure `cwd` is "
+                        "under a mounted path."
+                    )
+
+                self._kwargs["workdir"] = f"{cloud_cwd[0]}/{workdir_path}"
+                self._kwargs["mounted_workdir"] = (
+                    self._kwargs["mounted_workdir"]
+                    or f"{cloud_cwd[1]}/{workdir_path}"
+                )
+
+                if not any(
+                    Path(self._kwargs["mounted_workdir"]).is_relative_to(mounted)
+                    for _, mounted in mounts
+                ):
+                    workdir_mount_needed = True
+        else:
+            workdir_mount_needed = True
+
+        if workdir_mount_needed:
+            self._kwargs["mounted_workdir"] = (
+                self._kwargs["mounted_workdir"]
+                or f"{self.DEFAULT_MOUNTED_ROOT}/{DEFAULT_WORKDIR_NAME}"
+            )
+
+        self.workdir = SpecPath(
+            self._kwargs["workdir"],
+            mounted=self._kwargs["mounted_workdir"],
+        )
+
+        if not isinstance(self.workdir, GSPath):
+            raise ValueError(
+                "'gbatch' scheduler requires google cloud storage 'workdir'."
+            )
+
+        volumes: list[dict] = self.config["taskGroups"][0]["taskSpec"]["volumes"]
+
+        for host, mounted in mounts:
+            if not isinstance(host, GSPath):
+                raise ValueError(
+                    f"Mount source '{host}' is not a GCS path. "
+                    "Please specify a GCS path starting with 'gs://'."
+                )
+
+            volumes.append(
+                {
+                    "gcs": {"remotePath": "/".join(host.parts[1:])},
+                    "mountPath": str(mounted),
+                }
+            )
+
+        if workdir_mount_needed:
+            volumes.insert(
+                int(bool(mount_as_cwd)),
+                {
+                    "gcs": {"remotePath": str(self.workdir).split("://", 1)[1]},
+                    "mountPath": str(self.workdir.mounted),
+                },
+            )
 
     async def job_config_file(self, job: Job) -> SpecPath:
         base = f"job.wrapped.{self.name}.json"

@@ -75,6 +75,7 @@ class Scheduler(ABC):
         "subm_batch",
         "cwd",
         "timeout",
+        "_post_init_called",
     )
 
     # The name of the scheduler
@@ -113,6 +114,14 @@ class Scheduler(ABC):
         self.timeout = timeout
 
         self.config = Diot(**kwargs)
+        self._post_init_called = False
+
+    async def post_init(self):
+        """Post initialization for the scheduler
+
+        This is called after the scheduler is initialized, and can be used to
+        perform any additional setup that requires async operations.
+        """
 
     async def create_job(
         self,
@@ -129,6 +138,10 @@ class Scheduler(ABC):
         Returns:
             The job
         """
+        if not self._post_init_called:
+            await self.post_init()
+            self._post_init_called = True
+
         job = self.job_class(
             index=index,
             cmd=cmd,
