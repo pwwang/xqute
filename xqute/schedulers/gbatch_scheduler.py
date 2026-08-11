@@ -322,7 +322,6 @@ class GbatchScheduler(Scheduler):
         mounts, self._path_envs = await sanitize_mounts(
             mount,
             self.DEFAULT_MOUNTED_ROOT,
-            check_host_existence=False,
         )
 
         workdir_path = PanPath(self._kwargs["workdir"] or DEFAULT_WORKDIR_NAME)

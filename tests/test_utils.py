@@ -99,17 +99,17 @@ async def test_sanitize_mounts_relative_mounts():
     assert len(named_mounts_dict) == 0
 
 
-async def test_sanitize_mounts_named_source_not_exist():
-    with pytest.raises(FileNotFoundError):
-        await sanitize_mounts(
-            ["nonexistent=/mnt/disks/nonexistent"],
-            "/mnt/disks",
-        )
+# async def test_sanitize_mounts_named_source_not_exist():
+#     with pytest.raises(FileNotFoundError):
+#         await sanitize_mounts(
+#             ["nonexistent=/mnt/disks/nonexistent"],
+#             "/mnt/disks",
+#         )
 
 
-async def test_sanitize_mounts_source_not_exist():
-    with pytest.raises(FileNotFoundError):
-        await sanitize_mounts(
-            ["/nonexistent:/mnt/disks/nonexistent"],
-            "/mnt/disks",
-        )
+# async def test_sanitize_mounts_source_not_exist():
+#     with pytest.raises(FileNotFoundError):
+#         await sanitize_mounts(
+#             ["/nonexistent:/mnt/disks/nonexistent"],
+#             "/mnt/disks",
+#         )

@@ -155,7 +155,6 @@ class ContainerScheduler(LocalScheduler):
         mounts, self._path_envs = await sanitize_mounts(
             volumes,
             self.DEFAULT_MOUNTED_ROOT,
-            check_host_existence=True,
         )
 
         workdir_path = Path(self._kwargs["workdir"] or DEFAULT_WORKDIR_NAME)
