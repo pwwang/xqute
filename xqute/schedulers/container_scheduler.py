@@ -192,9 +192,9 @@ class ContainerScheduler(LocalScheduler):
 
                 if cwd_mount is None:
                     raise ValueError(
-                        "cwd is not under any of the mounted volumes. "
-                        "Please use `volume_as_cwd` or ensure `cwd` "
-                        "is under a mounted volume."
+                        "Can't determine workdir with a relative path to "
+                        "the mounted cwd. Use an absolute path for workdir or ensure "
+                        "`cwd` is under one of the mounted paths."
                     )
 
                 self._kwargs["workdir"] = f"{cwd_mount[0]}/{workdir_path}"

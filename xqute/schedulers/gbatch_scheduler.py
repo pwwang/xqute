@@ -359,9 +359,9 @@ class GbatchScheduler(Scheduler):
 
                 if cloud_cwd is None:
                     raise ValueError(
-                        "'cwd' is not under any of the mounted paths. "
-                        "Please specify 'mount_as_cwd' or ensure `cwd` is "
-                        "under a mounted path."
+                        "Can't determine workdir with a relative path to "
+                        "the mounted cwd. Use an absolute path for workdir or ensure "
+                        "`cwd` is under one of the mounted paths."
                     )
 
                 self._kwargs["workdir"] = f"{cloud_cwd[0]}/{workdir_path}"
