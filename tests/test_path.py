@@ -337,6 +337,26 @@ def test_specpath_is_hashable():
     assert d[p] == "value"
 
 
+def test_speclocalpath_without_mounted():
+    """A path constructed without going through the SpecPath factory - e.g. by
+    pathlib internals during glob - has no _mounted set; it must behave as
+    if it was never mounted."""
+    p = SpecLocalPath("/path/to/file")
+
+    # Hashing happens during pathlib's glob dedup (`if p not in yielded`)
+    assert hash(p) == hash(SpecPath("/path/to/file"))
+    d = {p: "value"}
+    assert p in d
+    assert d[p] == "value"
+
+    assert not p.mounted.is_mounted()
+    assert repr(p) == "SpecLocalPath('/path/to/file')"
+
+    # Derived paths keep behaving as unmounted
+    assert p.parent.mounted == p.parent
+    assert (p / "sub").mounted == p / "sub"
+
+
 async def test_speclocalpath():
     p = SpecPath("/path/to/file")
     assert p.name == "file"

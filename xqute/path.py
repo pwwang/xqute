@@ -425,6 +425,11 @@ class SpecPath(PanPath):
         <class 'xqute.path.SpecGSPath'>
     """
 
+    # A default so instances created without going through the factory below
+    # (e.g. by pathlib internals during glob) still have the attribute.
+    # None means the path was never mounted; it is its own mounted path.
+    _mounted: str | None = None
+
     def __new__(  # type: ignore
         cls,
         path: str | Path,
@@ -474,6 +479,15 @@ class SpecPath(PanPath):
         """
         return self.__fspath__()
 
+    def _mounted_str(self) -> str:
+        """Get the mounted path as a string, or this path's own string if it
+        was never mounted.
+
+        Returns:
+            str: The mounted path string, or the spec path string if unmounted.
+        """
+        return str(self) if self._mounted is None else str(self._mounted)
+
     @property
     def mounted(self) -> MountedPath:
         """Get the corresponding mounted path in the remote environment.
@@ -481,8 +495,7 @@ class SpecPath(PanPath):
         Returns:
             MountedPath: The path as it appears in the remote execution environment.
         """
-        # Make sure we handle the case where _mounted might not be set
-        return MountedPath(self._mounted, spec=self)  # type: ignore
+        return MountedPath(self._mounted_str(), spec=self)  # type: ignore
 
     def __repr__(self) -> str:
         """Generate a string representation of the SpecPath.
@@ -534,7 +547,7 @@ class SpecPath(PanPath):
                 the spec path and mounted path.
         """
         new_path = LocalPath.with_name(self, name)
-        new_mounted = PanPath(str(self._mounted)).with_name(name)
+        new_mounted = PanPath(self._mounted_str()).with_name(name)
 
         return SpecPath(new_path, mounted=new_mounted)
 
@@ -549,7 +562,7 @@ class SpecPath(PanPath):
                 the spec path and mounted path.
         """
         new_path = LocalPath.with_suffix(self, suffix)
-        new_mounted = PanPath(str(self._mounted)).with_suffix(suffix)
+        new_mounted = PanPath(self._mounted_str()).with_suffix(suffix)
 
         return SpecPath(new_path, mounted=new_mounted)
 
@@ -566,7 +579,7 @@ class SpecPath(PanPath):
                 the spec path and mounted path.
         """
         new_path = LocalPath.with_stem(self, stem)
-        new_mounted = PanPath(str(self._mounted)).with_stem(stem)
+        new_mounted = PanPath(self._mounted_str()).with_stem(stem)
 
         return SpecPath(new_path, mounted=new_mounted)
 
@@ -581,7 +594,7 @@ class SpecPath(PanPath):
                 the spec path and mounted path.
         """
         new_path = LocalPath.joinpath(self, *pathsegments)
-        new_mounted = PanPath(str(self._mounted)).joinpath(*pathsegments)
+        new_mounted = PanPath(self._mounted_str()).joinpath(*pathsegments)
 
         return SpecPath(new_path, mounted=new_mounted)
 
@@ -606,7 +619,7 @@ class SpecPath(PanPath):
                 of both the spec path and mounted path.
         """
         new_path = LocalPath.parent.fget(self)
-        new_mounted = PanPath(str(self._mounted)).parent
+        new_mounted = PanPath(self._mounted_str()).parent
 
         return SpecPath(new_path, mounted=new_mounted)
 
