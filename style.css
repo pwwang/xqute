@@ -1,0 +1,496 @@
+/* ============================================================
+   Landing page — transparent background for hero bleed-through
+   ============================================================ */
+[data-md-color-scheme="default"] .md-main {
+    background: transparent;
+}
+[data-md-color-scheme="default"] .md-content {
+    background: transparent;
+}
+
+.md-main .md-content h1 {
+    visibility: hidden;
+}
+
+/* ============================================================
+   Hero — full-bleed gradient that breaks out of content column
+   ============================================================ */
+
+.hero-wrapper {
+    position: relative;
+    margin: -2.4rem -2.4rem 2rem -2.4rem;
+    padding: 3.5rem 2rem 3rem;
+    text-align: center;
+    overflow: hidden;
+    isolation: isolate;
+}
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(155deg, #1e1b4b 0%, #312e81 20%, #4f46e5 55%, #7c3aed 80%, #a855f7 100%);
+}
+/* subtle animated grain overlay */
+.hero-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: .04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+}
+
+.hero-content h1 {
+    color: #fff;
+    font-weight: 900;
+    font-size: 2.6rem;
+    letter-spacing: -0.5px;
+    margin-bottom: .15em;
+}
+.hero-tagline {
+    color: rgba(255,255,255,.80);
+    font-size: 1.05rem;
+    font-weight: 400;
+    max-width: 520px;
+    margin: 0 auto 1.6rem;
+    display: block;
+    line-height: 1.5;
+}
+
+/* CTA row */
+.hero-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.4rem;
+}
+.hero-btn-primary {
+    background: #fff !important;
+    color: #4f46e5 !important;
+    font-weight: 700 !important;
+    border: none !important;
+    padding: .55em 1.6em !important;
+    border-radius: 8px !important;
+    font-size: .8rem !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,.15);
+    transition: transform .15s, box-shadow .15s;
+}
+.hero-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    color: #4f46e5 !important;
+    background: #fafafa !important;
+}
+.hero-install {
+    display: inline-block;
+    background: rgba(255,255,255,.12);
+    color: rgba(255,255,255,.9);
+    padding: .55em 1.2em;
+    border-radius: 8px;
+    font-size: .78rem;
+    font-family: var(--md-code-font-family);
+    cursor: pointer;
+    user-select: all;
+    border: 1px solid rgba(255,255,255,.10);
+    transition: background .15s;
+}
+.hero-install:hover {
+    background: rgba(255,255,255,.18);
+}
+
+/* Badge row */
+.hero-badges {
+    display: flex;
+    justify-content: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.6rem;
+    opacity: .85;
+}
+.hero-badges img {
+    height: 20px;
+    border-radius: 4px;
+}
+
+/* Scheduler icon strip */
+.hero-schedulers {
+    display: flex;
+    justify-content: center;
+    gap: .45rem;
+    flex-wrap: wrap;
+}
+.hero-schedulers span {
+    display: inline-block;
+    background: rgba(255,255,255,.10);
+    color: rgba(255,255,255,.85);
+    padding: .3em .75em;
+    border-radius: 20px;
+    font-size: .72rem;
+    border: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(6px);
+    transition: background .15s;
+}
+.hero-schedulers span:hover {
+    background: rgba(255,255,255,.18);
+}
+
+/* ============================================================
+   Feature cards — 3-col grid, color-coded
+   ============================================================ */
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .85rem;
+    margin: 1rem 0 1.5rem;
+}
+.feature-card {
+    border-radius: 10px;
+    padding: 1.2rem 1.1rem 1rem;
+    border: 1px solid transparent;
+    transition: transform .15s, box-shadow .15s;
+}
+.feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,.10);
+}
+.feature-card h4 {
+    margin: 0 0 .35em;
+    font-size: .82rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+.feature-card p {
+    margin: 0;
+    font-size: .72rem;
+    line-height: 1.5;
+    color: inherit;
+}
+
+.feature-purple {
+    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+    border-color: #e9d5ff;
+}
+.feature-purple h4 { color: #7c3aed; }
+.feature-purple p   { color: #4a2674; }
+
+.feature-green {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-color: #bbf7d0;
+}
+.feature-green h4 { color: #15803d; }
+.feature-green p  { color: #14532d; }
+
+.feature-amber {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border-color: #fde68a;
+}
+.feature-amber h4 { color: #b45309; }
+.feature-amber p  { color: #5c3b0a; }
+
+.feature-sky {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-color: #bae6fd;
+}
+.feature-sky h4 { color: #0369a1; }
+.feature-sky p  { color: #0c4a6e; }
+
+.feature-rose {
+    background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+    border-color: #fecdd3;
+}
+.feature-rose h4 { color: #be123c; }
+.feature-rose p  { color: #631b2c; }
+
+.feature-teal {
+    background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+    border-color: #99f6e4;
+}
+.feature-teal h4 { color: #0d9488; }
+.feature-teal p  { color: #134e4a; }
+
+/* ============================================================
+   Scheduler cards — horizontal strip, 3-col
+   ============================================================ */
+
+.scheduler-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .85rem;
+    margin: .8rem 0 1.5rem;
+}
+.sched-card {
+    border-radius: 10px;
+    padding: 1rem 1rem .8rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: border-color .15s, box-shadow .15s;
+}
+.sched-card:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 4px 16px rgba(79,70,229,.08);
+}
+.sched-card h3 {
+    margin: 0 0 .3em;
+    font-size: .8rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+.sched-card p {
+    margin: 0;
+    font-size: .68rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+.sched-card .highlight,
+.sched-card pre {
+    margin: .5rem 0 .3rem;
+    font-size: .64rem;
+}
+.sched-card code {
+    font-size: .64rem;
+    word-break: break-all;
+}
+
+/* ============================================================
+   Quick start block — dark terminal style, 2-col
+   ============================================================ */
+
+.quickstart-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    align-items: start;
+    margin: .6rem 0 1.5rem;
+}
+.quickstart-block pre {
+    margin: 0;
+    border-radius: 10px;
+    background: #0f172a !important;
+    border: 1px solid #1e293b;
+}
+.quickstart-block pre code {
+    font-size: .7rem;
+    line-height: 1.55;
+    color: #cbd5e1;
+}
+.quickstart-meta {
+    padding: .4rem 0;
+}
+.quickstart-meta h3 {
+    margin: 0 0 .3em;
+    font-size: .9rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+.quickstart-meta p {
+    font-size: .72rem;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: .5rem;
+}
+.quickstart-meta a {
+    font-weight: 600;
+    font-size: .75rem;
+}
+
+/* ============================================================
+   Tree block — subtle panel
+   ============================================================ */
+
+.tree-block {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: .8rem 1.2rem;
+    margin: .4rem 0 1.5rem;
+}
+.tree-block pre {
+    margin: 0;
+    background: transparent !important;
+}
+.tree-block code {
+    font-size: .7rem;
+    line-height: 1.6;
+    color: #334155;
+}
+
+/* ============================================================
+   Next pages — styled grid
+   ============================================================ */
+
+.next-pages {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .6rem;
+    margin: .6rem 0 1rem;
+}
+.next-pages a {
+    display: block;
+    padding: .7rem .9rem;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    font-size: .72rem;
+    font-weight: 600;
+    color: #334155;
+    transition: border-color .15s, background .15s;
+    text-decoration: none;
+}
+.next-pages a:hover {
+    border-color: #c7d2fe;
+    background: #eef2ff;
+    color: #4338ca;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 960px) {
+    .feature-grid,
+    .scheduler-strip,
+    .next-pages {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .quickstart-block {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 640px) {
+    .hero-wrapper {
+        margin: -1.2rem -1.2rem 1.5rem;
+        padding: 2.2rem 1rem 2rem;
+    }
+    .hero-content h1 {
+        font-size: 1.8rem;
+    }
+    .hero-tagline {
+        font-size: .85rem;
+    }
+    .feature-grid,
+    .scheduler-strip,
+    .next-pages {
+        grid-template-columns: 1fr;
+    }
+    .hero-cta {
+        flex-direction: column;
+    }
+}
+
+/* ============================================================
+   mkapi tweaks (preserved from original)
+   ============================================================ */
+
+.md-typeset .admonition, .md-typeset details {
+    font-size: .7rem !important;
+}
+.md-typeset table:not([class]) td {
+    padding: .55em 1.25em !important;
+}
+.md-typeset table:not([class]) th {
+    padding: .75em 1.25em !important;
+}
+.mkapi-docstring{
+    line-height: 1;
+}
+.mkapi-node {
+    background-color: #f0f6fa;
+    border-top: 3px solid #559bc9;
+}
+.mkapi-node .mkapi-object-container {
+    background-color: #b4d4e9;
+    padding: .12em .4em;
+}
+.mkapi-node .mkapi-object-container .mkapi-object.code {
+    background: none;
+    border: none;
+}
+.mkapi-node .mkapi-object-container .mkapi-object.code * {
+    font-size: .65rem !important;
+}
+.mkapi-node pre {
+    line-height: 1.5;
+}
+.md-typeset pre>code {
+    overflow: visible;
+    line-height: 1.2;
+}
+.mkapi-docstring .md-typeset pre>code {
+    font-size: 0.1rem !important;
+}
+.mkapi-section-name.bases {
+    margin-top: .2em;
+}
+.mkapi-section-body.bases {
+    padding-bottom: .7em;
+    line-height: 1.3;
+}
+.mkapi-section.bases {
+    margin-bottom: .8em;
+}
+.mkapi-node * {
+    font-size: .7rem;
+}
+.mkapi-node a.mkapi-src-link {
+    word-break: keep-all;
+}
+.mkapi-docstring {
+    padding: .4em .15em !important;
+}
+.mkapi-section-name-body {
+    font-size: .72rem !important;
+}
+.mkapi-node ul.mkapi-items li {
+    line-height: 1.4 !important;
+}
+.mkapi-node ul.mkapi-items li * {
+    font-size: .65rem !important;
+}
+.mkapi-node code.mkapi-object-signature {
+    padding-right: 2px;
+}
+.mkapi-node .mkapi-code * {
+    font-size: .65rem;
+}
+.mkapi-node .mkapi-code code.md-code__content {
+    display: inherit !important;
+}
+.mkapi-node a.mkapi-docs-link {
+    font-size: .6rem;
+}
+.mkapi-node h1.mkapi-object.mkapi-object-code {
+    margin: .2em .3em;
+}
+.mkapi-node h1.mkapi-object.mkapi-object-code .mkapi-object-kind.mkapi-object-kind-code {
+    font-style: normal;
+    margin-right: 16px;
+}
+.mkapi-node .mkapi-item-name {
+    font-size: .7rem !important;
+    color: #555;
+    padding-right: 4px;
+}
+.md-typeset {
+    font-size: .75rem !important;
+    line-height: 1.5 !important;
+}
+.mkapi-object-kind.package.top {
+    font-size: .8rem !important;
+    color: #111;
+}
+.mkapi-object.package.top > h2 {
+    font-size: .8rem !important;
+}
+.mkapi-object-body.package.top * {
+    font-size: .75rem !important;
+}
+.mkapi-object-kind.module.top {
+    font-size: .75rem !important;
+    color: #222;
+}
+.mkapi-object-body.module.top * {
+    font-size: .75rem !important;
+}
