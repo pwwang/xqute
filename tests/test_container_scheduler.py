@@ -42,6 +42,7 @@ async def test_init_docker(mock_bin_path, temp_workdir):
         volumes=["/tmp:/container/path"],
         # envs={"VAR1": "value1", "VAR2": "value2"},
         bin_args=["--privileged", "--network=host"],
+        bin=mock_bin_path + "/docker",
     )
     await scheduler.post_init()
     assert scheduler.image == "ubuntu:20.04"
@@ -87,11 +88,11 @@ def test_init_scheduler_using_mount_and_volumes():
             image="ubuntu:20.04",
             workdir="/tmp",
             volume_as_cwd="/host/path",
-            cwd="/container/path"
+            cwd="/container/path",
         )
 
 
-async def test_named_volume_handling(temp_workdir):
+async def test_named_volume_handling(temp_workdir, mock_bin_path):
     """Test handling of named volumes"""
     host_dir = temp_workdir / "dir1"
     await host_dir.a_mkdir(parents=True, exist_ok=True)
@@ -102,6 +103,7 @@ async def test_named_volume_handling(temp_workdir):
         image="ubuntu:20.04",
         workdir=temp_workdir,
         volumes=[f"DIR={host_dir}", f"FILE={host_file}"],
+        bin=mock_bin_path + "/docker",
     )
     await scheduler.post_init()
     assert len(scheduler.volumes) == 3
@@ -136,11 +138,12 @@ async def test_named_volume_handling(temp_workdir):
     #     await sched.post_init()
 
 
-async def test_volume_as_cwd_no_workdir():
+async def test_volume_as_cwd_no_workdir(mock_bin_path):
     """Test that volume_as_cwd without workdir"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
         volume_as_cwd="/tmp",
+        bin=mock_bin_path + "/docker",
     )
     await scheduler.post_init()
     assert scheduler.cwd == "/mnt/disks/.cwd"
@@ -152,12 +155,13 @@ async def test_volume_as_cwd_no_workdir():
     assert volumes[0] == "/tmp:/mnt/disks/.cwd"
 
 
-async def test_volume_as_cwd_and_workdir(temp_workdir):
+async def test_volume_as_cwd_and_workdir(temp_workdir, mock_bin_path):
     """Test that volume_as_cwd and workdir are handled correctly"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
         workdir=temp_workdir,
         volume_as_cwd="/tmp",
+        bin=mock_bin_path + "/docker",
     )
     await scheduler.post_init()
     assert scheduler.cwd == "/mnt/disks/.cwd"
@@ -170,12 +174,13 @@ async def test_volume_as_cwd_and_workdir(temp_workdir):
     assert "/tmp:/mnt/disks/.cwd" in volumes
 
 
-async def test_volume_as_cwd_and_mounted_workdir(temp_workdir):
+async def test_volume_as_cwd_and_mounted_workdir(temp_workdir, mock_bin_path):
     """Test that volume_as_cwd and mounted_workdir are handled correctly"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
         mounted_workdir="/container/workdir",
         volume_as_cwd="/tmp",
+        bin=mock_bin_path + "/docker",
     )
     await scheduler.post_init()
     assert scheduler.cwd == "/mnt/disks/.cwd"
@@ -199,10 +204,13 @@ def test_init_binary_not_found(temp_workdir):
         )
 
 
-async def test_jobcmd_shebang_docker(temp_workdir):
+async def test_jobcmd_shebang_docker(temp_workdir, mock_bin_path):
     """Test job command shebang generation for docker"""
     scheduler = ContainerScheduler(
-        image="ubuntu:20.04", volumes=["/tmp:/container"], workdir=temp_workdir
+        image="ubuntu:20.04",
+        volumes=["/tmp:/container"],
+        workdir=temp_workdir,
+        bin=mock_bin_path + "/docker",
     )
     await scheduler.post_init()
 
@@ -328,13 +336,14 @@ async def test_submission_failure(temp_workdir):
     assert "Failed to submit job" in await job.stderr_file.a_read_text()
 
 
-async def test_using_cwd():
+async def test_using_cwd(mock_bin_path):
     """Test that using cwd is handled correctly"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
         mounted_workdir="/tmp/workdir",
         mount="/tmp:/container",
         cwd="/container/cwd",
+        bin=mock_bin_path + "/docker",
     )
     await scheduler.post_init()
     assert scheduler.cwd == "/container/cwd"
@@ -347,12 +356,13 @@ async def test_using_cwd():
     assert volumes[1] == "/tmp/cwd/.xqute:/tmp/workdir"
 
 
-async def test_using_cwd_but_mount_not_found():
+async def test_using_cwd_but_mount_not_found(mock_bin_path):
     """Test that using cwd with a non-existent mount raises an error"""
     scheduler = ContainerScheduler(
         image="ubuntu:20.04",
         mount="/tmp:/container",
         cwd="/nonexisting/cwd",
+        bin=mock_bin_path + "/docker",
     )
     with pytest.raises(ValueError):
         await scheduler.post_init()
